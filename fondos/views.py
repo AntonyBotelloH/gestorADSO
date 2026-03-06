@@ -55,6 +55,7 @@ def inicio_fondo(request):
         'aprendices': aprendices,
         'conceptos': conceptos,
         'movimientos': ultimos_movimientos,
+        'titulo': 'Gestión de Fondos',
     }
     
     return render(request, 'inicio_fondo.html', contexto)
