@@ -24,7 +24,7 @@ class Fondo(models.Model):
     ]
 
     aprendiz = models.ForeignKey(
-        'usuario.Usuario', 
+        'usuarios.Usuario', 
         on_delete=models.CASCADE, 
         related_name='aportes_fondo',
         limit_choices_to={'rol': 'APRENDIZ'},
