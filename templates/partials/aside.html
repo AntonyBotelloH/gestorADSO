@@ -134,9 +134,9 @@
   <div class="mb-3 px-2">
     <label class="text-white-50 fw-bold mb-1 small" for="sidebarFichaSelect"><i class="bi bi-layers me-1"></i> Ficha Actual:</label>
     <select id="sidebarFichaSelect" class="form-select form-select-sm fw-bold border-secondary bg-dark text-white shadow-none">
-      <option value="2555555" selected>2555555 - ADSO</option>
-      <option value="2666666">2666666 - Prog</option>
-      <option value="2777777">2777777 - Multimedia</option>
+      {% for ficha in lista_fichas %}
+      <option value="{{ ficha.codigo_ficha }}" selected>{{ ficha }}</option>
+      {% endfor %}
     </select>
   </div>
 
