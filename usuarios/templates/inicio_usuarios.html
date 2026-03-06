@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="color-verde-sena-fn">Bienvenido, {{ nombre }}</h2>
+
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Listado de Aprendices</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Nombre Completo</th>
+                        <th>Documento</th>
+                        <th>Correo Electrónico</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aprendiz in aprendices %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="https://ui-avatars.com/api/?name={{ aprendiz.nombres }}+{{ aprendiz.apellidos }}&background=random" alt="" width="32" height="32" class="rounded-circle me-2">
+                                <div>
+                                    <div class="fw-bold">{{ aprendiz.nombres }} {{ aprendiz.apellidos }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ aprendiz.numero_documento }}</td>
+                        <td>{{ aprendiz.correo_electronico }}</td>
+                        <td>
+                            <span class="badge {% if aprendiz.estado %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% if aprendiz.estado %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+                                <a href="#" class="btn btn-outline-info" title="Ver Detalle"><i class="bi bi-eye"></i></a>
+                                <a href="#" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No hay aprendices registrados.</td>
+                    </tr>   
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>  
+{% endblock %}

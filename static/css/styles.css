@@ -1,0 +1,26 @@
+.color-verde-sena-bg {
+    background-color: #39A900 !important;
+}
+
+.color-negro-suave-bg {
+    background-color: #212529 !important;
+}
+
+.color-gris-oscuro-bg {
+    background-color: #333333 !important;
+}
+
+.color-gris-claro-bg {
+    background-color: #f8f9fa !important;
+}
+
+.color-rojo-alerta-bg {
+    background-color: #dc3545 !important;
+}
+
+/* Tus clases de texto (fn) se pueden quedar igual, o también ponerles !important por seguridad */
+.color-verde-sena-fn { color: #39A900 !important; }
+.color-negro-suave-fn { color: #212529 !important; }
+.color-gris-oscuro-fn { color: #333333 !important; }
+.color-gris-claro-fn { color: #f8f9fa !important; }
+.color-rojo-alerta-fn { color: #dc3545 !important; }
