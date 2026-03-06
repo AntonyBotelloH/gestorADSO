@@ -1,58 +1,70 @@
 {% extends "base.html" %}
+{% load static %}
+
 
 {% block content %}
-<h2 class="color-verde-sena-fn">Bienvenido, {{ nombre }}</h2>
+<div class="container-fluid py-3">
 
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-white py-3">
-        <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Listado de Aprendices</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4">Nombre Completo</th>
-                        <th>Documento</th>
-                        <th>Correo Electrónico</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for aprendiz in aprendices %}
-                    <tr>
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                <img src="https://ui-avatars.com/api/?name={{ aprendiz.nombres }}+{{ aprendiz.apellidos }}&background=random" alt="" width="32" height="32" class="rounded-circle me-2">
-                                <div>
-                                    <div class="fw-bold">{{ aprendiz.nombres }} {{ aprendiz.apellidos }}</div>
+   
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold">Listado de la Ficha 2555555</h5>
+            <div class="d-flex gap-2">
+                <input type="text" class="form-control form-control-sm" placeholder="🔍 Buscar aprendiz..." style="max-width: 250px;">
+                <button class="btn btn-primary btn-sm">+ Nuevo Aprendiz</button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Documento</th>
+                            <th>Aprendiz</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-4 text-muted">1099887766</td>
+                            <td><strong>Ana Martínez</strong></td>
+                            <td><span class="badge bg-warning text-dark">Vocero</span></td>
+                            <td><span class="badge bg-success">Activo</span></td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group" role="group">
+                                    <a href="#" class="btn btn-outline-secondary btn-sm">Editar</a>
+                                    <a href="#" class="btn btn-outline-secondary btn-sm">Historial</a>
                                 </div>
-                            </div>
-                        </td>
-                        <td>{{ aprendiz.numero_documento }}</td>
-                        <td>{{ aprendiz.correo_electronico }}</td>
-                        <td>
-                            <span class="badge {% if aprendiz.estado %}bg-success{% else %}bg-secondary{% endif %}">
-                                {% if aprendiz.estado %}Activo{% else %}Inactivo{% endif %}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm">
-                                <a href="#" class="btn btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
-                                <a href="#" class="btn btn-outline-info" title="Ver Detalle"><i class="bi bi-eye"></i></a>
-                                <a href="#" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No hay aprendices registrados.</td>
-                    </tr>   
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <td class="ps-4 text-muted">1049641572</td>
+                            <td><strong>Samuel Echeverria Bernate</strong></td>
+                            <td><span class="badge bg-secondary">Aprendiz</span></td>
+                            <td><span class="badge bg-success">Activo</span></td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group" role="group">
+                                    <a href="#" class="btn btn-outline-secondary btn-sm">Editar</a>
+                                    <a href="#" class="btn btn-outline-secondary btn-sm">Historial</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-white py-3">
+            <button class="btn btn-outline-success btn-sm">
+                <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
+            </button>
         </div>
     </div>
-</div>  
+
+</div>
 {% endblock %}
