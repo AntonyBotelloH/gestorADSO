@@ -70,7 +70,7 @@ def editar_usuario(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Datos de {usuario.first_name} actualizados correctamente.")
-            return redirect('usuarios:inicio_usuario')
+            return redirect('inicio_usuario')
         else:
             messages.error(request, "Error al actualizar. Revisa los campos marcados en rojo.")
     else:
