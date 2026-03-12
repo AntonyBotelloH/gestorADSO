@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Usuario
-from .forms import UsuarioForm, UsuarioEditarForm
+from .models import Usuario, Ficha
+from .forms import UsuarioForm, UsuarioEditarForm, FichaForm
 
 def inicio_usuario(request):
     lista_usuarios = Usuario.objects.all().order_by('first_name')
@@ -86,3 +86,30 @@ def editar_usuario(request, pk):
         ],
     }
     return render(request, 'aprendices/agregar_aprendiz.html', context)
+
+def crear_ficha(request):
+    if request.method == 'POST':
+        form = FichaForm(request.POST)
+        if form.is_valid():
+            ficha = form.save()
+            ficha.save()
+            
+            mensaje = f"¡Ficha {ficha.codigo_ficha} registrada!"
+            messages.success(request, mensaje)
+            
+            return redirect('inicio_usuario')
+        else:
+            messages.error(request, "Error al registrar. Por favor verifica los datos.")
+    else:
+        form = FichaForm()
+
+    context = {
+        'form': form,
+        'titulo': 'Registrar Nueva Ficha',
+        'breadcrumbs': [
+            {'nombre': 'Ficha', 'url': '#'},
+            {'nombre': 'Directorio', 'url': '/fichas/'}, 
+            {'nombre': 'Nueva Ficha', 'url': ''}
+        ],
+    }
+    return render(request, 'fichas/agregar_ficha.html', context)

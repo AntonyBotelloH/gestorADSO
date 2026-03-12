@@ -18,15 +18,7 @@ class UsuarioForm(ModelForm):
             'tipo_documento', 'documento', 'rol', 'ficha'
         ]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Inyecta clases de Bootstrap a todos los campos automáticamente
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.Select):
-                field.widget.attrs.update({'class': 'form-select'})
-            else:
-                field.widget.attrs.update({'class': 'form-control'})
-
+    
 class UsuarioEditarForm(ModelForm):
     class Meta:
         model = Usuario
@@ -37,17 +29,7 @@ class UsuarioEditarForm(ModelForm):
             'tipo_documento', 'rol', 'ficha', 'is_active'
         ]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.Select):
-                field.widget.attrs.update({'class': 'form-select'})
-            elif isinstance(field.widget, forms.CheckboxInput):
-                field.widget.attrs.update({'class': 'form-check-input'})
-            else:
-                field.widget.attrs.update({'class': 'form-control'})
-
-
+   
 # ==========================================
 # FORMULARIOS DE FICHA
 # ==========================================
@@ -57,14 +39,7 @@ class FichaForm(ModelForm):
         model = Ficha
         fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            if isinstance(field.widget, forms.Select):
-                field.widget.attrs.update({'class': 'form-select'})
-            else:
-                field.widget.attrs.update({'class': 'form-control'})
-
+   
 
 # ==========================================
 # FORMULARIOS DE GRUPO DE PROYECTO (SCRUM)

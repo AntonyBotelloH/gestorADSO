@@ -8,4 +8,6 @@ urlpatterns = [
     
     path('nuevo/', crear_usuario, name='crear_aprendiz'),
     path('editar/<int:pk>/', editar_usuario, name='editar_usuario'),
+    
+    path('fichas/nuevo/', crear_ficha, name='crear_ficha'),
 ]
