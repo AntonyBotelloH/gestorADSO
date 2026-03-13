@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }} | Gestor SENA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    {% if ficha_activa %}
+    
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h3 class="fw-bold mb-2">{{ titulo }}</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="/" class="text-decoration-none text-success">Inicio</a>
+                        </li>
+                        {% for miga in breadcrumbs %}
+                            {% if not forloop.last %}
+                                <li class="breadcrumb-item">
+                                    <a href="{{ miga.url }}" class="text-decoration-none text-success">{{ miga.nombre }}</a>
+                                </li>
+                            {% else %}
+                                <li class="breadcrumb-item active" aria-current="page">{{ miga.nombre }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-bold">Contexto Actual:</span>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 fs-6 shadow-sm">
+                    <i class="bi bi-layers me-1"></i> {{ ficha_activa.codigo_ficha }} - {{ ficha_activa.programa|truncatechars:20 }}
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 border-start border-4 border-success h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted fw-bold text-uppercase mb-1">Total Aprendices</h6>
+                        <h2 class="fw-bold mb-0">{{ total_aprendices|default:"0" }}</h2>
+                        <small class="text-muted d-block mt-2">{{ aprendices_activos|default:"0" }} Activos / {{ aprendices_retirados|default:"0" }} Retirados</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 border-start border-4 border-warning h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted fw-bold text-uppercase mb-1">Competencias</h6>
+                        <h2 class="fw-bold mb-0">12 <span class="fs-5 text-muted fw-normal">/ 24</span></h2>
+                        <small class="text-muted d-block mt-2">50% del diseño curricular</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 border-start border-4 border-success bg-success bg-opacity-10 h-100">
+                    <div class="card-body">
+                        <h6 class="text-success fw-bold text-uppercase mb-1">Etapa Actual</h6>
+                        <h2 class="text-success fw-bold mb-0">Lectiva</h2>
+                        <small class="text-success d-block mt-2">Finaliza: 15 Oct 2026</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="mb-0 fw-bold">Detalles del Programa</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="text-muted small fw-bold text-uppercase mb-1">Programa de Formación:</label>
+                            <p class="mb-0 fs-6">{{ ficha_activa.programa }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small fw-bold text-uppercase mb-1">Jornada:</label>
+                            <p class="mb-0 fs-6">{{ ficha_activa.jornada }}</p>
+                        </div>
+                        <div>
+                            <label class="text-muted small fw-bold text-uppercase mb-1">Lugar de Ejecución:</label>
+                            <p class="mb-0 fs-6">Sede Paipa - Ambiente de Sistemas 2</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="mb-0 fw-bold">Proyecto Formativo</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold">Fase 1: Análisis</span>
+                                <span class="text-success fw-bold">100%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold">Fase 2: Diseño</span>
+                                <span class="text-success fw-bold">100%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold">Fase 3: Desarrollo</span>
+                                <span class="text-warning fw-bold">40%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                <h5 class="mb-0 fw-bold">Equipo Ejecutor</h5>
+                <button class="btn btn-outline-success btn-sm">+ Asignar Instructor</button>
+            </div>
+            <div class="card-body">
+                <table id="tablaDatos" class="table table-hover table-striped align-middle w-100 nowrap">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Instructor</th>
+                            <th>Área</th>
+                            <th>Rol</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instructor in equipo_ejecutor %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if instructor.foto %}
+                                        <img src="{{ instructor.foto.url }}" alt="Foto" class="rounded-circle me-3 object-fit-cover" style="width: 45px; height: 45px;">
+                                    {% else %}
+                                        <img src="https://ui-avatars.com/api/?name={{ instructor.first_name }}+{{ instructor.last_name }}&background=39A900&color=fff&rounded=true&bold=true" alt="Sin foto" class="rounded-circle me-3" style="width: 45px; height: 45px;">
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ instructor.first_name }} {{ instructor.last_name }}</h6>
+                                        <small class="text-muted">{{ instructor.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted">Técnica</td>
+                            <td>
+                                {% if forloop.first %}
+                                    <span class="badge bg-success">Líder</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Instructor</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-secondary btn-sm">Perfil</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light py-3 border-0">
+                <small class="text-muted d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2 fs-5 text-primary"></i> 
+                    Esta ficha registra un promedio de asistencia del <strong>&nbsp;92%</strong>.
+                </small>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+            <div class="col-md-6 text-center">
+                <i class="bi bi-folder-x display-1 text-muted mb-4 d-block opacity-50"></i>
+                <h2 class="fw-bold text-secondary mb-3">No hay un contexto activo</h2>
+                <p class="text-muted fs-5 mb-4">Para visualizar el resumen, los aprendices y las estadísticas, por favor selecciona una ficha de formación en el menú lateral izquierdo.</p>
+                <button class="btn btn-success px-4 py-2" onclick="document.getElementById('sidebarFichaSelect').focus();">
+                    <i class="bi bi-arrow-left-circle me-2"></i> Seleccionar Ficha
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/table-config.js' %}"></script>
+{% endblock scripts %}
