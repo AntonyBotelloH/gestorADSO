@@ -26,7 +26,7 @@ class UsuarioEditarForm(ModelForm):
         # Agregamos 'is_active' por si necesitas desactivar a un aprendiz que se retiró.
         fields = [
             'first_name', 'last_name', 'email', 
-            'tipo_documento', 'rol', 'ficha', 'is_active'
+            'tipo_documento', 'rol', 'ficha', 'is_active','foto'
         ]
 
    
