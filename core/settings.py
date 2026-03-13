@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'fondos',
     'proyectos',
     'usuarios',
+    #pip install Pillow
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -129,3 +130,9 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+# URL base que verán los usuarios en el navegador (ej. http://127.0.0.1:8000/media/foto.jpg)
+MEDIA_URL = '/media/'
+
+# Ruta física en tu computador/servidor donde Django creará la carpeta y guardará los archivos
+MEDIA_ROOT = BASE_DIR / 'media'
