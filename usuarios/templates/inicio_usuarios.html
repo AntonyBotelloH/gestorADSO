@@ -10,89 +10,72 @@
         
         <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
             <h5 class="mb-0 fw-bold">Listado de la Ficha (Instructor: {{ nombre }})</h5>
-            <div class="d-flex gap-2">
-                <input type="text" class="form-control form-control-sm" placeholder="🔍 Buscar usuario..." style="max-width: 250px;">
+            <div>
                 <a href="{% url 'crear_usuario' %}" class="btn btn-primary btn-sm">+ Nuevo Usuario</a>
             </div>
         </div>
 
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Documento</th>
-                            <th>Usuario</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+        <div class="card-body">
+            <table id="tablaDatos" class="table table-hover table-striped align-middle w-100 nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>Documento</th>
+                        <th>Usuario</th>
+                        <th>Correo Electrónico</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios_ficha %}
+                    <tr>
+                        <td class="text-muted">{{ usuario.documento }}</td>
                         
-                        {% for usuario in usuarios_ficha %}
-                        <tr>
-                            <td class="ps-4 text-muted">{{ usuario.documento }}</td>
-                            
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    {% if usuario.foto %}
-                                        <img src="{{ usuario.foto.url }}" alt="Foto de {{ usuario.first_name }}" class="rounded-circle me-3 object-fit-cover" style="width: 45px; height: 45px;">
-                                    {% else %}
-                                        <img src="https://ui-avatars.com/api/?name={{ usuario.first_name }}+{{ usuario.last_name }}&background=39A900&color=fff&rounded=true&bold=true" alt="Sin foto" class="rounded-circle me-3" style="width: 45px; height: 45px;">
-                                    {% endif %}
-                                    
-                                    <div>
-                                        <h6 class="mb-0 fw-bold">{{ usuario.first_name }} {{ usuario.last_name }}</h6>
-                                        <small class="text-muted">{{ usuario.email }}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            
-                            <td>
-                                {% if usuario.rol == 'INSTRUCTOR' %}
-                                    <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
-                                {% elif usuario.rol == 'Admin' %}
-                                    <span class="badge bg-danger">{{ usuario.get_rol_display }}</span>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if usuario.foto %}
+                                    <img src="{{ usuario.foto.url }}" alt="Foto" class="rounded-circle me-3 object-fit-cover" style="width: 45px; height: 45px;">
                                 {% else %}
-                                    <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
+                                    <img src="https://ui-avatars.com/api/?name={{ usuario.first_name }}+{{ usuario.last_name }}&background=39A900&color=fff&rounded=true&bold=true" alt="Sin foto" class="rounded-circle me-3" style="width: 45px; height: 45px;">
                                 {% endif %}
-                            </td>
-                            
-                            <td>
-                                {% if usuario.is_active %}
-                                    <span class="badge bg-success">Activo</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Inactivo</span>
-                                {% endif %}
-                            </td>
-                            
-                            <td class="text-end pe-4">
-                                <div class="btn-group" role="group">
-                                    <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-outline-secondary btn-sm">Editar</a>
-                                    <a href="#" class="btn btn-outline-secondary btn-sm">Historial</a>
+                                
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ usuario.first_name }} {{ usuario.last_name }}</h6>
                                 </div>
-                            </td>
-                        </tr>
+                            </div>
+                        </td>
                         
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="bi bi-people fs-1 d-block mb-2"></i>
-                                No hay usuarios registrados en esta ficha todavía.
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card-footer bg-white py-3">
-            <button class="btn btn-outline-success btn-sm">
-                Exportar Excel
-            </button>
+                        <td class="text-muted">{{ usuario.email }}</td>
+                        
+                        <td>
+                            {% if usuario.rol == 'INSTRUCTOR' %}
+                                <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
+                            {% elif usuario.rol == 'Admin' %}
+                                <span class="badge bg-danger">{{ usuario.get_rol_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ usuario.get_rol_display }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-outline-secondary btn-sm">Editar</a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm">Historial</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -102,4 +85,6 @@
 {% block scripts %}
  
 <script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/table-config.js' %}"></script>
+
 {% endblock scripts %}
