@@ -12,7 +12,7 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-success">Inicio</a></li>
                 <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-success">Ficha</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'usuarios:inicio_usuario' %}" class="text-decoration-none text-success">Directorio</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'inicio_usuario' %}" class="text-decoration-none text-success">Directorio</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
             </ol>
         </nav>
@@ -31,7 +31,7 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         
                         {{ form|crispy }}
@@ -40,7 +40,7 @@
 
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{% url 'inicio_usuario' %}" class="btn btn-outline-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary">💾 Guardar Aprendiz</button>
+                            <button type="submit" class="btn btn-primary">💾 Guardar Usuario</button>
                         </div>
                     </form>
                 </div>

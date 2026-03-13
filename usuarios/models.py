@@ -39,6 +39,10 @@ class Usuario(AbstractUser):
     rol = models.CharField(max_length=20, choices=ROLE_CHOICES, default='APRENDIZ', verbose_name='Rol del Usuario')
     ficha = models.ForeignKey(Ficha, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Ficha')
     
+    # NUEVO CAMPO: Foto de perfil
+    # upload_to indica la subcarpeta donde se guardarán (adentro de tu carpeta MEDIA)
+    foto = models.ImageField(upload_to='fotos_perfil/', null=True, blank=True, verbose_name='Foto de Perfil')
+    
     REQUIRED_FIELDS = ['documento', 'first_name', 'last_name']
     
     class Meta:
@@ -58,3 +62,14 @@ class GrupoProyecto(models.Model):
         
     def __str__(self):
         return self.nombre
+    
+def renombrar_foto_perfil(instance, filename):
+    # Extraemos la extensión original del archivo (ej. jpg, png)
+    ext = filename.split('.')[-1]
+    
+    # Armamos el nuevo nombre usando el documento del usuario
+    # Ejemplo: Si sube "foto_mia.jpg" y su cédula es 1049641572, quedará "1049641572.jpg"
+    nuevo_nombre = f"{instance.documento}.{ext}"
+    
+    # Devolvemos la ruta completa donde debe guardarse
+    return os.path.join('fotos_perfil', nuevo_nombre)

@@ -20,28 +20,20 @@ def inicio_usuario(request):
 
 def crear_usuario(request):
     if request.method == 'POST':
-        form = UsuarioForm(request.POST)
+        form = UsuarioForm(request.POST, request.FILES) 
         if form.is_valid():
             usuario = form.save(commit=False)
-            
-            # 1. Asignar el documento como nombre de usuario
             usuario.username = usuario.documento
             
-            # 2. Construir la contraseña automática (# + Inicial N + Inicial A + Documento)
-            # Usamos [0].upper() para sacar la primera letra y asegurarnos de que sea mayúscula
             inicial_nombre = usuario.first_name[0].upper()
             inicial_apellido = usuario.last_name[0].upper()
-            
             password_generada = f"#{inicial_nombre}{inicial_apellido}{usuario.documento}"
             
-            # 3. Encriptamos la contraseña generada
             usuario.set_password(password_generada)
-            
-            # 4. Ahora sí guardamos en la base de datos
             usuario.save()
             
-            # BONUS UX: Le mostramos al instructor cuál fue la contraseña que se generó
-            mensaje = f"¡Aprendiz {usuario.first_name} registrado! Usuario: {usuario.documento} | Clave: {password_generada}"
+            # Cambiamos "Aprendiz" por "Usuario"
+            mensaje = f"¡Usuario {usuario.first_name} registrado! Ingreso: {usuario.documento} | Clave: {password_generada}"
             messages.success(request, mensaje)
             
             return redirect('inicio_usuario')
@@ -52,14 +44,14 @@ def crear_usuario(request):
 
     context = {
         'form': form,
-        'titulo': 'Registrar Nuevo Aprendiz',
+        'titulo': 'Registrar Nuevo Usuario', # Renombrado
         'breadcrumbs': [
             {'nombre': 'Ficha', 'url': '#'},
             {'nombre': 'Directorio', 'url': '/usuarios/'}, 
-            {'nombre': 'Nuevo Aprendiz', 'url': ''}
+            {'nombre': 'Nuevo Usuario', 'url': ''} # Renombrado
         ],
     }
-    return render(request, 'aprendices/agregar_aprendiz.html', context)
+    return render(request, 'usuarios/agregar_usuarios.html', context)
 
 
 def editar_usuario(request, pk):
@@ -85,7 +77,7 @@ def editar_usuario(request, pk):
             {'nombre': 'Editar Aprendiz', 'url': ''}
         ],
     }
-    return render(request, 'aprendices/agregar_aprendiz.html', context)
+    return render(request, 'usuarios/agregar_usuarios.html', context)
 
 def crear_ficha(request):
     if request.method == 'POST':

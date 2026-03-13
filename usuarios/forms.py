@@ -15,7 +15,7 @@ class UsuarioForm(ModelForm):
         # Es mejor definir exactamente qué campos puede llenar el administrador.
         fields = [
             'first_name', 'last_name', 'email', 
-            'tipo_documento', 'documento', 'rol', 'ficha'
+            'tipo_documento', 'documento', 'rol', 'ficha','foto'
         ]
 
     

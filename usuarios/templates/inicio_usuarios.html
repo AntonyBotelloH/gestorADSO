@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}{{ titulo }} | Gestor SENA{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -10,8 +11,8 @@
         <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
             <h5 class="mb-0 fw-bold">Listado de la Ficha (Instructor: {{ nombre }})</h5>
             <div class="d-flex gap-2">
-                <input type="text" class="form-control form-control-sm" placeholder="🔍 Buscar aprendiz..." style="max-width: 250px;">
-                <a href="{% url 'crear_aprendiz' %}" class="btn btn-primary btn-sm">+ Nuevo Aprendiz</a>
+                <input type="text" class="form-control form-control-sm" placeholder="🔍 Buscar usuario..." style="max-width: 250px;">
+                <a href="{% url 'crear_usuario' %}" class="btn btn-primary btn-sm">+ Nuevo Usuario</a>
             </div>
         </div>
 
@@ -21,7 +22,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">Documento</th>
-                            <th>Aprendiz</th>
+                            <th>Usuario</th>
                             <th>Rol</th>
                             <th>Estado</th>
                             <th class="text-end pe-4">Acciones</th>
@@ -33,7 +34,20 @@
                         <tr>
                             <td class="ps-4 text-muted">{{ usuario.documento }}</td>
                             
-                            <td><strong>{{ usuario.first_name }} {{ usuario.last_name }}</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if usuario.foto %}
+                                        <img src="{{ usuario.foto.url }}" alt="Foto de {{ usuario.first_name }}" class="rounded-circle me-3 object-fit-cover" style="width: 45px; height: 45px;">
+                                    {% else %}
+                                        <img src="https://ui-avatars.com/api/?name={{ usuario.first_name }}+{{ usuario.last_name }}&background=39A900&color=fff&rounded=true&bold=true" alt="Sin foto" class="rounded-circle me-3" style="width: 45px; height: 45px;">
+                                    {% endif %}
+                                    
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ usuario.first_name }} {{ usuario.last_name }}</h6>
+                                        <small class="text-muted">{{ usuario.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
                             
                             <td>
                                 {% if usuario.rol == 'INSTRUCTOR' %}
@@ -65,7 +79,7 @@
                         <tr>
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-people fs-1 d-block mb-2"></i>
-                                No hay aprendices registrados en esta ficha todavía.
+                                No hay usuarios registrados en esta ficha todavía.
                             </td>
                         </tr>
                         {% endfor %}

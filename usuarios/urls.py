@@ -6,7 +6,7 @@ from usuarios.views import *
 urlpatterns = [
     path('', inicio_usuario, name='inicio_usuario'),
     
-    path('nuevo/', crear_usuario, name='crear_aprendiz'),
+    path('nuevo/', crear_usuario, name='crear_usuario'),
     path('editar/<int:pk>/', editar_usuario, name='editar_usuario'),
     
     path('fichas/nuevo/', crear_ficha, name='crear_ficha'),
