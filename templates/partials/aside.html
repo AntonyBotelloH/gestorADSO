@@ -79,20 +79,24 @@
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/usuarios/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/usuarios/' in request.path %}true{% else %}false{% endif %}">
+        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-folder2-open me-2"></i> Ficha y Planeación
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if '/usuarios/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Resumen Ficha</a>
+              <a href="{% url 'inicio_ficha' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_ficha' %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Resumen Ficha
+              </a>
             </li>
             <li>
               <a href="#" class="nav-link text-white-50 py-1">Planeación Pedagógica</a>
             </li>
             <li>
-              <a href="{% url 'inicio_usuario' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_usuario' %}text-white fw-bold{% else %}text-white-50{% endif %}">Aprendices y Roles</a>
+              <a href="{% url 'inicio_usuario' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_usuario' %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Aprendices y Roles
+              </a>
             </li>
           </ul>
         </div>
@@ -126,15 +130,25 @@
 
   <div class="mb-3 px-2">
     <label class="text-white-50 fw-bold mb-1 small" for="sidebarFichaSelect"><i class="bi bi-layers me-1"></i> Ficha Actual:</label>
-    <select id="sidebarFichaSelect" class="form-select form-select-sm fw-bold border-secondary bg-dark text-white shadow-none">
-      {% for ficha in lista_fichas %}
-      <option value="{{ ficha.codigo_ficha }}">{{ ficha.codigo_ficha }} - {{ ficha.programa|truncatechars:15 }}</option>
-      {% empty %}
-      <option value="">Sin fichas</option>
-      {% endfor %}
-    </select>
+    
+    <form action="{% url 'set_ficha_activa' %}" method="POST" id="formCambiarFicha">
+      {% csrf_token %} 
+      <select name="ficha_id" id="sidebarFichaSelect" class="form-select form-select-sm fw-bold border-secondary bg-dark text-white shadow-none" onchange="this.form.submit()">
+        
+        <option value="" disabled {% if not ficha_activa %}selected{% endif %}>Seleccione una ficha...</option>
+        
+        {% for ficha in lista_fichas %}
+          <option value="{{ ficha.codigo_ficha }}" {% if ficha_activa and ficha_activa.codigo_ficha == ficha.codigo_ficha %}selected{% endif %}>
+            {{ ficha.codigo_ficha }} - {{ ficha.programa|truncatechars:15 }}
+          </option>
+        {% empty %}
+          <option value="" disabled>Sin fichas</option>
+        {% endfor %}
+        
+      </select>
+    </form>
   </div>
-
+  
   <div class="dropdown border-top border-secondary pt-3">
     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       <img src="https://ui-avatars.com/api/?name={{ request.user.first_name }}+{{ request.user.last_name }}&background=39A900&color=fff&rounded=true" alt="Perfil" width="42" height="42" class="rounded-circle me-2 border border-2 border-secondary" />
