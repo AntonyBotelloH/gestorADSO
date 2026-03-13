@@ -15,9 +15,7 @@ def inicio_usuario(request):
         ],
         'usuarios_ficha': lista_usuarios,
     }
-    return render(request, 'inicio_usuarios.html', context)
-
-
+    return render(request, 'usuarios/inicio_usuarios.html', context)
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST, request.FILES) 
@@ -36,7 +34,7 @@ def crear_usuario(request):
             mensaje = f"¡Usuario {usuario.first_name} registrado! Ingreso: {usuario.documento} | Clave: {password_generada}"
             messages.success(request, mensaje)
             
-            return redirect('inicio_usuario')
+            return redirect('usuarios/inicio_usuario')
         else:
             messages.error(request, "Error al registrar. Por favor verifica los datos.")
     else:
@@ -52,8 +50,6 @@ def crear_usuario(request):
         ],
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
-
-
 def editar_usuario(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
 
@@ -79,6 +75,71 @@ def editar_usuario(request, pk):
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
 
+
+def set_ficha_activa(request):
+    """
+    Recibe el ID de la ficha desde el selector del menú lateral,
+    lo guarda en la sesión del usuario y recarga la página.
+    """
+    # Verificamos que la petición venga del formulario (POST)
+    if request.method == 'POST':
+        # Atrapamos el ID ('ficha_id' es el atributo name="..." del <select>)
+        ficha_id = request.POST.get('ficha_id')
+        
+        if ficha_id:
+            # ¡Aquí ocurre la magia! Se guarda en la "mochila" del usuario (la sesión)
+            request.session['ficha_activa_id'] = ficha_id
+            # Opcional: Enviamos un mensaje de confirmación
+            messages.success(request, "Contexto actualizado correctamente.")
+            
+        # Lo devolvemos exactamente a la misma página en la que estaba
+        # (HTTP_REFERER guarda la URL anterior. Si falla, lo manda a '/')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+        
+    # Si alguien intenta acceder a esta URL escribiéndola en el navegador (GET), lo echamos al inicio
+    return redirect('/')
+
+from django.shortcuts import render, get_object_or_404
+from .models import Ficha, Usuario
+
+def inicio_ficha(request):
+    # 1. Leemos el código de la ficha que el instructor seleccionó en el menú lateral
+    codigo_seleccionado = request.session.get('ficha_activa_id')
+
+    # Si NO hay ficha seleccionada, renderizamos el HTML (el {% if ficha_activa %} mostrará la alerta)
+    if not codigo_seleccionado:
+        return render(request, 'fichas/inicio_ficha.html', {'titulo': 'Panel de Ficha'})
+
+    # 2. Obtenemos la ficha usando tu campo codigo_ficha
+    ficha = get_object_or_404(Ficha, codigo_ficha=codigo_seleccionado)
+    
+    # 3. Lógica de Aprendices (Métricas para las tarjetas)
+    aprendices = Usuario.objects.filter(ficha=ficha, rol='APRENDIZ')
+    total_aprendices = aprendices.count()
+    aprendices_activos = aprendices.filter(is_active=True).count()
+    aprendices_retirados = total_aprendices - aprendices_activos
+    
+    # 4. Lógica del Equipo Ejecutor (Tabla de Instructores)
+    equipo_ejecutor = Usuario.objects.filter(ficha=ficha, rol='INSTRUCTOR')
+    
+    # 5. Construcción dinámica de tus Breadcrumbs (Migas de pan)
+    breadcrumbs = [
+        {'nombre': 'Inicio', 'url': '/'}, 
+        {'nombre': f'Ficha {ficha.codigo_ficha}', 'url': ''}
+    ]
+    
+    # 6. Empaquetamos todo en el contexto
+    context = {
+        'titulo': f'Panel de Ficha {ficha.codigo_ficha}',
+        # Nota: Ya no pasamos 'ficha': ficha, porque tu Context Processor ya inyecta 'ficha_activa'
+        'total_aprendices': total_aprendices,
+        'aprendices_activos': aprendices_activos,
+        'aprendices_retirados': aprendices_retirados,
+        'equipo_ejecutor': equipo_ejecutor,
+        'breadcrumbs': breadcrumbs,
+    }
+    
+    return render(request, 'fichas/inicio_ficha.html', context)
 def crear_ficha(request):
     if request.method == 'POST':
         form = FichaForm(request.POST)
@@ -89,7 +150,7 @@ def crear_ficha(request):
             mensaje = f"¡Ficha {ficha.codigo_ficha} registrada!"
             messages.success(request, mensaje)
             
-            return redirect('inicio_usuario')
+            return redirect('inicio_ficha')
         else:
             messages.error(request, "Error al registrar. Por favor verifica los datos.")
     else:
