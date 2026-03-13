@@ -20,14 +20,17 @@ from django.urls import include, path
 from django.conf.urls.static import static
 
 from core.views import inicio
+from usuarios.views import set_ficha_activa
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', inicio, name='inicio'),
-    path('asistencia/', include('asistencia.urls')),
-    path('fondo/', include('fondos.urls')),
-    path('proyecto/', include('proyectos.urls')),
-    path('usuario/', include('usuarios.urls')),
+    path('asistencias/', include('asistencia.urls')),
+    path('fondos/', include('fondos.urls')),
+    path('proyectos/', include('proyectos.urls')),
+    path('usuarios/', include('usuarios.urls')),
+    path('set-ficha/', set_ficha_activa, name='set_ficha_activa'),
 ]
 
 if settings.DEBUG:
