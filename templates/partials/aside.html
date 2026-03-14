@@ -43,7 +43,7 @@
         <div class="collapse {% if '/fondos/' in request.path %}show{% endif %}" id="collapseFondos" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li><a href="{% url 'inicio_fondos' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_fondos' %}text-white fw-bold{% else %}text-white-50{% endif %}">Gestión de Fondos</a></li>
-            <li><a href="#" class="nav-link text-white-50 py-1">Metas del Fondo</a></li>
+            <li><a href="{% url 'metas' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'metas' %}text-white fw-bold{% else %}text-white-50{% endif %}">Metas del Fondo</a></li>
           </ul>
         </div>
       </li>
