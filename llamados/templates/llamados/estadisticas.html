@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Métricas Disciplinarias</h3>
+            <p class="text-muted small mb-0">Consolidado de novedades y análisis de cumplimiento</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'listar_llamados' %}" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-arrow-left me-1"></i> Volver al Listado</a>
+            <button class="btn btn-danger fw-bold shadow-sm"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar Informe</button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100 py-2 bg-body-tertiary">
+                <div class="card-body">
+                    <h6 class="text-muted fw-bold small text-uppercase">Total Casos</h6>
+                    <h2 class="fw-bold color-negro-suave-fn mb-0">12</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #ffc107 !important;">
+                <div class="card-body">
+                    <h6 class="text-muted fw-bold small text-uppercase">Llamados Verbales</h6>
+                    <h2 class="fw-bold text-warning mb-0">8</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #fd7e14 !important;">
+                <div class="card-body">
+                    <h6 class="text-muted fw-bold small text-uppercase">Llamados Escritos</h6>
+                    <h2 class="fw-bold mb-0" style="color: #fd7e14;">3</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-danger bg-opacity-10" style="border-left-color: #dc3545 !important;">
+                <div class="card-body">
+                    <h6 class="text-danger fw-bold small text-uppercase">Casos en Comité</h6>
+                    <h2 class="fw-bold text-danger mb-0">1</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Análisis de Cumplimiento</h5>
+                </div>
+                <div class="card-body bg-body-tertiary">
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-body small">Faltas Académicas</span>
+                            <span class="fw-bold text-muted small">75%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-body small">Faltas Disciplinarias</span>
+                            <span class="fw-bold text-muted small">25%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 25%;"></div>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary opacity-25 mb-4">
+                    <h6 class="fw-bold color-negro-suave-fn mb-3">Efectividad de Planes de Mejora</h6>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-body small">Planes Ejecutados y Cerrados</span>
+                            <span class="fw-bold text-success small">66%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 66%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-body small">Planes en Riesgo / Incumplidos</span>
+                            <span class="fw-bold text-danger small">33%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 33%;"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 border-start border-4 h-100" style="border-left-color: #dc3545 !important;">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Alerta de Reincidencia</h5>
+                    <span class="badge bg-danger rounded-pill">Seguimiento Crítico</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-start p-4">
+                            <div>
+                                <strong class="d-block text-body fs-5">1. Juan Pérez</strong>
+                                <small class="text-muted">CC. 1099887766</small>
+                                <div class="mt-2">
+                                    <span class="badge bg-warning text-dark me-1">1 Escrito</span>
+                                    <span class="badge bg-info text-dark">2 Verbales</span>
+                                </div>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6">3 Casos</span>
+                        </li>
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-start p-4">
+                            <div>
+                                <strong class="d-block text-body fs-5">2. Samuel Echeverria</strong>
+                                <small class="text-muted">CC. 1049641572</small>
+                                <div class="mt-2">
+                                    <span class="badge bg-info text-dark">1 Verbal</span>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6">1 Caso</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-body-tertiary p-3">
+                    <div class="border-start border-4 p-2 rounded" style="border-left-color: #39A900 !important; background-color: rgba(57, 169, 0, 0.05);">
+                        <p class="mb-0 small text-muted"><strong>Nota Técnica:</strong> El cálculo de reincidencia se basa en el registro histórico de la ficha desde el inicio de la etapa lectiva.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
