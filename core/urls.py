@@ -26,7 +26,7 @@ from usuarios.views import set_ficha_activa
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', inicio, name='inicio'),
-    path('asistencias/', include('asistencia.urls')),
+    path('asistencia/', include('asistencia.urls')),
     path('fondos/', include('fondos.urls')),
     path('proyectos/', include('proyectos.urls')),
     path('usuarios/', include('usuarios.urls')),
