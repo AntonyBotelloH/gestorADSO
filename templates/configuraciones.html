@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  [data-bs-theme="dark"] .color-negro-suave-fn {
+      color: #f8f9fa !important; /* Vuelve el texto claro en la oscuridad */
+  }
+</style>
+
+<div class="py-2">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1 color-negro-suave-fn">Configuraciones y Accesibilidad</h3>
+      <p class="text-muted small mb-0">Ajustes del sistema, personalización y gestión de datos</p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+    <div class="card-header bg-transparent py-3">
+      <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-universal-access-circle me-2 text-success"></i>Asistente de Accesibilidad Visual</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="p-4 border rounded bg-body-tertiary h-100">
+            <h6 class="fw-bold text-muted text-uppercase small mb-3">Tamaño de Texto</h6>
+            <div class="btn-group shadow-sm w-100" role="group">
+              <button type="button" id="btn-txt-menos" class="btn btn-outline-secondary fw-bold py-2" title="Disminuir fuente">A -</button>
+              <button type="button" id="btn-txt-normal" class="btn btn-secondary fw-bold py-2 active">Normal</button>
+              <button type="button" id="btn-txt-mas" class="btn btn-outline-secondary fw-bold py-2" title="Aumentar fuente">A +</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-4 border rounded bg-body-tertiary h-100">
+            <h6 class="fw-bold text-muted text-uppercase small mb-3">Opciones de Contraste</h6>
+            <div class="form-check form-switch fs-5 mt-2">
+              <input class="form-check-input" type="checkbox" role="switch" id="switchContraste" />
+              <label class="form-check-label fw-bold color-negro-suave-fn fs-6 ms-2" style="cursor: pointer;" for="switchContraste">Activar Alto Contraste</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+    <div class="card-header bg-transparent py-3">
+      <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-palette me-2 text-success"></i>Temas Visuales</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <label class="card border border-2 h-100 position-relative bg-body-tertiary" style="cursor: pointer; border-color: #39A900 !important;">
+            <div class="card-body d-flex align-items-center p-4">
+              <div class="form-check w-100 mb-0">
+                <input class="form-check-input mt-1" type="radio" name="temaVisual" id="temaOficial" checked />
+                <label class="form-check-label fw-bold stretched-link ms-2 color-negro-suave-fn fs-5" for="temaOficial">SENA Oficial (Claro)</label>
+              </div>
+            </div>
+          </label>
+        </div>
+        <div class="col-md-6">
+          <label class="card border border-2 border-secondary h-100 bg-dark text-white position-relative" style="cursor: pointer;">
+            <div class="card-body d-flex align-items-center p-4">
+              <div class="form-check w-100 mb-0">
+                <input class="form-check-input mt-1 bg-secondary border-secondary" type="radio" name="temaVisual" id="temaOscuro" />
+                <label class="form-check-label fw-bold stretched-link ms-2 fs-5" for="temaOscuro">Modo Oscuro</label>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+    <div class="card-header bg-transparent py-3">
+      <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-gear me-2 text-success"></i>Idioma y Preferencias</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4 align-items-center">
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-muted text-uppercase">Idioma del Sistema:</label>
+          <select class="form-select border-secondary-subtle bg-body-tertiary shadow-none py-2 text-body">
+            <option selected>Español (Colombia)</option>
+            <option>English (US)</option>
+          </select>
+        </div>
+        <div class="col-md-6 pt-md-4">
+          <div class="form-check mt-1">
+            <input class="form-check-input" type="checkbox" id="checkNotificaciones" checked />
+            <label class="form-check-label fw-bold color-negro-suave-fn ms-2" style="cursor: pointer;" for="checkNotificaciones">Recibir alertas de asistencia y proyectos por correo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 border-start border-4 border-info">
+    <div class="card-header bg-transparent py-3">
+      <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-database-gear me-2 text-info"></i>Gestión de Datos</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="p-4 border rounded text-center h-100 bg-body-tertiary">
+            <h6 class="fw-bold color-negro-suave-fn mb-2">Backup Local de la Ficha</h6>
+            <p class="text-muted small mb-4">Descarga una copia de seguridad de notas, asistencia y fondos.</p>
+            <button class="btn btn-outline-secondary fw-bold shadow-sm w-100 py-2 text-body"><i class="bi bi-cloud-download me-2"></i> Generar copia (.SQL)</button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-4 border border-danger rounded text-center h-100" style="background-color: rgba(220, 53, 69, 0.1);">
+            <h6 class="fw-bold text-danger mb-2">Restauración de Sistema</h6>
+            <p class="text-danger small mb-4 opacity-75">
+              Sube un respaldo previo. <strong>Esta acción sobreescribirá los datos actuales.</strong>
+            </p>
+            <button class="btn btn-danger fw-bold shadow-sm w-100 py-2"><i class="bi bi-cloud-upload me-2"></i> Subir Respaldo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-muted small mt-5 pb-3">
+    <p class="mb-1 fw-bold">Versión del Sistema: 1.0.4</p>
+    <p class="mb-0 opacity-75">Desarrollado para el Centro Minero - Paipa, Boyacá.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/config.js' %}"></script>
+{% endblock scripts %}

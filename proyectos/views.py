@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.urls import reverse
 from .models import Proyecto, Tarea, DailyScrum, RevisionTecnica
 from usuarios.models import Ficha, Usuario
 
@@ -108,8 +109,8 @@ def tablero_kanban(request, proyecto_id):
         'doing': tareas.filter(estado='In Progress'),
         'done': tareas.filter(estado='Done'),
         'breadcrumbs': [
-            {'nombre': 'Proyectos Scrum', 'url': '/proyectos/'},
-            {'nombre': proyecto.nombre, 'url': f'/proyectos/{proyecto.id}/'},
+            {'nombre': 'Proyectos Scrum', 'url': reverse('proyectos')},
+            {'nombre': proyecto.nombre, 'url': reverse('detalles_proyecto', args=[proyecto.id])},
             {'nombre': 'Tablero Kanban', 'url': ''}
         ]
     }

@@ -30,3 +30,24 @@
         background-color: #212529 !important;
     }
 }
+
+/* Filtro de Alto Contraste */
+body.alto-contraste {
+    filter: contrast(150%) saturate(120%);
+    background-color: #000 !important;
+}
+
+body.alto-contraste .card {
+    border: 2px solid #fff !important;
+}
+
+/* Corrección de color de texto personalizado para Modo Oscuro */
+[data-bs-theme="dark"] .color-negro-suave-fn {
+    color: #f8f9fa !important; /* Texto blanco suave */
+}
+
+/* Opcional: Si el Header principal sigue blanco, forzamos que sea oscuro */
+[data-bs-theme="dark"] header.bg-white {
+    background-color: #212529 !important;
+    border-color: #373b3e !important;
+}

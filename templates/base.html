@@ -11,9 +11,26 @@
     <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet" />
 
     <link rel="shortcut icon" href="{% static 'img/Logo.png' %}" type="image/x-icon" />
+
+    <script>
+        // 1. Tema Oscuro y Tamaño de fuente (Se aplican a la raíz HTML al instante)
+        const temaGlobal = localStorage.getItem('temaSena') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', temaGlobal);
+        
+        const sizeGlobal = localStorage.getItem('tamanoTextoSena') || '16';
+        document.documentElement.style.fontSize = sizeGlobal + 'px';
+
+        // 2. Alto Contraste (Se aplica al Body, espera a que el body exista)
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('altoContrasteSena') === 'true') {
+                document.body.style.filter = 'contrast(150%) saturate(120%)';
+                document.body.style.backgroundColor = '#000';
+            }
+        });
+    </script>
   </head>
 
-  <body class="color-gris-claro-bg">
+  <body class="bg-body-tertiary">
     <!-- CONTENEDOR PRINCIPAL -->
     <div class="d-flex min-vh-100">
       <!-- MENU LATERAL INICIO -->

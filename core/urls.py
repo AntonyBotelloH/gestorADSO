@@ -19,13 +19,14 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.static import static
 
-from core.views import inicio
+from core.views import inicio, configuraciones
 from usuarios.views import set_ficha_activa
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', inicio, name='inicio'),
+    path('configuraciones/', configuraciones, name='configuraciones'),
     path('asistencia/', include('asistencia.urls')),
     path('fondos/', include('fondos.urls')),
     path('proyectos/', include('proyectos.urls')),
