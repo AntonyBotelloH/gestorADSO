@@ -1,66 +1,102 @@
 {% extends "base.html" %}
-
-{% block title %}Metas del Fondo | Gestor SENA{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Metas Financieras</h3>
-    <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary btn-sm">← Volver a Fondos</a>
-</div>
+<div class="py-2">
 
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0 p-4 h-100">
-            <h5 class="fw-bold mb-3">Definir Nueva Meta</h5>
-            <form method="POST" action="{% url 'metas' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">Nombre de la Meta:</label>
-                    <input type="text" name="nombre" class="form-control" placeholder="Ej. Visita técnica a Bogotá" required>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Metas Financieras</h3>
+            <p class="text-muted small mb-0">Planificación de objetivos económicos de la ficha</p>
+        </div>
+        <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver a Fondos
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #39A900 !important;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 color-negro-suave-fn"><i class="bi bi-patch-plus me-2 text-success"></i>Definir Nueva Meta</h5>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">Descripción / Justificación:</label>
-                    <input type="text" name="descripcion" class="form-control" placeholder="Transporte y viáticos de la ficha">
+                <div class="card-body p-4">
+                    <form method="POST" action="{% url 'metas' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Meta:</label>
+                            <input type="text" name="nombre" class="form-control border-secondary-subtle" placeholder="Ej. Visita técnica a Bogotá" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Justificación:</label>
+                            <textarea name="descripcion" class="form-control border-secondary-subtle" rows="2" placeholder="Transporte y viáticos de la ficha"></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Valor Requerido ($):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle" placeholder="Ej. 250000" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite:</label>
+                                <input type="date" name="fecha_limite" class="form-control border-secondary-subtle" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm mt-2">
+                            <i class="bi bi-flag-fill me-2"></i>Establecer Meta
+                        </button>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small">Valor Total Requerido ($):</label>
-                    <input type="number" name="valor_objetivo" class="form-control" placeholder="Ej. 250000" required>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100 text-center d-flex flex-column">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 color-negro-suave-fn">Meta Activa Principal</h5>
                 </div>
-                <div class="mb-4">
-                    <label class="form-label fw-bold small">Fecha Límite de Recaudo:</label>
-                    <input type="date" name="fecha_limite" class="form-control" required>
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    {% if meta_activa %}
+                        <div class="mb-2">
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 mb-2 rounded-pill">EN CURSO</span>
+                            <h1 class="display-4 fw-bold color-negro-suave-fn mb-0">$ {{ meta_activa.valor_objetivo|floatformat:0 }}</h1>
+                            <p class="text-muted fs-5 fw-semibold">{{ meta_activa.nombre }}</p>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between fw-bold mb-1">
+                                <span class="color-verde-sena-fn">Recaudado: $ {{ recaudado|floatformat:0 }}</span>
+                                <span class="color-negro-suave-fn">{{ progreso|floatformat:1 }}%</span>
+                            </div>
+                            <div class="progress mb-3 shadow-sm" style="height: 15px; border-radius: 10px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated color-verde-sena-bg" 
+                                     role="progressbar" 
+                                     style="width: {{ progreso|stringformat:'f' }}%;"></div>
+                            </div>
+                            <div class="row text-start mt-3">
+                                <div class="col-6 border-end text-center">
+                                    <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Faltante</div>
+                                    <div class="fw-bold color-rojo-alerta-fn">$ {{ meta_activa.valor_objetivo|add:"-"|add:recaudado }}</div>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Día Límite</div>
+                                    <div class="fw-bold text-dark">{{ meta_activa.fecha_limite|date:"d M Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="py-5">
+                            <i class="bi bi-flag display-1 text-muted opacity-25 mb-3"></i>
+                            <p class="text-muted fw-bold">No hay ninguna meta activa actualmente.</p>
+                            <small class="text-muted d-block mt-n2">Usa el formulario para crear una.</small>
+                        </div>
+                    {% endif %}
                 </div>
-                <button type="submit" class="btn btn-success w-100 fw-bold">Establecer Meta</button>
-            </form>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0 p-4 h-100 text-center d-flex flex-column justify-content-center">
-            <h5 class="fw-bold text-muted mb-4">Meta Activa Principal</h5>
-            
-            {% if meta_activa %}
-                <h1 class="display-4 fw-bold text-dark mb-0">$ {{ meta_activa.valor_objetivo|floatformat:0 }}</h1>
-                <p class="text-muted fs-5 mb-4">{{ meta_activa.nombre }}</p>
-                
-                <div class="text-start">
-                    <div class="d-flex justify-content-between fw-bold small mb-1">
-                        <span class="text-success">Recaudado: $ {{ recaudado|floatformat:0 }}</span>
-                        <span>{{ progreso|floatformat:1 }}%</span>
-                    </div>
-                    <div class="progress mb-3" style="height: 12px;">
-                        <div class="progress-bar bg-success" style="width: {{ progreso|stringformat:'f' }}%;"></div>
-                    </div>
-                    <div class="d-flex justify-content-between text-muted small">
-                        <span>Faltan: $ {{ meta_activa.valor_objetivo|add:"-"|add:recaudado }}</span>
-                        <span>Límite: {{ meta_activa.fecha_limite|date:"d M Y" }}</span>
-                    </div>
-                </div>
-            {% else %}
-                <i class="bi bi-flag display-1 text-muted opacity-25 mb-3"></i>
-                <p class="text-muted">No hay ninguna meta activa en este momento.</p>
-            {% endif %}
-        </div>
-    </div>
 </div>
 {% endblock %}
