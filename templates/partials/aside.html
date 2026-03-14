@@ -22,21 +22,15 @@
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseAsistencia" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/asistencia/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/asistencia/' in request.path %}true{% else %}false{% endif %}">
+        <a href="#collapseAsistencia" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/asistencias/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/asistencias/' in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-calendar-check me-2"></i> Control Asistencia
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if '/asistencia/' in request.path %}show{% endif %}" id="collapseAsistencia" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/asistencias/' in request.path %}show{% endif %}" id="collapseAsistencia" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li>
-              <a href="{% url 'inicio_asistencia' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_asistencia' %}text-white fw-bold{% else %}text-white-50{% endif %}">Registrar Hoy</a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Días Anteriores</a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Estadísticas</a>
-            </li>
+            <li><a href="{% url 'inicio_asistencia' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_asistencia' %}text-white fw-bold{% else %}text-white-50{% endif %}">Registrar Hoy</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Días Anteriores</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Estadísticas</a></li>
           </ul>
         </div>
       </li>
@@ -48,15 +42,8 @@
         </a>
         <div class="collapse {% if '/fondos/' in request.path %}show{% endif %}" id="collapseFondos" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li>
-              <a href="{% url 'inicio_fondos' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_fondos' %}text-white fw-bold{% else %}text-white-50{% endif %}">Gestión de Fondos</a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Conceptos y Tarifas</a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Metas del Fondo</a>
-            </li>
+            <li><a href="{% url 'inicio_fondos' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_fondos' %}text-white fw-bold{% else %}text-white-50{% endif %}">Gestión de Fondos</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Metas del Fondo</a></li>
           </ul>
         </div>
       </li>
@@ -68,36 +55,36 @@
         </a>
         <div class="collapse {% if '/proyectos/' in request.path %}show{% endif %}" id="collapseProyectos" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li>
-              <a href="{% url 'inicio_proyecto' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_proyecto' %}text-white fw-bold{% else %}text-white-50{% endif %}">Ver Proyectos</a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Crear Nuevo Grupo</a>
-            </li>
+            <li><a href="{% url 'inicio_proyecto' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_proyecto' %}text-white fw-bold{% else %}text-white-50{% endif %}">Ver Proyectos</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Crear Nuevo Grupo</a></li>
           </ul>
         </div>
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}true{% else %}false{% endif %}">
-          <i class="bi bi-folder2-open me-2"></i> Ficha y Planeación
+        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/resumen-ficha/' in request.path or '/usuario/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/resumen-ficha/' in request.path or '/usuario/' in request.path %}true{% else %}false{% endif %}">
+          <i class="bi bi-folder2-open me-2"></i> Gestión de Ficha
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if '/usuarios/' in request.path or '/ficha/' in request.path or '/resumen-ficha/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/resumen-ficha/' in request.path or '/usuario/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li>
-              <a href="{% url 'inicio_ficha' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_ficha' %}text-white fw-bold{% else %}text-white-50{% endif %}">
-                Resumen Ficha
-              </a>
-            </li>
-            <li>
-              <a href="#" class="nav-link text-white-50 py-1">Planeación Pedagógica</a>
-            </li>
-            <li>
-              <a href="{% url 'inicio_usuario' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_usuario' %}text-white fw-bold{% else %}text-white-50{% endif %}">
-                Aprendices y Roles
-              </a>
-            </li>
+            <li><a href="{% url 'inicio_ficha' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_ficha' %}text-white fw-bold{% else %}text-white-50{% endif %}">Resumen Ficha</a></li>
+            <li><a href="{% url 'inicio_usuario' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_usuario' %}text-white fw-bold{% else %}text-white-50{% endif %}">Aprendices y Roles</a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav-item mb-1">
+        <a href="#collapsePlaneacion" data-bs-toggle="collapse" class="nav-link text-white rounded d-flex align-items-center {% if '/planeacion/' in request.path %}color-verde-sena-bg fw-bold{% else %}collapsed{% endif %}" aria-expanded="{% if '/planeacion/' in request.path %}true{% else %}false{% endif %}">
+          <i class="bi bi-journal-bookmark-fill me-2"></i> Planeación Pedagógica
+          <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+        </a>
+        <div class="collapse {% if '/planeacion/' in request.path %}show{% endif %}" id="collapsePlaneacion" data-bs-parent="#menuAcordeon">
+          <ul class="nav flex-column ps-4 mt-1">
+            <li><a href="{% url 'inicio_planeacion' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_planeacion' %}text-white fw-bold{% else %}text-white-50{% endif %}">Fases y Actividades</a></li>
+            <li><a href="{% url 'listar_raps' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_raps' %}text-white fw-bold{% else %}text-white-50{% endif %}">Resultados (RAP)</a></li>
+            <li><a href="{% url 'listar_competencias' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_competencias' %}text-white fw-bold{% else %}text-white-50{% endif %}">Competencias</a></li>
+            <li><a href="{% url 'importar_curriculo' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'importar_curriculo' %}text-white fw-bold{% else %}text-white-50{% endif %}">Importar Diseño</a></li>
           </ul>
         </div>
       </li>
@@ -115,8 +102,8 @@
         </div>
       </li>
 
-      <hr class="text-secondary opacity-50" />
-
+      <hr class="text-secondary opacity-50 mt-auto" />
+      
       <li class="nav-item mb-1">
         <a href="#" class="nav-link text-white rounded d-flex align-items-center"><i class="bi bi-check2-square me-2"></i> Mis Pendientes</a>
       </li>
@@ -126,25 +113,17 @@
     </ul>
   </div>
 
-  <hr class="text-secondary opacity-50 mt-auto" />
-
-  <div class="mb-3 px-2">
+  <div class="mb-3 px-2 mt-auto">
     <label class="text-white-50 fw-bold mb-1 small" for="sidebarFichaSelect"><i class="bi bi-layers me-1"></i> Ficha Actual:</label>
-    
     <form action="{% url 'set_ficha_activa' %}" method="POST" id="formCambiarFicha">
       {% csrf_token %} 
       <select name="ficha_id" id="sidebarFichaSelect" class="form-select form-select-sm fw-bold border-secondary bg-dark text-white shadow-none" onchange="this.form.submit()">
-        
-        <option value="" disabled {% if not ficha_activa %}selected{% endif %}>Seleccione una ficha...</option>
-        
+        <option value="" disabled {% if not ficha_activa %}selected{% endif %}>Seleccione...</option>
         {% for ficha in lista_fichas %}
           <option value="{{ ficha.codigo_ficha }}" {% if ficha_activa and ficha_activa.codigo_ficha == ficha.codigo_ficha %}selected{% endif %}>
             {{ ficha.codigo_ficha }} - {{ ficha.programa|truncatechars:15 }}
           </option>
-        {% empty %}
-          <option value="" disabled>Sin fichas</option>
         {% endfor %}
-        
       </select>
     </form>
   </div>
@@ -152,13 +131,11 @@
   <div class="dropdown border-top border-secondary pt-3">
     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
       <img src="https://ui-avatars.com/api/?name={{ request.user.first_name }}+{{ request.user.last_name }}&background=39A900&color=fff&rounded=true" alt="Perfil" width="42" height="42" class="rounded-circle me-2 border border-2 border-secondary" />
-
       <div class="d-flex flex-column text-start lh-1">
         <span class="fw-bold small mb-1">{{ request.user.first_name }} {{ request.user.last_name }}</span>
         <span class="badge color-verde-sena-bg text-white" style="font-size: 0.65rem; width: fit-content;">{{ request.user.get_rol_display }}</span>
       </div>
     </a>
-
     <ul class="dropdown-menu dropdown-menu-dark text-small shadow w-100">
       <li><a class="dropdown-item" href="#">Mi Perfil</a></li>
       <li><hr class="dropdown-divider" /></li>

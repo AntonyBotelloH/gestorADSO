@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ titulo }} | Gestor SENA{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="fw-bold mb-2">Importación Masiva de Diseño Curricular</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-success">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'inicio_planeacion' %}" class="text-decoration-none text-success">Planeación</a></li>
+                    <li class="breadcrumb-item active">Importar</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="row align-items-center g-5">
+                        <div class="col-md-6 border-end-md">
+                            <h5 class="fw-bold text-dark mb-4">Instrucciones del Archivo</h5>
+                            <p class="text-muted small">Para una carga exitosa, su archivo Excel (.xlsx) debe contener exactamente estas columnas en la primera fila:</p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Columna</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code class="text-primary">codigo_competencia</code></td>
+                                            <td>Ej: 220501096</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code class="text-primary">nombre_competencia</code></td>
+                                            <td>Texto completo de la norma.</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code class="text-primary">duracion</code></td>
+                                            <td>Solo números (horas).</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code class="text-primary">descripcion_rap</code></td>
+                                            <td>El resultado de aprendizaje.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert alert-info border-0 bg-light-subtle small mt-3">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <b>Nota:</b> Si una competencia tiene varios RAPs, repita los datos de la competencia en cada fila del RAP correspondiente.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 text-center">
+                            <div class="p-3">
+                                <i class="bi bi-file-earmark-excel-fill text-success display-1 mb-3"></i>
+                                <h5 class="fw-bold">Subir Archivo Excel</h5>
+                                <p class="text-muted small mb-4">Seleccione el archivo exportado de SofíaPlus o su plantilla personalizada.</p>
+
+                                <form method="POST" enctype="multipart/form-data" class="needs-validation">
+                                    {% csrf_token %}
+                                    <div class="mb-4">
+                                        <input type="file" name="archivo_excel" id="archivo_excel" 
+                                               class="form-control form-control-lg border-2" 
+                                               accept=".xlsx, .xls" required 
+                                               style="border-style: dashed;">
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm">
+                                            <i class="bi bi-cloud-arrow-up-fill me-2"></i> Procesar Currículo
+                                        </button>
+                                        <a href="{% url 'listar_raps' %}" class="btn btn-link text-decoration-none text-muted mt-2 small">
+                                            Volver al listado
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card bg-dark text-white border-0 shadow-sm overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-lightbulb-fill text-warning fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="fw-bold mb-1">¿Sabías que...?</h6>
+                            <p class="mb-0 small opacity-75">El sistema detecta automáticamente si una competencia ya existe. Si subes una competencia con el mismo código pero diferente nombre, el sistema actualizará la información existente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (min-width: 768px) {
+        .border-end-md {
+            border-right: 1px solid #dee2e6 !important;
+        }
+    }
+    input[type="file"]::file-selector-button {
+        background-color: #39A900;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 1rem;
+    }
+    input[type="file"]::file-selector-button:hover {
+        background-color: #2d8500;
+    }
+</style>
+{% endblock %}

@@ -11,4 +11,5 @@ urlpatterns = [
     
     # Ruta para las Competencias
     path('competencias/', views.listar_competencias, name='listar_competencias'),
+    path('importar/', views.importar_curriculo, name='importar_curriculo'),
 ]
