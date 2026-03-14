@@ -10,7 +10,7 @@ def dashboard_fondos(request):
     
     if not ficha_id:
         messages.warning(request, "Por favor, selecciona una ficha primero.")
-        return redirect('inicio') # O donde tengas tu selector principal
+        return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
 
@@ -20,11 +20,10 @@ def dashboard_fondos(request):
         responsable_id = request.POST.get('responsable')
         valor = request.POST.get('valor')
         
-        # Como es el dashboard, asumimos que si es un ingreso (como una multa), puede quedar pendiente.
-        # Si es un egreso (gasto), normalmente se ejecuta de inmediato.
         concepto_obj = get_object_or_404(Concepto, id=concepto_id)
+        # Los ingresos por defecto quedan como 'Pendiente' (por cobrar)
+        # Los egresos se marcan como 'Ejecutado' de inmediato.
         estado_inicial = 'Pendiente' if concepto_obj.tipo_operacion == 'Ingreso' else 'Ejecutado'
-
         responsable_obj = Usuario.objects.filter(id=responsable_id).first() if responsable_id else None
 
         Movimiento.objects.create(
@@ -35,26 +34,26 @@ def dashboard_fondos(request):
             estado=estado_inicial
         )
         messages.success(request, "Movimiento registrado exitosamente.")
-        return redirect('fondos')
+        return redirect('inicio_fondos')
 
     # --- LÓGICA DE LECTURA (GET) ---
     
-    # 1. Cálculos de Caja Real (Solo ejecutados)
-    ingresos = Movimiento.objects.filter(
+    # 1. Cálculos de Caja Real (Solo lo que ya se pagó/ejecutó)
+    ingresos_ejecutados = Movimiento.objects.filter(
         ficha=ficha, 
         concepto__tipo_operacion='Ingreso', 
         estado='Ejecutado'
     ).aggregate(Sum('valor'))['valor__sum'] or 0
     
-    egresos = Movimiento.objects.filter(
+    egresos_ejecutados = Movimiento.objects.filter(
         ficha=ficha, 
         concepto__tipo_operacion='Egreso', 
         estado='Ejecutado'
     ).aggregate(Sum('valor'))['valor__sum'] or 0
     
-    caja_real = ingresos - egresos
+    caja_real = ingresos_ejecutados - egresos_ejecutados
 
-    # 2. Cartera (Plata que deben los aprendices)
+    # 2. Cartera (Dinero pendiente de cobro)
     cartera = Movimiento.objects.filter(
         ficha=ficha, 
         concepto__tipo_operacion='Ingreso', 
@@ -66,19 +65,23 @@ def dashboard_fondos(request):
     progreso = 0
     faltante = 0
     if meta and meta.valor_objetivo > 0:
-        progreso = min((ingresos / meta.valor_objetivo) * 100, 100) # Evitar que pase del 100% visualmente
-        faltante = max(meta.valor_objetivo - ingresos, 0)
+        # El progreso se basa en lo recaudado (ingresos ejecutados)
+        progreso = min((ingresos_ejecutados / meta.valor_objetivo) * 100, 100)
+        faltante = max(meta.valor_objetivo - ingresos_ejecutados, 0)
 
     contexto = {
-        'titulo': 'Panel de Control del Tesorero',
         'caja_real': caja_real,
         'cartera': cartera,
         'meta': meta,
         'progreso_meta': round(progreso, 1),
         'faltante_meta': faltante,
-        'movimientos': Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable')[:10],
+        'movimientos': Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable').order_by('-fecha')[:10],
         'conceptos_activos': Concepto.objects.filter(activo=True),
-        'aprendices': Usuario.objects.filter(rol='APRENDIZ') # Ajusta esto según cómo relaciones aprendices y fichas
+        'aprendices': Usuario.objects.filter(rol='APRENDIZ'), 
+        # Variable para tu partial de breadcrumbs
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'}
+        ]
     }
 
     return render(request, 'fondos/fondos.html', contexto)
@@ -87,10 +90,11 @@ def dashboard_fondos(request):
 def listar_conceptos(request):
     """Vista para configurar las tarifas y multas."""
     if request.method == 'POST':
+        categoria = request.POST.get('categoria')
         Concepto.objects.create(
             nombre=request.POST.get('nombre'),
-            categoria=request.POST.get('categoria'),
-            tipo_operacion='Egreso' if request.POST.get('categoria') == 'Gasto' else 'Ingreso',
+            categoria=categoria,
+            tipo_operacion='Egreso' if categoria == 'Gasto' else 'Ingreso',
             valor_sugerido=request.POST.get('valor_sugerido'),
             vigente_desde=request.POST.get('vigente_desde'),
             activo=request.POST.get('estado') == 'Activo'
@@ -98,22 +102,27 @@ def listar_conceptos(request):
         messages.success(request, "Concepto guardado en el catálogo.")
         return redirect('conceptos')
 
-    conceptos = Concepto.objects.all()
-    return render(request, 'fondos/conceptos.html', {'conceptos': conceptos})
+    conceptos = Concepto.objects.all().order_by('categoria', 'nombre')
+    contexto = {
+        'conceptos': conceptos,
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'},
+            {'nombre': 'Catálogo de Conceptos', 'url': ''}
+        ]
+    }
+    return render(request, 'fondos/conceptos.html', contexto)
 
 
 def configurar_metas(request):
-    """Vista para establecer el objetivo financiero (ej. Salida técnica)."""
+    """Vista para establecer el objetivo financiero."""
     ficha_id = request.session.get('ficha_activa_id')
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id) if ficha_id else None
 
     if request.method == 'POST' and ficha:
-        # Desactivar metas anteriores de esta ficha
+        # Desactivar otras metas para que solo haya una principal activa
         MetaFinanciera.objects.filter(ficha=ficha).update(activa=False)
         
-        # Crear nueva meta
         MetaFinanciera.objects.create(
-            
             ficha=ficha,
             nombre=request.POST.get('nombre'),
             descripcion=request.POST.get('descripcion'),
@@ -121,25 +130,31 @@ def configurar_metas(request):
             fecha_limite=request.POST.get('fecha_limite'),
             activa=True
         )
-        messages.success(request, "Nueva meta establecida.")
+        messages.success(request, "Nueva meta establecida para la ficha.")
         return redirect('metas')
 
     meta_activa = MetaFinanciera.objects.filter(ficha=ficha, activa=True).first() if ficha else None
     
-    # Calcular recaudo para la meta activa
     recaudado = 0
+    progreso = 0
     if meta_activa:
         recaudado = Movimiento.objects.filter(
             ficha=ficha, 
             concepto__tipo_operacion='Ingreso', 
             estado='Ejecutado'
         ).aggregate(Sum('valor'))['valor__sum'] or 0
+        
+        if meta_activa.valor_objetivo > 0:
+            progreso = min((recaudado / meta_activa.valor_objetivo) * 100, 100)
 
     contexto = {
-        'titulo': 'Configuración de Metas Financieras',
         'meta_activa': meta_activa,
         'recaudado': recaudado,
-        'progreso': min((recaudado / meta_activa.valor_objetivo) * 100, 100) if meta_activa and meta_activa.valor_objetivo else 0
+        'progreso': round(progreso, 1),
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'},
+            {'nombre': 'Metas Financieras', 'url': ''}
+        ]
     }
     return render(request, 'fondos/metas.html', contexto)
 
@@ -147,4 +162,11 @@ def configurar_metas(request):
 def ver_recibo(request, movimiento_id):
     """Genera la vista de detalle de un comprobante específico."""
     movimiento = get_object_or_404(Movimiento, id=movimiento_id)
-    return render(request, 'fondos/recibo.html', {'movimiento': movimiento})
+    contexto = {
+        'movimiento': movimiento,
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'},
+            {'nombre': f'Comprobante #{movimiento.id:04d}', 'url': ''}
+        ]
+    }
+    return render(request, 'fondos/recibo.html', contexto)

@@ -1,84 +1,123 @@
 {% extends "base.html" %}
-
-{% block title %}Conceptos de Fondo | Gestor SENA{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Catálogo de Conceptos</h3>
-    <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary btn-sm">← Volver a Fondos</a>
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Catálogo de Conceptos</h3>
+            <p class="text-muted small mb-0">Gestión de tarifas, multas y aportes del fondo</p>
+        </div>
+        <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver a Fondos
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold color-verde-sena-fn"><i class="bi bi-plus-circle me-2"></i>Configurar Nuevo Concepto</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'conceptos' %}" class="row g-3">
+                {% csrf_token %}
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Nombre del Concepto:</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej. Retardo injustificado" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Categoría:</label>
+                    <select name="categoria" class="form-select" required>
+                        <option value="Multa">Multa / Sanción</option>
+                        <option value="Aporte">Aporte Voluntario</option>
+                        <option value="Cuota">Cuota Fija (Ej. Salida)</option>
+                        <option value="Gasto">Gasto (Egreso)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Valor Sugerido ($):</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" name="valor_sugerido" class="form-control" placeholder="Ej. 1000" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Vigente Desde:</label>
+                    <input type="date" name="vigente_desde" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Estado Inicial:</label>
+                    <select name="estado" class="form-select">
+                        <option value="Activo">🟢 Activo</option>
+                        <option value="Inactivo">🔴 Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <button type="reset" class="btn btn-light fw-bold me-2">Limpiar</button>
+                    <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm">
+                        <i class="bi bi-save me-2"></i>Guardar en Catálogo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn">Tarifario Vigente</h5>
+            <span class="badge bg-light text-dark border fw-normal px-3">{{ conceptos.count }} Conceptos</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="color-gris-claro-bg small text-uppercase">
+                    <tr>
+                        <th class="text-start ps-4 color-gris-oscuro-fn">Concepto</th>
+                        <th class="color-gris-oscuro-fn">Categoría</th>
+                        <th class="color-gris-oscuro-fn">Valor Base</th>
+                        <th class="color-gris-oscuro-fn">Vigencia</th>
+                        <th class="color-gris-oscuro-fn pe-4">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for concepto in conceptos %}
+                    <tr>
+                        <td class="text-start ps-4">
+                            <strong class="color-negro-suave-fn d-block">{{ concepto.nombre }}</strong>
+                            <small class="text-muted">ID: #{{ concepto.id|stringformat:"03d" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border px-3 rounded-pill">{{ concepto.get_categoria_display }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold color-verde-sena-fn fs-5">$ {{ concepto.valor_sugerido|floatformat:0 }}</span>
+                        </td>
+                        <td class="text-muted small">
+                            <i class="bi bi-calendar-event me-1"></i>{{ concepto.vigente_desde|date:"d M Y" }}
+                        </td>
+                        <td class="pe-4">
+                            {% if concepto.activo %}
+                                <span class="badge color-verde-sena-bg text-white px-3 py-2 rounded-pill shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Activo
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary text-white px-3 py-2 rounded-pill shadow-sm">
+                                    <i class="bi bi-pause-circle-fill me-1"></i> Inactivo
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-x display-4 d-block mb-3 opacity-25"></i>
+                            No hay conceptos configurados actualmente.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
-
-<section class="card shadow-sm border-0 mb-4 p-4">
-    <h5 class="fw-bold mb-3">Configurar Nuevo Concepto</h5>
-    <form method="POST" action="{% url 'conceptos' %}" class="row g-3">
-        {% csrf_token %}
-        <div class="col-md-6">
-            <label class="form-label fw-bold small">Nombre del Concepto:</label>
-            <input type="text" name="nombre" class="form-control" placeholder="Ej. Retardo injustificado" required>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label fw-bold small">Categoría:</label>
-            <select name="categoria" class="form-select" required>
-                <option value="Multa">Multa / Sanción</option>
-                <option value="Aporte">Aporte Voluntario</option>
-                <option value="Cuota">Cuota Fija (Ej. Salida)</option>
-                <option value="Gasto">Gasto (Egreso)</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label fw-bold small">Valor Sugerido ($):</label>
-            <input type="number" name="valor_sugerido" class="form-control" placeholder="Ej. 1000" required>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label fw-bold small">Vigente Desde:</label>
-            <input type="date" name="vigente_desde" class="form-control" required>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label fw-bold small">Estado:</label>
-            <select name="estado" class="form-select">
-                <option value="Activo">🟢 Activo</option>
-                <option value="Inactivo">🔴 Inactivo</option>
-            </select>
-        </div>
-        <div class="col-12 text-end mt-3">
-            <button type="submit" class="btn btn-success fw-bold">Guardar Concepto en Catálogo</button>
-        </div>
-    </form>
-</section>
-
-<section class="card shadow-sm border-0">
-    <div class="card-header bg-white py-3">
-        <h5 class="mb-0 fw-bold">Tarifario Vigente</h5>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Concepto</th>
-                    <th>Categoría</th>
-                    <th>Valor Base</th>
-                    <th>Vigencia</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for concepto in conceptos %}
-                <tr>
-                    <td><strong>{{ concepto.nombre }}</strong></td>
-                    <td>{{ concepto.get_categoria_display }}</td>
-                    <td>$ {{ concepto.valor_sugerido|floatformat:0 }}</td>
-                    <td>{{ concepto.vigente_desde|date:"d M Y" }}</td>
-                    <td>
-                        {% if concepto.activo %}
-                            <span class="badge bg-success">Activo</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Inactivo</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section>
 {% endblock %}
