@@ -14,10 +14,9 @@ def inicio_asistencia(request):
         return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
-    # Filtrar aprendices por ficha si tienes la relación, o general si es para pruebas
+    # NOTA: Asegúrate de filtrar los aprendices por la ficha activa en producción
     aprendices = Usuario.objects.filter(rol='APRENDIZ') 
 
-    # Lógica de Sesión (Hoy o Edición)
     sesion_id = request.GET.get('sesion_id')
     if sesion_id:
         sesion = get_object_or_404(SesionClase, id=sesion_id, ficha=ficha)
@@ -40,7 +39,6 @@ def inicio_asistencia(request):
             )
         
         messages.success(request, "¡Asistencia guardada correctamente!")
-        # Si estábamos editando una sesión específica, nos quedamos ahí
         if sesion_id:
             return redirect(f"/asistencia/?sesion_id={sesion_id}")
         return redirect('inicio_asistencia')
@@ -49,6 +47,7 @@ def inicio_asistencia(request):
     dict_registros = {reg.aprendiz.id: reg for reg in registros_hoy}
 
     contexto = {
+        'titulo': 'Toma de Asistencia', # <-- TÍTULO AÑADIDO
         'sesion': sesion,
         'aprendices': aprendices,
         'dict_registros': dict_registros,
@@ -77,7 +76,6 @@ def historial_asistencias(request):
         total_fallas=Count('registros', filter=Q(registros__estado='Falla'))
     ).order_by('-fecha')
 
-    # Filtros GET
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
 
@@ -87,6 +85,7 @@ def historial_asistencias(request):
         sesiones = sesiones.filter(fecha__lte=fecha_fin)
 
     contexto = {
+        'titulo': 'Historial de Asistencia', # <-- TÍTULO AÑADIDO
         'sesiones': sesiones,
         'total_aprendices': total_aprendices,
         'breadcrumbs': [
@@ -128,7 +127,6 @@ def estadisticas_asistencia(request):
 
     aprendices = sorted(aprendices, key=lambda x: x.porcentaje_falla, reverse=True)
 
-    # Cálculos globales
     total_registros = RegistroAsistencia.objects.filter(sesion__ficha=ficha).count()
     pct_asistencia = pct_falla = pct_retardo = 0
     
@@ -142,6 +140,7 @@ def estadisticas_asistencia(request):
         pct_retardo = (retardos / total_registros) * 100
 
     contexto = {
+        'titulo': 'Estadísticas de Asistencia', # <-- TÍTULO AÑADIDO
         'total_sesiones': total_sesiones,
         'aprendices_riesgo': aprendices_riesgo,
         'retardos_totales': retardos_totales,
