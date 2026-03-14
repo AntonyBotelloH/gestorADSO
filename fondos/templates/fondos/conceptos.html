@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Conceptos de Fondo | Gestor SENA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold">Catálogo de Conceptos</h3>
+    <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary btn-sm">← Volver a Fondos</a>
+</div>
+
+<section class="card shadow-sm border-0 mb-4 p-4">
+    <h5 class="fw-bold mb-3">Configurar Nuevo Concepto</h5>
+    <form method="POST" action="{% url 'conceptos' %}" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label class="form-label fw-bold small">Nombre del Concepto:</label>
+            <input type="text" name="nombre" class="form-control" placeholder="Ej. Retardo injustificado" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-bold small">Categoría:</label>
+            <select name="categoria" class="form-select" required>
+                <option value="Multa">Multa / Sanción</option>
+                <option value="Aporte">Aporte Voluntario</option>
+                <option value="Cuota">Cuota Fija (Ej. Salida)</option>
+                <option value="Gasto">Gasto (Egreso)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold small">Valor Sugerido ($):</label>
+            <input type="number" name="valor_sugerido" class="form-control" placeholder="Ej. 1000" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold small">Vigente Desde:</label>
+            <input type="date" name="vigente_desde" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-bold small">Estado:</label>
+            <select name="estado" class="form-select">
+                <option value="Activo">🟢 Activo</option>
+                <option value="Inactivo">🔴 Inactivo</option>
+            </select>
+        </div>
+        <div class="col-12 text-end mt-3">
+            <button type="submit" class="btn btn-success fw-bold">Guardar Concepto en Catálogo</button>
+        </div>
+    </form>
+</section>
+
+<section class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Tarifario Vigente</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Concepto</th>
+                    <th>Categoría</th>
+                    <th>Valor Base</th>
+                    <th>Vigencia</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for concepto in conceptos %}
+                <tr>
+                    <td><strong>{{ concepto.nombre }}</strong></td>
+                    <td>{{ concepto.get_categoria_display }}</td>
+                    <td>$ {{ concepto.valor_sugerido|floatformat:0 }}</td>
+                    <td>{{ concepto.vigente_desde|date:"d M Y" }}</td>
+                    <td>
+                        {% if concepto.activo %}
+                            <span class="badge bg-success">Activo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

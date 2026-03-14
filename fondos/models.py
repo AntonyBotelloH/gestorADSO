@@ -1,60 +1,74 @@
 from django.db import models
-from django.utils import timezone
+from usuarios.models import Ficha, Usuario
 
-class ConceptoFondo(models.Model):
-    nombre = models.CharField(max_length=100, unique=True, verbose_name='Nombre del Concepto')
-    descripcion = models.TextField(blank=True, null=True, help_text='Explicación detallada de para qué es este fondo')
-    activo = models.BooleanField(default=True, help_text='Desmarcar si este concepto ya no se usa')
-
-    class Meta:
-        verbose_name = 'Concepto de Fondo'
-        verbose_name_plural = 'Conceptos de Fondos'
-        ordering = ['nombre']
-
-    def __str__(self):
-        return self.nombre
-
-class Fondo(models.Model):
-    ESTADO_PAGO_CHOICES = [
-        ('PENDIENTE', 'Pendiente'),
-        ('PAGADO', 'Pagado'),
-        ('MORA', 'En Mora'),
+class Concepto(models.Model):
+    CATEGORIA_CHOICES = [
+        ('Multa', 'Multa / Sanción'),
+        ('Aporte', 'Aporte Voluntario'),
+        ('Cuota', 'Cuota Fija (Ej. Salida)'),
+        ('Gasto', 'Gasto (Egreso)'),
     ]
-
-    aprendiz = models.ForeignKey(
-        'usuarios.Usuario', 
-        on_delete=models.CASCADE, 
-        related_name='aportes_fondo',
-        limit_choices_to={'rol': 'APRENDIZ'},
-        verbose_name='Aprendiz'
-    )
     
-    concepto = models.ForeignKey(
-        ConceptoFondo, 
-        on_delete=models.PROTECT, # Protege la integridad referencial
-        verbose_name='Concepto del Aporte',
-        limit_choices_to={'activo': True} # Solo muestra los conceptos activos
-    )
+    TIPO_OPERACION_CHOICES = [
+        ('Ingreso', '▲ Ingreso (Cobro)'),
+        ('Egreso', '▼ Gasto (Egreso)'),
+    ]
     
-    descripcion = models.TextField(blank=True, null=True, help_text='Detalles adicionales del pago del aprendiz')
-    valor = models.PositiveIntegerField(verbose_name='Valor (COP)', help_text='Monto en pesos colombianos')
-    estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='PENDIENTE', verbose_name='Estado del Pago')
-    
-    fecha_creacion = models.DateField(default=timezone.now, verbose_name='Fecha de Registro')
-    fecha_limite = models.DateField(null=True, blank=True, verbose_name='Fecha Límite de Pago')
-    fecha_pago = models.DateField(null=True, blank=True, verbose_name='Fecha en que realizó el pago')
-    
-    comprobante = models.FileField(
-        upload_to='comprobantes_fondos/', 
-        null=True, 
-        blank=True, 
-        help_text='Soporte de pago, recibo o transferencia (PDF/Imagen)'
-    )
+    nombre = models.CharField(max_length=150, verbose_name="Nombre del Concepto")
+    categoria = models.CharField(max_length=50, choices=CATEGORIA_CHOICES, verbose_name="Categoría")
+    tipo_operacion = models.CharField(max_length=20, choices=TIPO_OPERACION_CHOICES, verbose_name="Tipo de Operación")
+    valor_sugerido = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name="Valor Sugerido ($)")
+    vigente_desde = models.DateField(verbose_name="Vigente Desde")
+    activo = models.BooleanField(default=True, verbose_name="Estado (Activo/Inactivo)")
 
     class Meta:
-        verbose_name = 'Registro de Fondo'
-        verbose_name_plural = 'Registros de Fondos'
-        ordering = ['-fecha_creacion', 'estado_pago']
+        verbose_name = "Concepto de Fondo"
+        verbose_name_plural = "Catálogo de Conceptos"
+        ordering = ['-activo', 'nombre']
 
     def __str__(self):
-        return f"{self.concepto.nombre} - {self.aprendiz} (${self.valor})"
+        return f"{self.nombre} ({self.get_tipo_operacion_display()})"
+
+
+class MetaFinanciera(models.Model):
+    ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='metas_financieras')
+    nombre = models.CharField(max_length=150, verbose_name="Nombre de la Meta")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción / Justificación")
+    valor_objetivo = models.DecimalField(max_digits=12, decimal_places=0, verbose_name="Valor Total Requerido ($)")
+    fecha_limite = models.DateField(verbose_name="Fecha Límite de Recaudo")
+    activa = models.BooleanField(default=True, verbose_name="Meta Activa")
+
+    class Meta:
+        verbose_name = "Meta Financiera"
+        verbose_name_plural = "Metas Financieras"
+        # Ordena para que las metas activas y con fecha más próxima salgan primero
+        ordering = ['-activa', 'fecha_limite']
+
+    def __str__(self):
+        return f"{self.ficha.codigo_ficha} - {self.nombre} (${self.valor_objetivo})"
+
+
+class Movimiento(models.Model):
+    ESTADO_CHOICES = [
+        ('Pendiente', 'Pendiente'),
+        ('Ejecutado', 'Ejecutado'),
+    ]
+    
+    ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='movimientos_fondos')
+    # ForeignKey a Usuario: Permite null=True por si es un gasto general del comité y no a nombre de un aprendiz en específico
+    responsable = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Aprendiz / Responsable")
+    concepto = models.ForeignKey(Concepto, on_delete=models.PROTECT, verbose_name="Concepto")
+    
+    # max_digits=10 permite registrar hasta $9,999,999,999 COP
+    valor = models.DecimalField(max_digits=10, decimal_places=0, verbose_name="Valor ($)")
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Operación")
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Ejecutado', verbose_name="Estado")
+    observacion = models.TextField(blank=True, null=True, verbose_name="Observación")
+
+    class Meta:
+        verbose_name = "Movimiento de Fondo"
+        verbose_name_plural = "Historial de Movimientos"
+        ordering = ['-fecha'] # Siempre muestra el más reciente primero
+
+    def __str__(self):
+        return f"Comprobante #{self.id:04d} - {self.concepto.nombre} - ${self.valor}"

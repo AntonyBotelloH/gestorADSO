@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<form method="POST" action="{% url 'inicio_asistencia' %}{% if request.GET.sesion_id %}?sesion_id={{ request.GET.sesion_id }}{% endif %}">
+    {% csrf_token %}
+    
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 shadow-sm" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold color-verde-sena-fn">Sesión del Día</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Fecha:</label>
+                    <input type="date" class="form-control bg-light" value="{{ sesion.fecha|date:'Y-m-d' }}" readonly>
+                </div>
+                <div class="col-md-9">
+                    <label class="form-label fw-bold small text-muted">Tema / Actividad:</label>
+                    <input type="text" name="tema_tratado" class="form-control" placeholder="Ej. Implementación de maquetación móvil" value="{{ sesion.tema_tratado|default:'' }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn">Registro de Aprendices</h5>
+            <div class="btn-group">
+                <a href="{% url 'historial_asistencia' %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                    <i class="bi bi-clock-history"></i> Ver Historial
+                </a>
+                <a href="{% url 'estadisticas_asistencia' %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                    <i class="bi bi-bar-chart"></i> Ver Estadísticas
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="color-gris-claro-bg text-center small">
+                    <tr>
+                        <th class="text-start ps-4 color-gris-oscuro-fn">Aprendiz</th>
+                        <th class="color-gris-oscuro-fn">Estado</th>
+                        <th class="color-gris-oscuro-fn">Asistió</th>
+                        <th class="color-gris-oscuro-fn">Retardo</th>
+                        <th class="color-gris-oscuro-fn">Falla</th>
+                        <th class="color-gris-oscuro-fn">Justif.</th>
+                        <th class="color-gris-oscuro-fn">Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aprendiz in aprendices %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="fw-bold color-negro-suave-fn">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge color-verde-sena-bg text-white rounded-pill px-3">Activo</span>
+                        </td>
+                        <td class="text-center">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Presente" id="pres_{{ aprendiz.id }}" checked>
+                        </td>
+                        <td class="text-center">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Retardo" id="ret_{{ aprendiz.id }}">
+                        </td>
+                        <td class="text-center">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Falla" id="fal_{{ aprendiz.id }}">
+                        </td>
+                        <td class="text-center">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Excusa" id="exc_{{ aprendiz.id }}">
+                        </td>
+                        <td class="pe-4">
+                            <input type="text" name="comentario_{{ aprendiz.id }}" id="com_{{ aprendiz.id }}" class="form-control form-control-sm" placeholder="Opcional...">
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <p class="text-muted mb-0"><i class="bi bi-info-circle me-2"></i>No hay aprendices registrados en esta ficha.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer color-gris-claro-bg py-3 text-end pe-4">
+            <button type="reset" class="btn color-gris-oscuro-bg text-white me-2 fw-bold">Deshacer</button>
+            <button type="submit" class="btn color-verde-sena-bg text-white fw-bold">Guardar Asistencia</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% for key, reg in dict_registros.items %}
+            let estado = "{{ reg.estado }}";
+            let aprendiz_id = "{{ key }}";
+            
+            if(estado === 'Presente') document.getElementById('pres_' + aprendiz_id).checked = true;
+            if(estado === 'Retardo') document.getElementById('ret_' + aprendiz_id).checked = true;
+            if(estado === 'Falla') document.getElementById('fal_' + aprendiz_id).checked = true;
+            if(estado === 'Excusa') document.getElementById('exc_' + aprendiz_id).checked = true;
+            
+            let comentario = document.getElementById('com_' + aprendiz_id);
+            if(comentario) {
+                comentario.value = "{{ reg.comentario|escapejs }}";
+            }
+        {% endfor %}
+    });
+</script>
+{% endblock %}

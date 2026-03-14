@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Historial de Sesiones</h3>
+            <p class="text-muted small mb-0">Consulta y filtrado de asistencias pasadas</p>
+        </div>
+        <a href="{% url 'inicio_asistencia' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver a Asistencia
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 shadow-sm" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-funnel me-2"></i>Filtrar Sesiones</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Desde:</label>
+                    <input type="date" name="fecha_inicio" class="form-control bg-light border-secondary-subtle" value="{{ request.GET.fecha_inicio }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Hasta:</label>
+                    <input type="date" name="fecha_fin" class="form-control bg-light border-secondary-subtle" value="{{ request.GET.fecha_fin }}">
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn color-verde-sena-bg text-white fw-bold flex-grow-1 shadow-sm">
+                            <i class="bi bi-search me-1"></i> Consultar
+                        </button>
+                        <a href="{% url 'historial_asistencia' %}" class="btn btn-outline-secondary shadow-sm" title="Limpiar Filtros">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn">Listado de Sesiones Registradas</h5>
+            <span class="badge bg-light text-dark border fw-normal px-3">Total: {{ sesiones.count }} sesiones</span>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="color-gris-claro-bg small">
+                    <tr>
+                        <th class="text-start ps-4 color-gris-oscuro-fn">Fecha de Clase</th>
+                        <th class="text-start color-gris-oscuro-fn">Tema Tratado / Actividad</th>
+                        <th class="color-gris-oscuro-fn">Quórum</th>
+                        <th class="color-gris-oscuro-fn">Resumen de Novedades</th>
+                        <th class="color-gris-oscuro-fn pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sesion in sesiones %}
+                    <tr>
+                        <td class="text-start ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="p-2 color-verde-sena-bg rounded-3 me-3 text-white text-center shadow-sm" style="width: 45px; height: 45px;">
+                                    <small class="d-block fw-bold" style="font-size: 0.6rem; line-height: 1;">{{ sesion.fecha|date:"M"|upper }}</small>
+                                    <span class="fs-5 fw-bold" style="line-height: 1;">{{ sesion.fecha|date:"d" }}</span>
+                                </div>
+                                <strong class="color-negro-suave-fn">{{ sesion.fecha|date:"Y" }}</strong>
+                            </div>
+                        </td>
+                        <td class="text-start">
+                            <span class="text-muted fw-semibold small d-block mb-1 text-uppercase" style="letter-spacing: 0.5px;">Actividad:</span>
+                            <span class="color-negro-suave-fn fw-bold">{{ sesion.tema_tratado|default:"Sin tema registrado" }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold fs-5 color-negro-suave-fn">{{ sesion.total_presentes }}</div>
+                            <div class="text-muted small">de {{ total_aprendices }}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <span class="badge color-verde-sena-bg text-white rounded-pill px-3 shadow-sm" title="Presentes">
+                                    <i class="bi bi-check-lg me-1"></i> {{ sesion.total_presentes }}
+                                </span>
+                                {% if sesion.total_retardos > 0 %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3 shadow-sm" title="Retardos">
+                                    <i class="bi bi-clock me-1"></i> {{ sesion.total_retardos }}
+                                </span>
+                                {% endif %}
+                                {% if sesion.total_fallas > 0 %}
+                                <span class="badge color-rojo-alerta-bg text-white rounded-pill px-3 shadow-sm" title="Fallas">
+                                    <i class="bi bi-x-lg me-1"></i> {{ sesion.total_fallas }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{% url 'inicio_asistencia' %}?sesion_id={{ sesion.id }}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm">
+                                <i class="bi bi-pencil-square me-1"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-calendar2-x display-4 mb-3 d-block opacity-25"></i>
+                            <p class="mb-0">No se encontraron sesiones para el rango de fechas seleccionado.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card-footer color-gris-claro-bg py-3 d-flex justify-content-between align-items-center px-4">
+            <span class="small text-muted fw-bold">Auditado para la ficha: {{ request.session.ficha_activa_id }}</span>
+            <button class="btn btn-outline-dark btn-sm fw-bold shadow-sm">
+                <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Exportar Excel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

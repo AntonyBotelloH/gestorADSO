@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'fondos',
     'proyectos',
     'usuarios',
+    'planeacion',
     #pip install Pillow
+    #pip install pandas openpyxl
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
