@@ -1,61 +1,94 @@
 {% extends "base.html" %}
-
-{% block title %}Comprobante #{{ movimiento.id|stringformat:"04d" }} | Gestor SENA{% endblock %}
+{% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold">Detalle de Movimiento</h3>
-    <div class="btn-group">
-        <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary btn-sm">← Volver</a>
-        <button class="btn btn-primary btn-sm"><i class="bi bi-download"></i> PDF</button>
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Detalle de Movimiento</h3>
+            <p class="text-muted small mb-0">Vista previa del comprobante de caja</p>
+        </div>
+        <div class="btn-group shadow-sm">
+            <a href="{% url 'inicio_fondos' %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button class="btn color-verde-sena-bg text-white btn-sm fw-bold" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Imprimir / PDF
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow border-0 p-5 mb-4" style="border-top: 5px solid #39A900 !important;">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-7">
+            <div class="card shadow border-0 p-1 mb-4">
+                <div class="card-body p-4 p-md-5 border-top border-5" style="border-top-color: #39A900 !important;">
+                    
+                    <div class="text-center border-bottom pb-4 mb-4">
+                        <img src="{% static 'img/Logo.png' %}" alt="SENA" width="60" class="mb-3">
+                        <h2 class="fw-bold color-negro-suave-fn mb-1">SENA - Ficha {{ movimiento.ficha.codigo_ficha }}</h2>
+                        <h5 class="text-muted text-uppercase fw-bold" style="letter-spacing: 2px;">Comprobante de Movimiento</h5>
+                        <div class="badge bg-light text-dark border mt-2 px-3 py-2">
+                            <span class="text-muted">Referencia:</span> 
+                            <span class="fw-bold text-dark">#{{ movimiento.id|stringformat:"04d" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-sm-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Fecha de Operación</label>
+                            <span class="fw-bold color-negro-suave-fn">{{ movimiento.fecha|date:"d \d\e F, Y - h:i A" }}</span>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Estado del Registro</label>
+                            <span class="badge {% if movimiento.estado == 'Ejecutado' %}color-verde-sena-bg text-white{% else %}bg-warning text-dark{% endif %} px-3 rounded-pill">
+                                {{ movimiento.estado|upper }}
+                            </span>
+                        </div>
+                        <div class="col-12">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Responsable / Beneficiario</label>
+                            <span class="fw-bold fs-5 color-negro-suave-fn">
+                                {{ movimiento.responsable.get_full_name|default:"Comité de Ficha / Fondo General" }}
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Concepto</label>
+                            <span class="fw-bold text-dark">{{ movimiento.concepto.nombre }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Categoría</label>
+                            <span class="badge bg-light text-dark border">{{ movimiento.concepto.get_categoria_display }}</span>
+                        </div>
+                        <div class="col-12">
+                            <label class="small text-muted text-uppercase fw-bold d-block">Observaciones</label>
+                            <p class="text-muted italic bg-light p-3 rounded border-start border-3 border-secondary-subtle">
+                                {{ movimiento.observacion|default:"No se registraron observaciones adicionales para este movimiento." }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center bg-light p-4 rounded-4 border">
+                        <span class="fs-4 fw-bold color-gris-oscuro-fn">VALOR TOTAL:</span>
+                        <div class="text-end">
+                            <span class="display-6 fw-bold {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}color-verde-sena-fn{% else %}color-rojo-alerta-fn{% endif %}">
+                                {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}+{% else %}-{% endif %} $ {{ movimiento.valor|floatformat:0 }}
+                            </span>
+                            <div class="small fw-bold text-muted text-uppercase">Pesos Colombianos (COP)</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center text-muted mt-5 pt-4 border-top border-secondary-subtle border-dashed">
+                        <p class="mb-1 fw-bold">Gestor SENA - Regional Boyacá</p>
+                        <p class="small mb-0 opacity-75">Este documento es un soporte digital generado por el sistema interno de la ficha. No representa un título valor legal fuera del entorno pedagógico.</p>
+                    </div>
+                </div>
+            </div>
             
-            <div class="text-center border-bottom pb-4 mb-4">
-                <h2 class="fw-bold text-dark">SENA - Ficha {{ movimiento.ficha.codigo_ficha }}</h2>
-                <h4 class="text-muted text-uppercase letter-spacing-1">Comprobante de Movimiento</h4>
-                <p class="mb-0 text-secondary fw-bold">Referencia No. {{ movimiento.id|stringformat:"04d" }}</p>
-            </div>
-
-            <table class="table table-borderless fs-5">
-                <tbody>
-                    <tr>
-                        <td class="text-muted" width="40%">Fecha de Operación:</td>
-                        <td class="fw-bold">{{ movimiento.fecha|date:"d \d\e F, Y - h:i A" }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Responsable / Beneficiario:</td>
-                        <td class="fw-bold">{{ movimiento.responsable.first_name|default:"Comité de Ficha" }} {{ movimiento.responsable.last_name|default:"" }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Concepto:</td>
-                        <td class="fw-bold">{{ movimiento.concepto.nombre }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Observación:</td>
-                        <td class="fw-bold">{{ movimiento.observacion|default:"Sin observaciones" }}</td>
-                    </tr>
-                    <tr>
-                        <td class="text-muted">Estado:</td>
-                        <td><span class="badge {% if movimiento.estado == 'Ejecutado' %}bg-success{% else %}bg-warning text-dark{% endif %} fs-6">{{ movimiento.estado }}</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="d-flex justify-content-between align-items-center bg-light p-4 rounded mt-4">
-                <span class="fs-4 fw-bold text-muted">VALOR TOTAL:</span>
-                <span class="display-6 fw-bold {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}text-success{% else %}text-danger{% endif %}">
-                    {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}+{% else %}-{% endif %} $ {{ movimiento.valor|floatformat:0 }} COP
-                </span>
-            </div>
-
-            <div class="text-center text-muted small mt-5 pt-4 border-top">
-                <p class="mb-0">Paipa, Boyacá - Regional Centro Minero</p>
-                <p class="mb-0">Este documento es un soporte interno de la gestión de fondos de la ficha.</p>
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                <div class="small">
+                    ¿Hay algún error en este comprobante? Comunícate con el instructor o el líder de comité para realizar un ajuste de auditoría.
+                </div>
             </div>
         </div>
     </div>
