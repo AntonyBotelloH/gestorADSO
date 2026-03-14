@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Sprint Backlog</h3>
+            <p class="text-muted small mb-0">Proyecto: <strong>Sistema de Inventario POS</strong></p>
+        </div>
+        <div class="btn-group shadow-sm">
+            <a href="{% url 'detalles_proyecto' %}" class="btn btn-outline-secondary btn-sm fw-bold">← Volver</a>
+            <button class="btn color-verde-sena-bg text-white btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#nuevaTareaModal">
+                <i class="bi bi-plus-circle me-1"></i> Nueva Tarea
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="card border-0 bg-light shadow-none h-100">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-uppercase mb-0 color-gris-oscuro-fn">Por Hacer</h6>
+                    <span class="badge bg-secondary rounded-pill">2</span>
+                </div>
+                <div class="card-body p-2 d-flex flex-column gap-2">
+                    <div class="card border-0 shadow-sm border-start border-4 border-danger">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-1">Arreglar permisos Cajero</h6>
+                            <p class="text-muted small mb-3">Restringir accesos financieros.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-light text-dark border small">Carlos R.</span>
+                                <small class="text-danger fw-bold"><i class="bi bi-clock"></i> Mañana</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 bg-light shadow-none h-100">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-uppercase mb-0 color-gris-oscuro-fn">En Proceso</h6>
+                    <span class="badge bg-primary rounded-pill">1</span>
+                </div>
+                <div class="card-body p-2">
+                    <div class="card border-0 shadow-sm border-start border-4 border-warning">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-1">CRUD de Productos</h6>
+                            <p class="text-muted small mb-3">Lógica de persistencia DB.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-light text-dark border small">Samuel E.</span>
+                                <small class="text-muted fw-bold">Hoy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 bg-light shadow-none h-100">
+                <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold text-uppercase mb-0 color-gris-oscuro-fn">Terminado</h6>
+                    <span class="badge color-verde-sena-bg text-white rounded-pill">1</span>
+                </div>
+                <div class="card-body p-2">
+                    <div class="card border-0 shadow-sm border-start border-4 border-success bg-white opacity-75">
+                        <div class="card-body p-3 text-muted">
+                            <h6 class="fw-bold mb-1 text-decoration-line-through">Modelo de Datos</h6>
+                            <p class="small mb-3">MER Normalizado.</p>
+                            <div class="d-flex justify-content-end">
+                                <span class="badge color-verde-sena-bg text-white small"><i class="bi bi-check-all"></i> Listo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="nuevaTareaModal" tabindex="-1" aria-labelledby="nuevaTareaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header color-verde-sena-bg text-white border-0">
+                    <h5 class="modal-title fw-bold" id="nuevaTareaModalLabel"><i class="bi bi-card-checklist me-2"></i>Agregar Tarea al Sprint</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="crear_tarea">
+                    
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Tarea:</label>
+                            <input type="text" name="nombre" class="form-control border-secondary-subtle" placeholder="Ej. Crear endpoint de Login" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Descripción (Opcional):</label>
+                            <textarea name="descripcion" class="form-control border-secondary-subtle" rows="2"></textarea>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Responsable:</label>
+                                <select name="responsable" class="form-select border-secondary-subtle" required>
+                                    <option value="" disabled selected>-- Asignar a --</option>
+                                    {% for integrante in proyecto.integrantes.all %}
+                                        <option value="{{ integrante.id }}">{{ integrante.first_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Prioridad:</label>
+                                <select name="prioridad" class="form-select border-secondary-subtle">
+                                    <option value="Alta">🔴 Alta</option>
+                                    <option value="Media" selected>🟡 Media</option>
+                                    <option value="Baja">🔵 Baja</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn color-verde-sena-bg text-white fw-bold shadow-sm">Guardar Tarea</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
