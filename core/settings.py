@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'fondos',
     'proyectos',
     'usuarios',
+    'planeacion',
     #pip install Pillow
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
