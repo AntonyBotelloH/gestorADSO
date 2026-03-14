@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Control Disciplinario</h3>
+            <p class="text-muted small mb-0">Gestión de novedades y llamados de atención de la ficha</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="#" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-gear me-1"></i> Estrategias</a>
+            <a href="#" class="btn color-verde-sena-bg text-white fw-bold shadow-sm"><i class="bi bi-bar-chart-line me-1"></i> Estadísticas</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-transparent py-3">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-plus me-2 text-success"></i>Registrar Novedad</h5>
+        </div>
+        <div class="card-body bg-body-tertiary rounded-bottom">
+            <form class="row g-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Aprendiz Implicado:</label>
+                        <select class="form-select border-secondary-subtle bg-body-tertiary text-body shadow-none">
+                            <option selected disabled>-- Seleccione un aprendiz --</option>
+                            <option>Juan Pérez</option>
+                            <option>Samuel Echeverria Bernate</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Instancia del Llamado:</label>
+                        <select class="form-select border-secondary-subtle bg-body-tertiary text-body shadow-none">
+                            <option>🟡 Llamado Verbal</option>
+                            <option>🔴 Llamado Escrito</option>
+                            <option>⚫ Comité de Evaluación</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="mb-3 flex-grow-1 d-flex flex-column">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos:</label>
+                        <textarea class="form-control border-secondary-subtle bg-body-tertiary text-body shadow-none flex-grow-1" rows="4" placeholder="Detalle la situación ocurrida..."></textarea>
+                    </div>
+                </div>
+                <div class="col-12 text-end mt-2">
+                    <button type="button" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm">Registrar Caso</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-journal-text me-2 text-success"></i>Bitácora de Seguimiento</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-secondary border-bottom">
+                        <tr>
+                            <th class="ps-4 py-3">Fecha</th>
+                            <th>Aprendiz</th>
+                            <th>Instancia</th>
+                            <th>Motivo Principal</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        <tr>
+                            <td class="ps-4 text-muted small">20 Feb 2026</td>
+                            <td class="text-body fw-bold">Juan Pérez</td>
+                            <td><span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Escrito</span></td>
+                            <td class="text-muted text-truncate" style="max-width: 200px;">Inasistencia reiterada.</td>
+                            <td class="text-end pe-4">
+                                <a href="#" class="btn btn-outline-secondary btn-sm fw-bold me-1">Ver Detalle</a>
+                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta"><i class="bi bi-file-earmark-pdf"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 text-muted small">15 Feb 2026</td>
+                            <td class="text-body fw-bold">Samuel Echeverria</td>
+                            <td><span class="badge bg-info text-dark px-3 py-2 rounded-pill">Verbal</span></td>
+                            <td class="text-muted text-truncate" style="max-width: 200px;">Uso indebido de equipos.</td>
+                            <td class="text-end pe-4">
+                                <a href="#" class="btn btn-outline-secondary btn-sm fw-bold me-1">Ver Detalle</a>
+                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" disabled><i class="bi bi-file-earmark-pdf"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

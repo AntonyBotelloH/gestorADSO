@@ -28,6 +28,7 @@ urlpatterns = [
     path('', inicio, name='inicio'),
     path('configuraciones/', configuraciones, name='configuraciones'),
     path('asistencia/', include('asistencia.urls')),
+    path('llamados/', include('llamados.urls')),
     path('fondos/', include('fondos.urls')),
     path('proyectos/', include('proyectos.urls')),
     path('usuarios/', include('usuarios.urls')),

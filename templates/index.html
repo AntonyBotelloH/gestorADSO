@@ -6,33 +6,33 @@
   <div class="row g-3 mb-4">
     
     <div class="col-md-4">
-      <div class="card h-100 shadow-sm border-0 border-start border-primary border-4">
+      <div class="card h-100 shadow-sm border-0 border-start border-primary border-4 bg-body-tertiary">
         <div class="card-body">
           <h6 class="text-muted fw-semibold mb-1">Quórum de Hoy</h6>
-          <h2 class="fw-bold mb-0">28 <span class="fs-5 text-muted fw-normal">/ 32</span></h2>
-          <small class="text-muted">92% de asistencia reportada</small>
+          <h2 class="fw-bold mb-0 color-negro-suave-fn">{{ quorum_presentes }} <span class="fs-5 text-muted fw-normal">/ {{ quorum_total }}</span></h2>
+          <small class="text-muted">{{ quorum_porcentaje }}% de asistencia reportada</small>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card h-100 shadow-sm border-0 border-start border-success border-4">
+      <div class="card h-100 shadow-sm border-0 border-start border-success border-4 bg-body-tertiary">
         <div class="card-body">
           <h6 class="text-muted fw-semibold mb-1">Fondo de Ficha</h6>
-          <h2 class="text-success fw-bold mb-2">$ 110.000</h2>
+          <h2 class="text-success fw-bold mb-2">$ {{ fondo_actual }}</h2>
           <div class="progress mb-1" style="height: 8px;">
-            <div class="progress-bar bg-success" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ fondo_porcentaje }}%;"></div>
           </div>
-          <small class="text-muted">Meta: Salida Técnica (45%)</small>
+          <small class="text-muted">Meta: Salida Técnica ({{ fondo_porcentaje }}%)</small>
         </div>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="card h-100 shadow-sm border-0 border-start border-danger border-4">
+      <div class="card h-100 shadow-sm border-0 border-start border-danger border-4 bg-body-tertiary">
         <div class="card-body">
           <h6 class="text-muted fw-semibold mb-1">Alertas Pendientes</h6>
-          <h2 class="text-danger fw-bold mb-0">3</h2>
+          <h2 class="text-danger fw-bold mb-0">{{ alertas_pendientes }}</h2>
           <small class="text-muted">Casos disciplinarios sin cerrar</small>
         </div>
       </div>
@@ -44,14 +44,14 @@
     
     <div class="col-lg-6">
       <div class="card shadow-sm border-0 h-100">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-          <h5 class="mb-0 fw-bold">Alertas Disciplinarias</h5>
-          <a href="Llamados_Atencion/llamados.html" class="btn btn-outline-secondary btn-sm">Ver Todo</a>
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+          <h5 class="mb-0 fw-bold color-negro-suave-fn">Alertas Disciplinarias</h5>
+          <a href="{% url 'listar_llamados' %}" class="btn btn-outline-secondary btn-sm">Ver Todo</a>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
+              <thead>
                 <tr>
                   <th class="ps-4">Aprendiz</th>
                   <th>Tipo</th>
@@ -59,20 +59,19 @@
                 </tr>
               </thead>
               <tbody>
+                {% for alerta in alertas %}
                 <tr>
-                  <td class="ps-4"><strong>Juan Pérez</strong></td>
-                  <td><span class="badge bg-warning text-dark">Escrito</span></td>
+                  <td class="ps-4 text-body"><strong>{{ alerta.aprendiz }}</strong></td>
+                  <td><span class="badge bg-{{ alerta.color }} text-dark">{{ alerta.tipo }}</span></td>
                   <td class="text-end pe-4">
-                    <a href="Llamados_Atencion/detalle.html" class="btn btn-light btn-sm border">Revisar</a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm">Revisar</a>
                   </td>
                 </tr>
+                {% empty %}
                 <tr>
-                  <td class="ps-4"><strong>Samuel Ech.</strong></td>
-                  <td><span class="badge bg-info text-dark">Verbal</span></td>
-                  <td class="text-end pe-4">
-                    <a href="Llamados_Atencion/detalle.html" class="btn btn-light btn-sm border">Revisar</a>
-                  </td>
+                  <td colspan="3" class="text-center py-3 text-muted">No hay alertas recientes. ¡Excelente!</td>
                 </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
@@ -82,26 +81,23 @@
 
     <div class="col-lg-6">
       <div class="card shadow-sm border-0 h-100">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-          <h5 class="mb-0 fw-bold">Estado de Sprints</h5>
-          <a href="Proyectos/proyectos.html" class="btn btn-outline-secondary btn-sm">Tablero Kanban</a>
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+          <h5 class="mb-0 fw-bold color-negro-suave-fn">Estado de Sprints</h5>
+          <a href="{% url 'proyectos' %}" class="btn btn-outline-secondary btn-sm">Tablero Kanban</a>
         </div>
         <div class="card-body p-0">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+            {% for sprint in sprints %}
+            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center p-3 border-secondary-subtle">
               <div>
-                <strong class="d-block">Inventario POS</strong>
-                <small class="text-muted">Sprint 3: Facturación</small>
+                <strong class="d-block text-body">{{ sprint.proyecto }}</strong>
+                <small class="text-muted">{{ sprint.sprint_nombre }}</small>
               </div>
-              <span class="badge bg-success rounded-pill px-3 py-2">A Tiempo</span>
+              <span class="badge bg-{{ sprint.color }} rounded-pill px-3 py-2">{{ sprint.estado }}</span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
-              <div>
-                <strong class="d-block">App Domicilios</strong>
-                <small class="text-muted">Sprint 2: Retrasado</small>
-              </div>
-              <span class="badge bg-danger rounded-pill px-3 py-2">Crítico</span>
-            </li>
+            {% empty %}
+            <li class="list-group-item bg-transparent text-center p-4 text-muted">No hay Sprints activos.</li>
+            {% endfor %}
           </ul>
         </div>
       </div>
@@ -109,34 +105,24 @@
 
   </div>
 
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-      <h5 class="mb-0 fw-bold">✅ Tareas del Instructor</h5>
-      <a href="Pendientes/pendientes.html" class="btn btn-outline-secondary btn-sm">Gestionar Todos</a>
+  <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+      <h5 class="mb-0 fw-bold color-negro-suave-fn">✅ Tareas del Instructor</h5>
+      <a href="#" class="btn btn-outline-secondary btn-sm">Gestionar Todos</a>
     </div>
     <div class="card-body">
+      {% for tarea in tareas %}
       <div class="form-check mb-3">
-        <input class="form-check-input fs-5" type="checkbox" id="tarea1">
-        <label class="form-check-label ms-2 mt-1" for="tarea1">
-          Subir reportes a Sofía Plus
+        <input class="form-check-input fs-5 border-secondary" type="checkbox" id="tarea{{ forloop.counter }}" {% if tarea.completada %}checked{% endif %}>
+        <label class="form-check-label ms-2 mt-1 text-body {% if tarea.completada %}text-muted text-decoration-line-through opacity-75{% endif %}" for="tarea{{ forloop.counter }}">
+          {{ tarea.descripcion }}
         </label>
       </div>
-      <div class="form-check mb-3">
-        <input class="form-check-input fs-5" type="checkbox" id="tarea2">
-        <label class="form-check-label ms-2 mt-1" for="tarea2">
-          Firmar planes de mejora
-        </label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input fs-5" type="checkbox" id="tarea3" checked>
-        <label class="form-check-label ms-2 mt-1 text-muted text-decoration-line-through" for="tarea3">
-          Revisar Sprints de ADSO
-        </label>
-      </div>
+      {% endfor %}
     </div>
   </div>
 
-  <div class="alert alert-info border-0 shadow-sm d-flex align-items-center" role="alert">
+  <div class="alert alert-info border-0 shadow-sm d-flex align-items-center" role="alert" style="background-color: rgba(13, 202, 240, 0.1); color: #0dcaf0;">
     <div class="me-3 fs-4">ℹ️</div>
     <div>
       <b>Resumen:</b> Tienes clase con <b>ADSO</b> a las 12:00 PM. Se han reportado <b>3 bloqueos</b> técnicos en la Daily.

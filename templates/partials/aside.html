@@ -240,29 +240,31 @@
       <li class="nav-item mb-1">
         <a href="#collapseLlamados"
           data-bs-toggle="collapse"
-          class="nav-link rounded d-flex align-items-center {% if '/llamados/' in request.path %}
-            color-verde-sena-bg text-white fw-bold
-          {% else %}
-            text-white collapsed
-          {% endif %}"
-          aria-expanded="{% if '/llamados/' in request.path %}
-            true
-          {% else %}
-            false
-          {% endif %}">
+          class="nav-link rounded d-flex align-items-center text-white {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}{% else %}collapsed{% endif %}"
+          aria-expanded="{% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
           <i class="bi bi-exclamation-triangle me-2"></i> Llamados de Atención
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if '/llamados/' in request.path %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
+        
+        <div class="collapse {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Historial Llamados</a>
+              <a href="{% url 'listar_llamados' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_llamados' or request.resolver_match.url_name == 'detalle_llamado' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                Historial Llamados
+              </a>
             </li>
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Estrategias Pedagógicas</a>
+              <a href="{% url 'estrategias' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'estrategias' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                Estrategias Pedagógicas
+              </a>
             </li>
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Estadísticas</a>
+              <a href="{% url 'estadisticas' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                Estadísticas
+              </a>
             </li>
           </ul>
         </div>

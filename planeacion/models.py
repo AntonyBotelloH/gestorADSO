@@ -57,3 +57,12 @@ class ActividadPlaneacion(models.Model):
 
     def __str__(self):
         return f"{self.ficha.codigo_ficha} - {self.fase.nombre} - {self.actividad_proyecto[:30]}"
+    
+class TareaInstructor(models.Model):
+    """Modelo para la lista de tareas pendientes del instructor en el Dashboard."""
+    descripcion = models.CharField(max_length=200)
+    completada = models.BooleanField(default=False)
+    creada_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.descripcion
