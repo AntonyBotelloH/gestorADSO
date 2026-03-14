@@ -55,25 +55,26 @@
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseProyectos" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center text-white collapsed">
+        <a href="#collapseProyectos" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center {% if '/proyectos/' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}" aria-expanded="{% if '/proyectos/' in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-kanban me-2"></i> Proyectos Scrum
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse" id="collapseProyectos" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/proyectos/' in request.path %}show{% endif %}" id="collapseProyectos" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li><a href="#" class="nav-link text-white-50 py-1">Ver Proyectos</a></li>
-            <li><a href="#" class="nav-link text-white-50 py-1">Crear Nuevo Grupo</a></li>
+            <li><a href="{% url 'proyectos' %}" class="nav-link py-1 {% if '/proyectos/' in request.path and request.resolver_match.url_name != 'nuevo_grupo' %}text-white fw-bold{% else %}text-white-50{% endif %}">Ver Proyectos</a></li>
+            <li><a href="{% url 'nuevo_grupo' %}" class="nav-link py-1 {% if request.resolver_match.url_name == 'nuevo_grupo' %}text-white fw-bold{% else %}text-white-50{% endif %}">Crear Nuevo Grupo</a></li>
           </ul>
         </div>
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center text-white collapsed">
+        <a href="#collapseFicha" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center {% if '/ficha/' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}">
           <i class="bi bi-folder2-open me-2"></i> Gestión de Ficha
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse" id="collapseFicha" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/ficha/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
+            <li><a href="#" class="nav-link text-white-50 py-1">Resumen Ficha</a></li>
             <li><a href="#" class="nav-link text-white-50 py-1">Aprendices y Roles</a></li>
           </ul>
         </div>
@@ -93,13 +94,14 @@
       </li>
 
       <li class="nav-item mb-1">
-        <a href="#collapseLlamados" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center text-white collapsed">
+        <a href="#collapseLlamados" data-bs-toggle="collapse" class="nav-link rounded d-flex align-items-center {% if '/llamados/' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}" aria-expanded="{% if '/llamados/' in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-exclamation-triangle me-2"></i> Llamados de Atención
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse" id="collapseLlamados" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/llamados/' in request.path %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
-            <li><a href="#" class="nav-link text-white-50 py-1">Historial</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Historial Llamados</a></li>
+            <li><a href="#" class="nav-link text-white-50 py-1">Estrategias Pedagógicas</a></li>
             <li><a href="#" class="nav-link text-white-50 py-1">Estadísticas</a></li>
           </ul>
         </div>
