@@ -406,7 +406,7 @@
   {% for ficha in lista_fichas %}
     <option value="{{ ficha.codigo_ficha }}" 
       {% if ficha_activa and ficha_activa.codigo_ficha|stringformat:"s" == ficha.codigo_ficha|stringformat:"s" %}selected{% endif %}>
-      {{ ficha.codigo_ficha }} - ADSO
+      {{ ficha.codigo_ficha }} - {{ ficha.programa.nombre|default:"ADSO" }}
     </option>
   {% endfor %}
 </select>
