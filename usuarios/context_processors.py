@@ -16,7 +16,6 @@ def fichas_globales(request):
         except Ficha.DoesNotExist:
             # Si no existe, limpiamos la basura de la sesión
             request.session['ficha_activa_id'] = None
-            
     return {
         'lista_fichas': fichas,
         'ficha_activa': ficha_activa

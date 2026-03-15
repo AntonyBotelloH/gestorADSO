@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.static import static
 
-from core.views import inicio, configuraciones
+from core.views import inicio, configuraciones, cambiar_ficha
 from usuarios.views import set_ficha_activa
 
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', inicio, name='inicio'),
     path('configuraciones/', configuraciones, name='configuraciones'),
+    path('cambiar-ficha/', cambiar_ficha, name='cambiar_ficha'),
     path('asistencia/', include('asistencia.urls')),
     path('llamados/', include('llamados.urls')),
     path('fondos/', include('fondos.urls')),

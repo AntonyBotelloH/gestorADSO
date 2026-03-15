@@ -1,84 +1,147 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.db.models import Q, Sum
+from django.utils import timezone
 
+# Importación de todos tus modelos
 from pendientes.models import Pendiente
+from usuarios.models import Usuario
+from llamados.models import LlamadoAtencion
 from proyectos.models import Proyecto
+from asistencia.models import SesionClase, RegistroAsistencia
+from fondos.models import Movimiento, MetaFinanciera
 
 def inicio(request):
-    """Vista del Panel de Control principal (Dashboard) conectado a la BD."""
+    """Vista del Panel de Control principal (Dashboard) 100% Dinámico."""
     
-    # ==========================================
-    # 1. PROYECTOS Y SPRINTS (DATOS REALES)
-    # ==========================================
-    proyectos_bd = Proyecto.objects.all().order_by('-fecha_inicio')[:5]
+    # 0. Sincronización con el Context Processor
+    ficha_actual = request.session.get('ficha_activa_id')
+    hoy = timezone.now().date()
+    
+    # 1. Inicialización de variables (KPIs)
+    total_aprendices = 0
+    asistentes_hoy = 0
+    porcentaje_asistencia = 0
+    saldo_fondo = 0
+    porcentaje_fondo = 0
+    nombre_meta = "Sin meta activa"
+    alertas_pendientes = 0
     sprints_reales = []
-    
-    for p in proyectos_bd:
-        # Asignamos el color de Bootstrap según el estado real de la base de datos
-        color = 'success' if p.estado == 'Al Día' else 'danger' if p.estado == 'Atrasado' else 'warning'
-        sprints_reales.append({
-            'proyecto': p.nombre,
-            'sprint_nombre': 'En curso', # Más adelante lo cruzamos con el modelo de Sprints si lo creas
-            'estado': p.estado,
-            'color': color
-        })
+    alertas_reales = []
 
     # ==========================================
-    # 2. TAREAS DEL INSTRUCTOR (DATOS REALES)
+    # 2. CONSULTAS FILTRADAS (Si hay ficha seleccionada)
     # ==========================================
-    # CORREGIDO: Trae todas las tareas, ordenadas para que las completadas salgan al final
-    # Cambiamos '-creada_en' por '-creado_en'
-    tareas_reales = Pendiente.objects.all().order_by('completada', '-creado_en')
+    if ficha_actual and ficha_actual != 'general':
+        
+        # --- QUÓRUM (Asistencia) ---
+        total_aprendices = Usuario.objects.filter(
+            ficha__codigo_ficha=ficha_actual, 
+            rol='APRENDIZ'
+        ).count()
+
+        sesion_hoy = SesionClase.objects.filter(ficha__codigo_ficha=ficha_actual, fecha=hoy).first()
+        if sesion_hoy:
+            asistentes_hoy = RegistroAsistencia.objects.filter(
+                sesion=sesion_hoy, 
+                estado__in=['Presente', 'Retardo']
+            ).count()
+
+        if total_aprendices > 0:
+            porcentaje_asistencia = int((asistentes_hoy / total_aprendices) * 100)
+
+        # --- FONDOS (Contabilidad Real) ---
+        ingresos = Movimiento.objects.filter(
+            ficha__codigo_ficha=ficha_actual, 
+            concepto__tipo_operacion='Ingreso'
+        ).aggregate(total=Sum('valor'))['total'] or 0
+
+        egresos = Movimiento.objects.filter(
+            ficha__codigo_ficha=ficha_actual, 
+            concepto__tipo_operacion='Egreso'
+        ).aggregate(total=Sum('valor'))['total'] or 0
+
+        saldo_fondo = ingresos - egresos
+
+        meta = MetaFinanciera.objects.filter(ficha__codigo_ficha=ficha_actual, activa=True).first()
+        if meta:
+            nombre_meta = meta.nombre
+            if meta.valor_objetivo > 0:
+                porcentaje_fondo = min(int((saldo_fondo / meta.valor_objetivo) * 100), 100)
+
+        # --- PROYECTOS ---
+        proyectos_bd = Proyecto.objects.filter(ficha__codigo_ficha=ficha_actual).order_by('-fecha_inicio')[:5]
+        for p in proyectos_bd:
+            color = 'success' if p.estado == 'Al Día' else 'danger' if p.estado == 'Atrasado' else 'warning'
+            sprints_reales.append({
+                'proyecto': p.nombre, 
+                'sprint_nombre': 'En curso', 
+                'estado': p.estado, 
+                'color': color
+            })
+
+        # --- ALERTAS DISCIPLINARIAS ---
+        alertas_pendientes = LlamadoAtencion.objects.filter(
+            ficha__codigo_ficha=ficha_actual
+        ).exclude(plan_mejora__estado='Cumplido').count()
+        
+        ultimos_llamados = LlamadoAtencion.objects.filter(
+            ficha__codigo_ficha=ficha_actual
+        ).order_by('-fecha_incidente')[:5]
+        
+        for llamado in ultimos_llamados:
+            color = 'warning' if llamado.instancia == 'Escrito' else 'info' if llamado.instancia == 'Verbal' else 'dark'
+            alertas_reales.append({
+                'aprendiz': llamado.aprendiz.get_full_name(), 
+                'tipo': llamado.get_instancia_display(), 
+                'color': color
+            })
 
     # ==========================================
-    # 3. QUÓRUM, FONDOS Y ALERTAS (LÓGICA PREPARADA)
+    # 3. TAREAS (Ficha actual + Generales)
     # ==========================================
-    # Aquí es donde conectaremos las otras apps apenas creemos sus models.py. 
-    # Por ahora enviamos las variables en 0 para que no estalle el HTML.
-    
-    ''' LÓGICA REAL (A descomentar después)
-    # Quórum
-    total_aprendices = Usuario.objects.filter(rol='Aprendiz', ficha__codigo_ficha='3196477').count()
-    asistentes_hoy = RegistroAsistencia.objects.filter(fecha=timezone.now().date(), asistio=True).count()
-    porcentaje_asistencia = int((asistentes_hoy / total_aprendices) * 100) if total_aprendices > 0 else 0
-    
-    # Fondos
-    fondo_actual = FondoFicha.objects.first()
-    recaudado = fondo_actual.recaudado if fondo_actual else 0
-    meta = fondo_actual.meta_dinero if fondo_actual else 1
-    porcentaje_fondo = int((recaudado / meta) * 100)
-    
-    # Alertas
-    alertas_pendientes = LlamadoAtencion.objects.filter(estado='Abierto').count()
-    ultimas_alertas = LlamadoAtencion.objects.filter(estado='Abierto').order_by('-fecha')[:3]
-    '''
+    if ficha_actual == 'general' or not ficha_actual:
+        tareas_reales = Pendiente.objects.filter(ficha_vinculada__isnull=True).order_by('completada', '-creado_en')
+    else:
+        tareas_reales = Pendiente.objects.filter(
+            Q(ficha_vinculada__codigo_ficha=ficha_actual) | Q(ficha_vinculada__isnull=True)
+        ).order_by('completada', '-creado_en')
 
+    # ==========================================
+    # 4. CONSTRUCCIÓN DEL CONTEXTO
+    # ==========================================
     context = {
         'titulo': 'Inicio',
         'breadcrumbs': [{'nombre': 'Inicio', 'url': ''}],
         
-        # Datos Reales
         'sprints': sprints_reales,
         'tareas': tareas_reales,
+        'alertas': alertas_reales,
         
-        # Datos en espera de sus modelos
-        'quorum_presentes': 0, # Cambiar a: asistentes_hoy
-        'quorum_total': 32,    # Cambiar a: total_aprendices
-        'quorum_porcentaje': 0,# Cambiar a: porcentaje_asistencia
-        'fondo_actual': '0',   # Cambiar a: recaudado
-        'fondo_porcentaje': 0, # Cambiar a: porcentaje_fondo
-        'alertas_pendientes':0,# Cambiar a: alertas_pendientes
-        'alertas': [],         # Cambiar a: ultimas_alertas
+        # KPIs de la parte superior
+        'alertas_pendientes': alertas_pendientes,
+        'quorum_total': total_aprendices,
+        'quorum_presentes': asistentes_hoy,
+        'quorum_porcentaje': porcentaje_asistencia,
+        'fondo_actual': f"{saldo_fondo:,.0f}",
+        'fondo_porcentaje': porcentaje_fondo,
+        'nombre_meta': nombre_meta,
     }
     
     return render(request, 'index.html', context)
 
 def configuraciones(request):
-    """Vista para la página de Ajustes y Accesibilidad."""
+    """Vista para Ajustes."""
     context = {
         'titulo': 'Configuraciones',
-        'breadcrumbs': [
-            {'nombre': 'Configuraciones', 'url': ''}
-        ]
+        'breadcrumbs': [{'nombre': 'Configuraciones', 'url': ''}]
     }
     return render(request, 'configuraciones.html', context)
+
+def cambiar_ficha(request):
+    """Lógica global de cambio de contexto de ficha."""
+    if request.method == 'POST':
+        codigo = request.POST.get('ficha_id')
+        request.session['ficha_activa_id'] = None if codigo == 'general' else codigo
+            
+    return redirect(request.META.get('HTTP_REFERER', reverse('inicio')))

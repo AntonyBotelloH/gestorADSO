@@ -393,18 +393,26 @@
         </a>
       </li>
     </ul>
-  </div>
 
-  <div class="mt-auto pt-3">
     <div class="mb-3 px-2">
       <label class="text-white-50 fw-bold mb-1 small" for="sidebarFichaSelect"><i class="bi bi-layers me-1"></i> Ficha Actual:</label>
-      <form action="#" method="POST" id="formCambiarFicha">
+      
+      <form action="{% url 'cambiar_ficha' %}" method="POST" id="formCambiarFicha">
         {% csrf_token %}
         <select name="ficha_id" id="sidebarFichaSelect" class="form-select form-select-sm fw-bold border-secondary color-gris-oscuro-bg text-white shadow-none" onchange="this.form.submit()">
-          <option value="2555555" selected>2555555 - ADSO</option>
-        </select>
+  
+  <option value="general" {% if not ficha_activa %}selected{% endif %}>General (Sin Ficha)</option>
+  
+  {% for ficha in lista_fichas %}
+    <option value="{{ ficha.codigo_ficha }}" 
+      {% if ficha_activa and ficha_activa.codigo_ficha|stringformat:"s" == ficha.codigo_ficha|stringformat:"s" %}selected{% endif %}>
+      {{ ficha.codigo_ficha }} - ADSO
+    </option>
+  {% endfor %}
+</select>
       </form>
     </div>
+  
 
     <div class="dropdown border-top border-secondary pt-3 px-2">
       <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -426,5 +434,5 @@
         </li>
       </ul>
     </div>
-  </div>
+  </div> <!-- Cierre correcto de offcanvas-body -->
 </aside>
