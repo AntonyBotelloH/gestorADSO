@@ -18,9 +18,13 @@
       <li class="nav-item mb-1">
         <a href="/"
           class="nav-link rounded d-flex align-items-center {% if request.path == '/' %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white
+
           {% endif %}">
           <i class="bi bi-house-door me-2"></i> Inicio
         </a>
@@ -30,14 +34,22 @@
         <a href="#collapseAsistencia"
           data-bs-toggle="collapse"
           class="nav-link rounded d-flex align-items-center {% if '/asistencia/' in request.path %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white collapsed
+
           {% endif %}"
           aria-expanded="{% if '/asistencia/' in request.path %}
+            
             true
+
           {% else %}
+            
             false
+
           {% endif %}">
           <i class="bi bi-calendar-check me-2"></i> Control Asistencia
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
@@ -47,9 +59,13 @@
             <li>
               <a href="{% url 'inicio_asistencia' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_asistencia' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Registrar Hoy
               </a>
@@ -57,9 +73,13 @@
             <li>
               <a href="{% url 'historial_asistencia' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'historial_asistencia' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Días Anteriores
               </a>
@@ -67,9 +87,13 @@
             <li>
               <a href="{% url 'estadisticas_asistencia' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas_asistencia' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Estadísticas
               </a>
@@ -82,14 +106,22 @@
         <a href="#collapseFondos"
           data-bs-toggle="collapse"
           class="nav-link rounded d-flex align-items-center {% if '/fondos/' in request.path %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white collapsed
+
           {% endif %}"
           aria-expanded="{% if '/fondos/' in request.path %}
+            
             true
+
           {% else %}
+            
             false
+
           {% endif %}">
           <i class="bi bi-cash-coin me-2"></i> Fondos
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
@@ -99,9 +131,13 @@
             <li>
               <a href="{% url 'inicio_fondos' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_fondos' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Gestión de Fondos
               </a>
@@ -109,9 +145,13 @@
             <li>
               <a href="{% url 'conceptos' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'conceptos' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Conceptos y Tarifas
               </a>
@@ -119,9 +159,13 @@
             <li>
               <a href="{% url 'metas' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'metas' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Metas del Fondo
               </a>
@@ -134,14 +178,22 @@
         <a href="#collapseProyectos"
           data-bs-toggle="collapse"
           class="nav-link rounded d-flex align-items-center {% if '/proyectos/' in request.path %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white collapsed
+
           {% endif %}"
           aria-expanded="{% if '/proyectos/' in request.path %}
+            
             true
+
           {% else %}
+            
             false
+
           {% endif %}">
           <i class="bi bi-kanban me-2"></i> Proyectos Scrum
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
@@ -151,9 +203,13 @@
             <li>
               <a href="{% url 'proyectos' %}"
                 class="nav-link py-1 {% if '/proyectos/' in request.path and request.resolver_match.url_name != 'nuevo_grupo' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Ver Proyectos
               </a>
@@ -161,9 +217,13 @@
             <li>
               <a href="{% url 'nuevo_grupo' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'nuevo_grupo' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Crear Nuevo Grupo
               </a>
@@ -176,9 +236,13 @@
         <a href="#collapseFicha"
           data-bs-toggle="collapse"
           class="nav-link rounded d-flex align-items-center {% if '/ficha/' in request.path %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white collapsed
+
           {% endif %}">
           <i class="bi bi-folder2-open me-2"></i> Gestión de Ficha
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
@@ -186,7 +250,7 @@
         <div class="collapse {% if '/ficha/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Resumen Ficha</a>
+              <a href="{% url "inicio_usuario" %}" class="nav-link text-white-50 py-1">Resumen Ficha</a>
             </li>
             <li>
               <a href="#" class="nav-link text-white-50 py-1">Aprendices y Roles</a>
@@ -199,14 +263,22 @@
         <a href="#collapsePlaneacion"
           data-bs-toggle="collapse"
           class="nav-link rounded d-flex align-items-center {% if '/planeacion/' in request.path %}
+            
             color-verde-sena-bg text-white fw-bold
+
           {% else %}
+            
             text-white collapsed
+
           {% endif %}"
           aria-expanded="{% if '/planeacion/' in request.path %}
+            
             true
+
           {% else %}
+            
             false
+
           {% endif %}">
           <i class="bi bi-journal-bookmark-fill me-2"></i> Planeación Pedagógica
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
@@ -216,9 +288,13 @@
             <li>
               <a href="{% url 'inicio_planeacion' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'inicio_planeacion' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Fases y Actividades
               </a>
@@ -226,9 +302,13 @@
             <li>
               <a href="{% url 'listar_raps' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_raps' %}
+                  
                   text-white fw-bold
+
                 {% else %}
+                  
                   text-white-50
+
                 {% endif %}">
                 Resultados (RAP)
               </a>
@@ -240,29 +320,49 @@
       <li class="nav-item mb-1">
         <a href="#collapseLlamados"
           data-bs-toggle="collapse"
-          class="nav-link rounded d-flex align-items-center text-white {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}{% else %}collapsed{% endif %}"
-          aria-expanded="{% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}true{% else %}false{% endif %}">
+          class="nav-link rounded d-flex align-items-center text-white {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}
+
+          {% else %}
+            collapsed
+          {% endif %}"
+          aria-expanded="{% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}
+            true
+          {% else %}
+            false
+          {% endif %}">
           <i class="bi bi-exclamation-triangle me-2"></i> Llamados de Atención
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        
+
         <div class="collapse {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
               <a href="{% url 'listar_llamados' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_llamados' or request.resolver_match.url_name == 'detalle_llamado' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_llamados' or request.resolver_match.url_name == 'detalle_llamado' %}
+                  text-white fw-bold color-verde-sena-fn
+                {% else %}
+                  text-white-50
+                {% endif %}">
                 Historial Llamados
               </a>
             </li>
             <li>
               <a href="{% url 'estrategias' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'estrategias' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'estrategias' %}
+                  text-white fw-bold color-verde-sena-fn
+                {% else %}
+                  text-white-50
+                {% endif %}">
                 Estrategias Pedagógicas
               </a>
             </li>
             <li>
               <a href="{% url 'estadisticas' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas' %}text-white fw-bold color-verde-sena-fn{% else %}text-white-50{% endif %}">
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas' %}
+                  text-white fw-bold color-verde-sena-fn
+                {% else %}
+                  text-white-50
+                {% endif %}">
                 Estadísticas
               </a>
             </li>
@@ -273,12 +373,24 @@
       <hr class="text-secondary opacity-50 mt-4" />
 
       <li class="nav-item mb-1">
-        <a href="#" class="nav-link text-white rounded d-flex align-items-center"><i class="bi bi-check2-square me-2"></i> Mis Pendientes</a>
+        <a href="{% url 'listar_pendientes' %}"
+          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'listar_pendientes' %}
+            color-verde-sena-bg text-white fw-bold
+          {% else %}
+            text-white
+          {% endif %}">
+          <i class="bi bi-check2-square me-2"></i> Mis Pendientes
+        </a>
       </li>
       <li class="nav-item mb-1">
-        <a href="{% url 'configuraciones' %}" class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' %}color-verde-sena-bg text-white fw-bold{% else %}text-white{% endif %}">
-    <i class="bi bi-gear me-2"></i> Configuraciones
-  </a>
+        <a href="{% url 'configuraciones' %}"
+          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' %}
+            color-verde-sena-bg text-white fw-bold
+          {% else %}
+            text-white
+          {% endif %}">
+          <i class="bi bi-gear me-2"></i> Configuraciones
+        </a>
       </li>
     </ul>
   </div>

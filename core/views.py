@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
 
-from planeacion.models import TareaInstructor
+from pendientes.models import Pendiente
 from proyectos.models import Proyecto
 
 def inicio(request):
@@ -26,8 +26,9 @@ def inicio(request):
     # ==========================================
     # 2. TAREAS DEL INSTRUCTOR (DATOS REALES)
     # ==========================================
-    # Trae todas las tareas, ordenadas para que las completadas salgan al final
-    tareas_reales = TareaInstructor.objects.all().order_by('completada', '-creada_en')
+    # CORREGIDO: Trae todas las tareas, ordenadas para que las completadas salgan al final
+    # Cambiamos '-creada_en' por '-creado_en'
+    tareas_reales = Pendiente.objects.all().order_by('completada', '-creado_en')
 
     # ==========================================
     # 3. QUÓRUM, FONDOS Y ALERTAS (LÓGICA PREPARADA)

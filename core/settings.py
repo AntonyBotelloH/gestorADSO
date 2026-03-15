@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'usuarios',
     'planeacion',
     'llamados',
+    'pendientes',
     #pip install Pillow
     #pip install pandas openpyxl
 ]

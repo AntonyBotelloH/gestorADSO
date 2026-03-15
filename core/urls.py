@@ -33,6 +33,7 @@ urlpatterns = [
     path('proyectos/', include('proyectos.urls')),
     path('usuarios/', include('usuarios.urls')),
     path('planeacion/', include('planeacion.urls')),
+    path('pendientes/', include('pendientes.urls')),
     path('set-ficha/', set_ficha_activa, name='set_ficha_activa'),
 ]
 

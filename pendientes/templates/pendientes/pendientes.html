@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Gestor de Pendientes</h3>
+            <p class="text-muted small mb-0">Mis Pendientes Administrativos y Académicos</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label class="fw-bold small text-muted text-nowrap">Vincular a Ficha:</label>
+            <select class="form-select form-select-sm border-secondary-subtle bg-body-tertiary text-body shadow-none">
+                <option value="general">General (Sin Ficha)</option>
+                <option value="2555555" selected>2555555 - ADSO</option>
+                <option value="2666666">2666666 - Programación</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-transparent py-3">
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-plus-circle me-2 text-success"></i>Crear Nueva Tarea Administrativa</h5>
+        </div>
+        <div class="card-body bg-body-tertiary">
+            <form class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Descripción del Pendiente:</label>
+                    <input type="text" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. Calificar evidencias...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Categoría:</label>
+                    <select class="form-select border-secondary-subtle bg-body text-body shadow-none">
+                        <option>Sofía Plus</option>
+                        <option>Calificaciones</option>
+                        <option>Reuniones / Actas</option>
+                        <option>Planeación Pedagógica</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Prioridad:</label>
+                    <select class="form-select border-secondary-subtle bg-body text-body shadow-none">
+                        <option value="alta">Alta 🔴</option>
+                        <option value="media" selected>Media 🟡</option>
+                        <option value="baja">Baja 🔵</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Límite:</label>
+                    <input type="date" class="form-control border-secondary-subtle bg-body text-body shadow-none">
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" class="btn color-verde-sena-bg text-white fw-bold shadow-sm" title="Agregar Tarea"><i class="bi bi-plus-lg"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-list-check me-2 text-primary"></i>Lista de Pendientes Activos</h5>
+                    <button class="btn btn-outline-secondary btn-sm">Limpiar Completados</button>
+                </div>
+                <div class="card-body bg-body-tertiary p-3">
+                    
+                    <div class="d-flex align-items-center gap-3 p-3 mb-3 border border-secondary-subtle border-start border-4 rounded shadow-sm bg-body position-relative" style="border-left-color: #dc3545 !important;">
+                        <input class="form-check-input fs-4 border-secondary mt-0" type="checkbox" style="cursor: pointer;">
+                        <div class="flex-grow-1">
+                            <strong class="d-block text-body fs-6 mb-1">Subir asistencia de la semana a Sofía Plus</strong>
+                            <span class="text-muted small">Categoría: <b>Sofía Plus</b> | Límite: 25 Feb</span>
+                        </div>
+                        <span class="badge bg-danger rounded-pill px-3 py-2">Urgente</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 p-3 mb-3 border border-secondary-subtle border-start border-4 rounded shadow-sm bg-body position-relative" style="border-left-color: #ffc107 !important;">
+                        <input class="form-check-input fs-4 border-secondary mt-0" type="checkbox" style="cursor: pointer;">
+                        <div class="flex-grow-1">
+                            <strong class="d-block text-body fs-6 mb-1">Firmar actas de Plan de Mejoramiento (Ficha 2555555)</strong>
+                            <span class="text-muted small">Categoría: <b>Reuniones / Actas</b> | Límite: 28 Feb</span>
+                        </div>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">Media</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">📈 Mi Rendimiento</h5>
+                </div>
+                <div class="card-body bg-body-tertiary">
+                    <div class="mb-4 mt-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold text-body small">Tareas Completadas esta semana</span>
+                            <span class="fw-bold text-success small">8 / 12</span>
+                        </div>
+                        <div class="progress" style="height: 12px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 66%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 border-start border-4 p-3 rounded bg-body shadow-sm" style="border-left-color: #39A900 !important;">
+                        <p class="text-muted small mb-0">
+                            <b>Nota:</b> Las tareas vencidas aparecerán resaltadas en el dashboard principal para asegurar el cumplimiento de los tiempos de respuesta del instructor.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
