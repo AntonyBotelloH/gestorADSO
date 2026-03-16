@@ -1,9 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.utils import timezone
+from usuarios.decorators import rol_requerido
 from .models import Concepto, Movimiento, MetaFinanciera
 from usuarios.models import Ficha, Usuario
 
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def dashboard_fondos(request):
     """Vista principal: Dashboard financiero y registro de movimientos."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -31,7 +36,9 @@ def dashboard_fondos(request):
             responsable=responsable_obj,
             concepto=concepto_obj,
             valor=valor,
-            estado=estado_inicial
+            estado=estado_inicial,
+            # Si se cobra/paga de una vez, la fecha de pago es HOY. Si queda pendiente, es None.
+            fecha_pago=timezone.now() if estado_inicial == 'Ejecutado' else None
         )
         messages.success(request, "Movimiento registrado exitosamente.")
         return redirect('inicio_fondos')
@@ -170,3 +177,75 @@ def ver_recibo(request, movimiento_id):
         ]
     }
     return render(request, 'fondos/recibo.html', contexto)
+
+@login_required
+def pagar_movimiento(request, movimiento_id):
+    """Cambia el estado de un movimiento de Pendiente a Ejecutado y registra la fecha."""
+    if request.method == 'POST':
+        movimiento = get_object_or_404(Movimiento, id=movimiento_id)
+        
+        if movimiento.estado == 'Pendiente':
+            movimiento.estado = 'Ejecutado'
+            # Registramos el momento exacto en el que el instructor le dio clic al botón
+            movimiento.fecha_pago = timezone.now() 
+            movimiento.save()
+            
+            messages.success(request, f"¡El pago de $ {movimiento.valor:,.0f} fue registrado exitosamente!")
+            
+    return redirect('inicio_fondos')
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
+def configurar_metas(request):
+    """Vista para establecer el objetivo financiero."""
+    ficha_id = request.session.get('ficha_activa_id')
+    ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id) if ficha_id else None
+
+    # Si entra un formulario por POST
+    if request.method == 'POST' and ficha:
+        # Desactivar otras metas para que solo haya una principal activa
+        MetaFinanciera.objects.filter(ficha=ficha).update(activa=False)
+        
+        MetaFinanciera.objects.create(
+            ficha=ficha,
+            nombre=request.POST.get('nombre'),
+            descripcion=request.POST.get('descripcion'),
+            valor_objetivo=request.POST.get('valor_objetivo'),
+            fecha_limite=request.POST.get('fecha_limite'),
+            activa=True
+        )
+        messages.success(request, "Nueva meta establecida para la ficha.")
+        return redirect('metas')
+
+    # Lógica de Lectura para mostrar la tarjeta de la derecha
+    meta_activa = MetaFinanciera.objects.filter(ficha=ficha, activa=True).first() if ficha else None
+    
+    recaudado = 0
+    progreso = 0
+    faltante = 0
+
+    if meta_activa:
+        # Solo contamos ingresos que YA fueron pagados (Ejecutados)
+        recaudado = Movimiento.objects.filter(
+            ficha=ficha, 
+            concepto__tipo_operacion='Ingreso', 
+            estado='Ejecutado'
+        ).aggregate(Sum('valor'))['valor__sum'] or 0
+        
+        if meta_activa.valor_objetivo > 0:
+            progreso = min((recaudado / meta_activa.valor_objetivo) * 100, 100)
+            
+        # Calculamos el faltante restando lo recaudado del objetivo
+        faltante = max(meta_activa.valor_objetivo - recaudado, 0)
+
+    contexto = {
+        'titulo': 'Metas de Fondo',
+        'meta_activa': meta_activa,
+        'recaudado': recaudado,
+        'progreso': round(progreso, 1),
+        'faltante': faltante, # <--- Enviamos el faltante ya calculado al HTML
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'},
+            {'nombre': 'Metas Financieras', 'url': ''}
+        ]
+    }
+    return render(request, 'fondos/metas.html', contexto)
