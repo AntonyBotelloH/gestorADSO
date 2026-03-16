@@ -1,0 +1,52 @@
+<div class="card border-0 shadow-sm border-start border-4 border-{{ border }} bg-body {% if done %}opacity-75{% endif %} mb-1">
+    <div class="card-body p-3">
+        <h6 class="fw-bold mb-1 {% if done %}text-decoration-line-through text-muted{% else %}text-body{% endif %}">
+            {{ tarea.nombre }}
+        </h6>
+        
+        <p class="text-muted small mb-3">
+            {{ tarea.descripcion|default:"Sin descripción adicional."|truncatechars:70 }}
+        </p>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center">
+                <img src="https://ui-avatars.com/api/?name={{ tarea.responsable.first_name }}+{{ tarea.responsable.last_name }}&background=6c757d&color=fff" 
+                     class="rounded-circle me-2" width="24" height="24" 
+                     title="Responsable: {{ tarea.responsable.get_full_name }}">
+                <span class="small text-muted">{{ tarea.responsable.first_name }}</span>
+            </div>
+
+            {% if done %}
+                <span class="badge color-verde-sena-bg text-white small" style="font-size: 0.65rem;">
+                    <i class="bi bi-check-all"></i> COMPLETADO
+                </span>
+            {% else %}
+                <small class="{% if tarea.prioridad == 'Alta' %}text-danger{% elif tarea.prioridad == 'Media' %}text-warning{% else %}text-info{% endif %} fw-bold" style="font-size: 0.75rem;">
+                    <i class="bi bi-flag-fill"></i> {{ tarea.prioridad|upper }}
+                </small>
+            {% endif %}
+        </div>
+
+        {% if not done %}
+        <div class="mt-3 pt-2 border-top border-secondary-subtle d-flex justify-content-end gap-1">
+            {% if tarea.estado == 'To Do' %}
+                <form method="POST" action="{% url 'cambiar_estado_tarea' tarea.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="nuevo_estado" value="In Progress">
+                    <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.7rem;" title="Empezar tarea">
+                        Trabajar <i class="bi bi-play-fill"></i>
+                    </button>
+                </form>
+            {% elif tarea.estado == 'In Progress' %}
+                <form method="POST" action="{% url 'cambiar_estado_tarea' tarea.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="nuevo_estado" value="Done">
+                    <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size: 0.7rem;" title="Terminar tarea">
+                        Finalizar <i class="bi bi-check-lg"></i>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
