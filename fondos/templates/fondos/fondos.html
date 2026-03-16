@@ -1,167 +1,196 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-<div class="py-2">
-
+  <div class="py-2">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold mb-1 color-negro-suave-fn">Gestión de Fondos</h3>
-            <p class="text-muted small mb-0">Control de ingresos, egresos y metas de la ficha</p>
-        </div>
-        <div class="btn-group shadow-sm">
-            <a href="{% url 'conceptos' %}" class="btn btn-outline-secondary btn-sm fw-bold">
-                <i class="bi bi-gear me-1"></i> Tarifas
-            </a>
-            <a href="{% url 'metas' %}" class="btn btn-outline-secondary btn-sm fw-bold">
-                <i class="bi bi-bullseye me-1"></i> Metas
-            </a>
-            <button class="btn color-verde-sena-bg text-white btn-sm fw-bold">
-                <i class="bi bi-bar-chart me-1"></i> Reporte
-            </button>
-        </div>
+      <div>
+        <h3 class="fw-bold mb-1 color-negro-suave-fn">Gestión de Fondos</h3>
+        <p class="text-muted small mb-0">Control de ingresos, egresos y metas de la ficha</p>
+      </div>
+      <div class="btn-group shadow-sm">
+        <a href="{% url 'conceptos' %}" class="btn btn-outline-secondary btn-sm fw-bold"><i class="bi bi-gear me-1"></i> Tarifas</a>
+        <a href="{% url 'metas' %}" class="btn btn-outline-secondary btn-sm fw-bold"><i class="bi bi-bullseye me-1"></i> Metas</a>
+        <button class="btn color-verde-sena-bg text-white btn-sm fw-bold"><i class="bi bi-bar-chart me-1"></i> Reporte</button>
+      </div>
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-4 h-100" style="border-left-color: #39A900 !important;">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Caja Real (Efectivo)</h6>
-                    <h2 class="fw-bold color-verde-sena-fn mb-1">$ {{ caja_real|floatformat:0 }}</h2> 
-                    <small class="text-muted">Monto disponible en físico</small>
-                </div>
-            </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #39A900 !important;">
+          <div class="card-body">
+            <h6 class="text-muted fw-bold small text-uppercase">Caja Real (Efectivo)</h6>
+            <h2 class="fw-bold color-verde-sena-fn mb-1">$ {{ caja_real|floatformat:0 }}</h2>
+            <small class="text-muted">Monto disponible en físico</small>
+          </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-4 h-100" style="border-left-color: #dc3545 !important;">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Cartera (Por Cobrar)</h6>
-                    <h2 class="fw-bold color-rojo-alerta-fn mb-1">$ {{ cartera|floatformat:0 }}</h2>
-                    <small class="text-muted">Total deudas pendientes</small>
-                </div>
-            </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #dc3545 !important;">
+          <div class="card-body">
+            <h6 class="text-muted fw-bold small text-uppercase">Cartera (Por Cobrar)</h6>
+            <h2 class="fw-bold color-rojo-alerta-fn mb-1">$ {{ cartera|floatformat:0 }}</h2>
+            <small class="text-muted">Total deudas pendientes</small>
+          </div>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-4 border-primary h-100">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Meta: {{ meta.nombre|default:"Sin Meta Activa" }}</h6>
-                    <div class="mt-2">
-                        <div class="d-flex justify-content-between small fw-bold mb-1">
-                            <span class="color-negro-suave-fn">{{ progreso_meta }}%</span>
-                            <span class="text-primary">Faltan: $ {{ faltante_meta|floatformat:0 }}</span>
-                        </div>
-                        <div class="progress" style="height: 10px; border-radius: 10px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ progreso_meta|stringformat:'f' }}%;"></div>
-                        </div>
-                    </div>
-                </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card shadow-sm border-0 border-start border-4 border-primary h-100 bg-body-tertiary">
+          <div class="card-body">
+            <h6 class="text-muted fw-bold small text-uppercase">Meta: {{ meta.nombre|default:'Sin Meta Activa' }}</h6>
+            <div class="mt-2">
+              <div class="d-flex justify-content-between small fw-bold mb-1">
+                <span class="text-body">{{ progreso_meta }}%</span>
+                <span class="text-primary">Faltan: $ {{ faltante_meta|floatformat:0 }}</span>
+              </div>
+              <div class="progress" style="height: 10px; border-radius: 10px; background-color: var(--bs-secondary-bg);">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ progreso_meta|stringformat:'f' }}%;"></div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4 border-top border-4" style="border-top-color: #39A900 !important;">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-plus-circle me-2 text-success"></i>Registrar Nuevo Movimiento</h5>
-        </div>
-        <div class="card-body px-4 py-4">
-            <form method="POST" action="{% url 'inicio_fondos' %}" class="row g-3">
-                {% csrf_token %}
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Responsable:</label>
-                    <select name="responsable" class="form-select border-secondary-subtle shadow-none">
-                        <option value="">-- Seleccione Aprendiz / Comité --</option>
-                        {% for aprendiz in aprendices %}
-                            <option value="{{ aprendiz.id }}">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Concepto:</label>
-                    <select name="concepto" class="form-select border-secondary-subtle shadow-none" required>
-                        <option value="" disabled selected>-- Elija Concepto --</option>
-                        {% for concepto in conceptos_activos %}
-                            <option value="{{ concepto.id }}">{{ concepto.nombre }} ({{ concepto.get_tipo_operacion_display }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Valor ($):</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="number" name="valor" class="form-control border-secondary-subtle shadow-none" placeholder="0" required>
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm">
-                        <i class="bi bi-check2-circle me-1"></i> Registrar
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div class="card shadow-sm border-0 mb-4 border-top border-4 bg-body-tertiary" style="border-top-color: #39A900 !important;">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-plus-circle me-2 text-success"></i>Registrar Nuevo Movimiento</h5>
+      </div>
+      <div class="card-body px-4 py-4">
+        <form method="POST" action="{% url 'inicio_fondos' %}" class="row g-3">
+          {% csrf_token %}
+          <div class="col-md-4">
+            <label class="form-label fw-bold small text-muted text-uppercase">Responsable:</label>
+            <select name="responsable" class="form-select border-secondary-subtle bg-body text-body shadow-none">
+              <option value="">-- Seleccione Aprendiz / Comité --</option>
+              {% for aprendiz in aprendices %}
+                <option value="{{ aprendiz.id }}">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small text-muted text-uppercase">Concepto:</label>
+            <select name="concepto" id="selectConcepto" class="form-select border-secondary-subtle bg-body text-body shadow-none" required>
+              <option value="" disabled selected data-valor="">-- Elija Concepto --</option>
+              {% for concepto in conceptos_activos %}
+                <option value="{{ concepto.id }}" data-valor="{{ concepto.valor_sugerido|floatformat:0 }}">{{ concepto.nombre }} ({{ concepto.get_tipo_operacion_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-bold small text-muted text-uppercase">Valor ($):</label>
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+              <input type="number" name="valor" id="inputValor" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="0" required />
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm"><i class="bi bi-check2-circle me-1"></i> Registrar</button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold color-negro-suave-fn">Últimos Movimientos</h5>
-            <span class="badge bg-light text-dark border px-3 fw-normal">Historial Reciente</span>
-        </div>
+    <div class="card shadow-sm border-0 bg-body-tertiary">
+      <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold color-negro-suave-fn">Últimos Movimientos</h5>
+        <span class="badge bg-secondary-subtle text-body border px-3 fw-normal">Historial Reciente</span>
+      </div>
+
+      <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="color-gris-claro-bg small text-uppercase">
-                    <tr>
-                        <th class="text-start ps-4 color-gris-oscuro-fn">Fecha</th>
-                        <th class="text-start color-gris-oscuro-fn">Responsable</th>
-                        <th class="text-start color-gris-oscuro-fn">Concepto</th>
-                        <th class="color-gris-oscuro-fn">Valor</th>
-                        <th class="color-gris-oscuro-fn">Estado</th>
-                        <th class="color-gris-oscuro-fn pe-4">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for mov in movimientos %}
-                    <tr>
-                        <td class="text-start ps-4 text-muted small">
-                            <i class="bi bi-calendar3 me-2"></i>{{ mov.fecha|date:"d M Y" }}
-                        </td>
-                        <td class="text-start">
-                            <strong class="color-negro-suave-fn">{{ mov.responsable.first_name|default:"Comité General" }} {{ mov.responsable.last_name|default:"" }}</strong>
-                        </td>
-                        <td class="text-start">
-                            <span class="badge bg-light text-dark border rounded-pill px-3">{{ mov.concepto.nombre }}</span>
-                        </td>
-                        <td class="fw-bold">
-                            <span class="{% if mov.concepto.tipo_operacion == 'Ingreso' %}color-verde-sena-fn{% else %}color-rojo-alerta-fn{% endif %} fs-5">
-                                {% if mov.concepto.tipo_operacion == 'Ingreso' %}+{% else %}-{% endif %} $ {{ mov.valor|floatformat:0 }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if mov.estado == 'Ejecutado' %}
-                                <span class="badge color-verde-sena-bg text-white px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.7rem;">
-                                    <i class="bi bi-check-lg"></i> EJECUTADO
-                                </span>
-                            {% else %}
-                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.7rem;">
-                                    <i class="bi bi-hourglass-split"></i> PENDIENTE
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="pe-4 text-end">
-                            <a href="{% url 'ver_recibo' mov.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm">
-                                <i class="bi bi-receipt me-1"></i> Recibo
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="bi bi-coin display-4 d-block mb-3 opacity-25"></i>
-                            No hay movimientos registrados para esta ficha.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+          <table class="table table-hover align-middle mb-0 text-center">
+            <thead class="table-secondary small text-uppercase">
+              <tr>
+                <th class="text-start ps-4">Fecha</th>
+                <th class="text-start">Responsable</th>
+                <th class="text-start">Concepto</th>
+                <th>Valor</th>
+                <th>Estado</th>
+                <th class="pe-4 text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mov in movimientos %}
+                <tr>
+                  <td class="text-start ps-4 text-muted small">
+                    <i class="bi bi-calendar3 me-2"></i>{{ mov.fecha|date:'d M Y' }}
+                  </td>
+                  <td class="text-start">
+                    <strong class="text-body">{{ mov.responsable.first_name|default:'Comité General' }} {{ mov.responsable.last_name|default:'' }}</strong>
+                  </td>
+                  <td class="text-start">
+                    <span class="badge bg-secondary-subtle text-body border rounded-pill px-3">{{ mov.concepto.nombre }}</span>
+                  </td>
+                  <td class="fw-bold">
+                    <span class="{% if mov.concepto.tipo_operacion == 'Ingreso' %}
+                        color-verde-sena-fn
+                      {% else %}
+                        color-rojo-alerta-fn
+                      {% endif %} fs-5">
+                      {% if mov.concepto.tipo_operacion == 'Ingreso' %}
+                        +
+                      {% else %}
+                        -
+                      {% endif %}$ {{ mov.valor|floatformat:0 }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if mov.estado == 'Ejecutado' %}
+                      <span class="badge color-verde-sena-bg text-white px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.7rem;"><i class="bi bi-check-lg"></i> EJECUTADO</span>
+                    {% else %}
+                      <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.7rem;"><i class="bi bi-hourglass-split"></i> PENDIENTE</span>
+                    {% endif %}
+                  </td>
+
+                  <td class="pe-4 text-end text-nowrap">
+                    {% if mov.estado == 'Pendiente' %}
+                      <form action="{% url 'pagar_movimiento' mov.id %}" method="POST" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm fw-bold px-3 rounded-pill shadow-sm me-1" title="Marcar como Pagado"><i class="bi bi-currency-dollar"></i> Pagar</button>
+                      </form>
+                    {% endif %}
+
+                    <a href="{% url 'ver_recibo' mov.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm" title="Ver Recibo"><i class="bi bi-receipt"></i> <span class="d-none d-md-inline ms-1">Recibo</span></a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center py-5 text-muted">
+                    <i class="bi bi-coin display-4 d-block mb-3 opacity-25"></i>
+                    No hay movimientos registrados para esta ficha.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+  {% block scripts %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Capturamos los elementos por su ID
+        const selectElement = document.getElementById('selectConcepto')
+        const inputElement = document.getElementById('inputValor')
+      
+        // Escuchamos cada vez que el usuario cambia la opción del desplegable
+        selectElement.addEventListener('change', function () {
+          // Obtenemos la opción que está seleccionada actualmente
+          const selectedOption = this.options[this.selectedIndex]
+      
+          // Leemos el atributo oculto 'data-valor' que inyectamos con Django
+          const valorSugerido = selectedOption.getAttribute('data-valor')
+      
+          // Si tiene un valor, lo ponemos en el input; si no, lo dejamos vacío
+          if (valorSugerido) {
+            inputElement.value = valorSugerido
+          } else {
+            inputElement.value = ''
+          }
+        })
+      })
+    </script>
+  {% endblock %}
 {% endblock %}

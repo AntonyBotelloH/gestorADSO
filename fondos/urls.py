@@ -13,4 +13,7 @@ urlpatterns = [
     
     # Detalle / Comprobante en PDF o vista web de un movimiento específico
     path('recibo/<int:movimiento_id>/', views.ver_recibo, name='ver_recibo'),
+    
+    # Ruta para procesar el pago. Fíjate que recibe el ID del movimiento en la URL
+    path('pagar/<int:movimiento_id>/', views.pagar_movimiento, name='pagar_movimiento'),
 ]

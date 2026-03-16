@@ -2,9 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Count, Q
+from django.contrib.auth.decorators import login_required
+
+from usuarios.decorators import rol_requerido 
 from .models import SesionClase, RegistroAsistencia
 from usuarios.models import Ficha, Usuario
 
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def inicio_asistencia(request):
     """Vista para registrar la asistencia del día o editar una sesión pasada."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -14,15 +19,24 @@ def inicio_asistencia(request):
         return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
-    # NOTA: Asegúrate de filtrar los aprendices por la ficha activa en producción
     aprendices = Usuario.objects.filter(rol='APRENDIZ') 
 
     sesion_id = request.GET.get('sesion_id')
+    
     if sesion_id:
+        # Si venimos del historial a editar una sesión específica
         sesion = get_object_or_404(SesionClase, id=sesion_id, ficha=ficha)
     else:
-        hoy = timezone.now().date()
-        sesion, created = SesionClase.objects.get_or_create(ficha=ficha, fecha=hoy)
+        # LÓGICA CORREGIDA PARA EVITAR DUPLICADOS
+        # 1. Obtenemos la fecha exacta de HOY en nuestra zona horaria local
+        hoy = timezone.localtime(timezone.now()).date()
+        
+        # 2. Buscamos explícitamente si ya hay una clase registrada hoy
+        sesion = SesionClase.objects.filter(ficha=ficha, fecha=hoy).first()
+        
+        # 3. Solo si NO existe ninguna, la creamos
+        if not sesion:
+            sesion = SesionClase.objects.create(ficha=ficha, fecha=hoy)
 
     if request.method == 'POST':
         sesion.tema_tratado = request.POST.get('tema_tratado', '')
@@ -46,8 +60,8 @@ def inicio_asistencia(request):
     registros_hoy = RegistroAsistencia.objects.filter(sesion=sesion)
     dict_registros = {reg.aprendiz.id: reg for reg in registros_hoy}
 
+    # Se eliminó la variable 'titulo' redundante
     contexto = {
-        'titulo': 'Toma de Asistencia', # <-- TÍTULO AÑADIDO
         'sesion': sesion,
         'aprendices': aprendices,
         'dict_registros': dict_registros,
@@ -59,6 +73,8 @@ def inicio_asistencia(request):
     return render(request, 'asistencia/asistencia.html', contexto)
 
 
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def historial_asistencias(request):
     """Vista para consultar sesiones anteriores con filtros de fecha."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -84,8 +100,8 @@ def historial_asistencias(request):
     if fecha_fin:
         sesiones = sesiones.filter(fecha__lte=fecha_fin)
 
+    # Se eliminó la variable 'titulo' redundante
     contexto = {
-        'titulo': 'Historial de Asistencia', # <-- TÍTULO AÑADIDO
         'sesiones': sesiones,
         'total_aprendices': total_aprendices,
         'breadcrumbs': [
@@ -96,6 +112,8 @@ def historial_asistencias(request):
     return render(request, 'asistencia/historial.html', contexto)
 
 
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def estadisticas_asistencia(request):
     """Vista para el dashboard de rendimiento y riesgo de deserción."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -122,10 +140,11 @@ def estadisticas_asistencia(request):
         else:
             aprendiz.porcentaje_falla = 0
             
-        if aprendiz.porcentaje_falla >= 15:
+        if aprendiz.total_fallas >= 5:
             aprendices_riesgo += 1
 
-    aprendices = sorted(aprendices, key=lambda x: x.porcentaje_falla, reverse=True)
+    aprendices_con_fallas = [a for a in aprendices if a.total_fallas > 0]
+    aprendices_ordenados = sorted(aprendices_con_fallas, key=lambda x: x.total_fallas, reverse=True)
 
     total_registros = RegistroAsistencia.objects.filter(sesion__ficha=ficha).count()
     pct_asistencia = pct_falla = pct_retardo = 0
@@ -139,15 +158,15 @@ def estadisticas_asistencia(request):
         pct_falla = (fallas / total_registros) * 100
         pct_retardo = (retardos / total_registros) * 100
 
+    # Se eliminó la variable 'titulo' redundante
     contexto = {
-        'titulo': 'Estadísticas de Asistencia', # <-- TÍTULO AÑADIDO
         'total_sesiones': total_sesiones,
         'aprendices_riesgo': aprendices_riesgo,
         'retardos_totales': retardos_totales,
         'pct_asistencia': pct_asistencia,
         'pct_falla': pct_falla,
         'pct_retardo': pct_retardo,
-        'aprendices': aprendices,
+        'aprendices': aprendices_ordenados,
         'breadcrumbs': [
             {'nombre': 'Asistencia', 'url': '/asistencia/'},
             {'nombre': 'Análisis Estadístico', 'url': ''}

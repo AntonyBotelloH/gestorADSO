@@ -14,19 +14,19 @@
         </a>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4 border-start border-4 shadow-sm" style="border-left-color: #39A900 !important;">
-        <div class="card-header bg-white py-3">
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 bg-body-tertiary" style="border-left-color: #39A900 !important;">
+        <div class="card-header bg-transparent py-3">
             <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-funnel me-2"></i>Filtrar Sesiones</h5>
         </div>
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted text-uppercase">Desde:</label>
-                    <input type="date" name="fecha_inicio" class="form-control bg-light border-secondary-subtle" value="{{ request.GET.fecha_inicio }}">
+                    <input type="date" name="fecha_inicio" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ request.GET.fecha_inicio }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted text-uppercase">Hasta:</label>
-                    <input type="date" name="fecha_fin" class="form-control bg-light border-secondary-subtle" value="{{ request.GET.fecha_fin }}">
+                    <input type="date" name="fecha_fin" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ request.GET.fecha_fin }}">
                 </div>
                 <div class="col-md-4">
                     <div class="d-grid gap-2 d-md-flex">
@@ -42,21 +42,21 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+        <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold color-negro-suave-fn">Listado de Sesiones Registradas</h5>
-            <span class="badge bg-light text-dark border fw-normal px-3">Total: {{ sesiones.count }} sesiones</span>
+            <span class="badge bg-secondary-subtle text-body border border-secondary-subtle fw-normal px-3">Total: {{ sesiones.count }} sesiones</span>
         </div>
         
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="color-gris-claro-bg small">
+                <thead class="table-secondary small text-uppercase">
                     <tr>
-                        <th class="text-start ps-4 color-gris-oscuro-fn">Fecha de Clase</th>
-                        <th class="text-start color-gris-oscuro-fn">Tema Tratado / Actividad</th>
-                        <th class="color-gris-oscuro-fn">Quórum</th>
-                        <th class="color-gris-oscuro-fn">Resumen de Novedades</th>
-                        <th class="color-gris-oscuro-fn pe-4">Acciones</th>
+                        <th class="text-start ps-4">Fecha de Clase</th>
+                        <th class="text-start">Tema Tratado / Actividad</th>
+                        <th>Quórum</th>
+                        <th>Resumen de Novedades</th>
+                        <th class="pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,15 +68,15 @@
                                     <small class="d-block fw-bold" style="font-size: 0.6rem; line-height: 1;">{{ sesion.fecha|date:"M"|upper }}</small>
                                     <span class="fs-5 fw-bold" style="line-height: 1;">{{ sesion.fecha|date:"d" }}</span>
                                 </div>
-                                <strong class="color-negro-suave-fn">{{ sesion.fecha|date:"Y" }}</strong>
+                                <strong class="text-body">{{ sesion.fecha|date:"Y" }}</strong>
                             </div>
                         </td>
                         <td class="text-start">
                             <span class="text-muted fw-semibold small d-block mb-1 text-uppercase" style="letter-spacing: 0.5px;">Actividad:</span>
-                            <span class="color-negro-suave-fn fw-bold">{{ sesion.tema_tratado|default:"Sin tema registrado" }}</span>
+                            <span class="text-body fw-bold">{{ sesion.tema_tratado|default:"Sin tema registrado" }}</span>
                         </td>
                         <td>
-                            <div class="fw-bold fs-5 color-negro-suave-fn">{{ sesion.total_presentes }}</div>
+                            <div class="fw-bold fs-5 text-body">{{ sesion.total_presentes }}</div>
                             <div class="text-muted small">de {{ total_aprendices }}</div>
                         </td>
                         <td>
@@ -114,9 +114,9 @@
             </table>
         </div>
         
-        <div class="card-footer color-gris-claro-bg py-3 d-flex justify-content-between align-items-center px-4">
+        <div class="card-footer bg-transparent border-top border-secondary-subtle py-3 d-flex justify-content-between align-items-center px-4">
             <span class="small text-muted fw-bold">Auditado para la ficha: {{ request.session.ficha_activa_id }}</span>
-            <button class="btn btn-outline-dark btn-sm fw-bold shadow-sm">
+            <button class="btn btn-outline-secondary btn-sm fw-bold shadow-sm">
                 <i class="bi bi-file-earmark-spreadsheet me-1 text-success"></i> Exportar Excel
             </button>
         </div>

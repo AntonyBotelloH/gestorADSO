@@ -47,7 +47,6 @@ class MetaFinanciera(models.Model):
     def __str__(self):
         return f"{self.ficha.codigo_ficha} - {self.nombre} (${self.valor_objetivo})"
 
-
 class Movimiento(models.Model):
     ESTADO_CHOICES = [
         ('Pendiente', 'Pendiente'),
@@ -55,20 +54,23 @@ class Movimiento(models.Model):
     ]
     
     ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='movimientos_fondos')
-    # ForeignKey a Usuario: Permite null=True por si es un gasto general del comité y no a nombre de un aprendiz en específico
     responsable = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Aprendiz / Responsable")
     concepto = models.ForeignKey(Concepto, on_delete=models.PROTECT, verbose_name="Concepto")
     
-    # max_digits=10 permite registrar hasta $9,999,999,999 COP
     valor = models.DecimalField(max_digits=10, decimal_places=0, verbose_name="Valor ($)")
-    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Operación")
+    
+    # --- CAMBIOS AQUÍ ---
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    fecha_pago = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Pago Real")
+    # --------------------
+    
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Ejecutado', verbose_name="Estado")
     observacion = models.TextField(blank=True, null=True, verbose_name="Observación")
 
     class Meta:
         verbose_name = "Movimiento de Fondo"
         verbose_name_plural = "Historial de Movimientos"
-        ordering = ['-fecha'] # Siempre muestra el más reciente primero
+        ordering = ['-fecha']
 
     def __str__(self):
         return f"Comprobante #{self.id:04d} - {self.concepto.nombre} - ${self.valor}"

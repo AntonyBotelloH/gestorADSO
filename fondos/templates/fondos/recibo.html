@@ -4,7 +4,7 @@
 {% block content %}
 <div class="py-2">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4" id="reciboHeader">
         <div>
             <h3 class="fw-bold mb-1 color-negro-suave-fn">Detalle de Movimiento</h3>
             <p class="text-muted small mb-0">Vista previa del comprobante de caja</p>
@@ -21,23 +21,23 @@
 
     <div class="row justify-content-center">
         <div class="col-md-9 col-lg-7">
-            <div class="card shadow border-0 p-1 mb-4">
-                <div class="card-body p-4 p-md-5 border-top border-5" style="border-top-color: #39A900 !important;">
+            <div class="card shadow border-0 p-1 mb-4 bg-body-tertiary">
+                <div class="card-body bg-body p-4 p-md-5 border-top border-5" style="border-top-color: #39A900 !important; border-radius: 0.375rem;">
                     
-                    <div class="text-center border-bottom pb-4 mb-4">
-                        <img src="{% static 'img/Logo.png' %}" alt="SENA" width="60" class="mb-3">
+                    <div class="text-center border-bottom border-secondary-subtle pb-4 mb-4">
+                        <img src="{% static 'img/Logo.png' %}" alt="SENA" width="60" class="mb-3 rounded">
                         <h2 class="fw-bold color-negro-suave-fn mb-1">SENA - Ficha {{ movimiento.ficha.codigo_ficha }}</h2>
                         <h5 class="text-muted text-uppercase fw-bold" style="letter-spacing: 2px;">Comprobante de Movimiento</h5>
-                        <div class="badge bg-light text-dark border mt-2 px-3 py-2">
+                        <div class="badge bg-secondary-subtle text-body border border-secondary-subtle mt-2 px-3 py-2">
                             <span class="text-muted">Referencia:</span> 
-                            <span class="fw-bold text-dark">#{{ movimiento.id|stringformat:"04d" }}</span>
+                            <span class="fw-bold">#{{ movimiento.id|stringformat:"04d" }}</span>
                         </div>
                     </div>
 
                     <div class="row g-4 mb-4">
                         <div class="col-sm-6">
                             <label class="small text-muted text-uppercase fw-bold d-block">Fecha de Operación</label>
-                            <span class="fw-bold color-negro-suave-fn">{{ movimiento.fecha|date:"d \d\e F, Y - h:i A" }}</span>
+                            <span class="fw-bold text-body">{{ movimiento.fecha|date:"d \d\e F, Y - h:i A" }}</span>
                         </div>
                         <div class="col-sm-6 text-sm-end">
                             <label class="small text-muted text-uppercase fw-bold d-block">Estado del Registro</label>
@@ -47,28 +47,23 @@
                         </div>
                         <div class="col-12">
                             <label class="small text-muted text-uppercase fw-bold d-block">Responsable / Beneficiario</label>
-                            <span class="fw-bold fs-5 color-negro-suave-fn">
+                            <span class="fw-bold fs-5 text-body">
                                 {{ movimiento.responsable.get_full_name|default:"Comité de Ficha / Fondo General" }}
                             </span>
                         </div>
                         <div class="col-sm-6">
                             <label class="small text-muted text-uppercase fw-bold d-block">Concepto</label>
-                            <span class="fw-bold text-dark">{{ movimiento.concepto.nombre }}</span>
+                            <span class="fw-bold text-body">{{ movimiento.concepto.nombre }}</span>
                         </div>
                         <div class="col-sm-6">
                             <label class="small text-muted text-uppercase fw-bold d-block">Categoría</label>
-                            <span class="badge bg-light text-dark border">{{ movimiento.concepto.get_categoria_display }}</span>
+                            <span class="badge bg-secondary-subtle text-body border border-secondary-subtle">{{ movimiento.concepto.get_categoria_display }}</span>
                         </div>
-                        <div class="col-12">
-                            <label class="small text-muted text-uppercase fw-bold d-block">Observaciones</label>
-                            <p class="text-muted italic bg-light p-3 rounded border-start border-3 border-secondary-subtle">
-                                {{ movimiento.observacion|default:"No se registraron observaciones adicionales para este movimiento." }}
-                            </p>
-                        </div>
+                        
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center bg-light p-4 rounded-4 border">
-                        <span class="fs-4 fw-bold color-gris-oscuro-fn">VALOR TOTAL:</span>
+                    <div class="d-flex justify-content-between align-items-center bg-body-secondary p-4 rounded-4 border border-secondary-subtle">
+                        <span class="fs-4 fw-bold text-body">VALOR TOTAL:</span>
                         <div class="text-end">
                             <span class="display-6 fw-bold {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}color-verde-sena-fn{% else %}color-rojo-alerta-fn{% endif %}">
                                 {% if movimiento.concepto.tipo_operacion == 'Ingreso' %}+{% else %}-{% endif %} $ {{ movimiento.valor|floatformat:0 }}
@@ -77,14 +72,14 @@
                         </div>
                     </div>
 
-                    <div class="text-center text-muted mt-5 pt-4 border-top border-secondary-subtle border-dashed">
-                        <p class="mb-1 fw-bold">Gestor SENA - Regional Boyacá</p>
+                    <div class="text-center text-muted mt-5 pt-4 border-top border-secondary-subtle" style="border-top-style: dashed !important;">
+                        <p class="mb-1 fw-bold">Gestor SENA - Centro Minero</p>
                         <p class="small mb-0 opacity-75">Este documento es un soporte digital generado por el sistema interno de la ficha. No representa un título valor legal fuera del entorno pedagógico.</p>
                     </div>
                 </div>
             </div>
             
-            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center" role="alert">
+            <div class="alert alert-info border-0 shadow-sm d-flex align-items-center bg-info-subtle text-info-emphasis" role="alert">
                 <i class="bi bi-info-circle-fill fs-4 me-3"></i>
                 <div class="small">
                     ¿Hay algún error en este comprobante? Comunícate con el instructor o el líder de comité para realizar un ajuste de auditoría.
@@ -93,4 +88,32 @@
         </div>
     </div>
 </div>
+
+<style>
+    @media print {
+        /* Oculta el menú lateral, navbar y botones usando IDs y mayor especificidad */
+        #sidebarMenu, .btn-group, .alert, header, .navbar, nav, #reciboHeader { 
+            display: none !important; 
+        }
+        
+        /* Si tu contenido principal tiene un margen izquierdo para dejarle espacio al menú, se lo quitamos al imprimir */
+        body, main, .content, .container-fluid {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            background-color: white !important; 
+            color: black !important;
+        }
+
+        /* Fuerza los colores del recibo para que no gasten tinta negra de más */
+        .card { box-shadow: none !important; border: none !important; margin: 0 !important;}
+        .bg-body, .bg-body-secondary, .bg-body-tertiary, .bg-secondary-subtle { 
+            background-color: #f8f9fa !important; 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+        .text-body, .text-muted, .color-negro-suave-fn { color: #212529 !important; }
+        .color-verde-sena-fn { color: #39A900 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .color-rojo-alerta-fn { color: #dc3545 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+</style>
 {% endblock %}
