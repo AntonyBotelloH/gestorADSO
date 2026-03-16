@@ -16,8 +16,8 @@
 
     <div class="row g-4">
         <div class="col-md-6">
-            <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #39A900 !important;">
-                <div class="card-header bg-white py-3">
+            <div class="card shadow-sm border-0 border-top border-4 h-100 bg-body-tertiary" style="border-top-color: #39A900 !important;">
+                <div class="card-header bg-transparent py-3">
                     <h5 class="fw-bold mb-0 color-negro-suave-fn"><i class="bi bi-patch-plus me-2 text-success"></i>Definir Nueva Meta</h5>
                 </div>
                 <div class="card-body p-4">
@@ -25,23 +25,23 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Meta:</label>
-                            <input type="text" name="nombre" class="form-control border-secondary-subtle" placeholder="Ej. Visita técnica a Bogotá" required>
+                            <input type="text" name="nombre" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. Visita técnica a Bogotá" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Justificación:</label>
-                            <textarea name="descripcion" class="form-control border-secondary-subtle" rows="2" placeholder="Transporte y viáticos de la ficha"></textarea>
+                            <textarea name="descripcion" class="form-control border-secondary-subtle bg-body text-body shadow-none" rows="2" placeholder="Transporte y viáticos de la ficha"></textarea>
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label fw-bold small text-muted text-uppercase">Valor Requerido ($):</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle" placeholder="Ej. 250000" required>
+                                    <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+                                    <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. 250000" required>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite:</label>
-                                <input type="date" name="fecha_limite" class="form-control border-secondary-subtle" required>
+                                <input type="date" name="fecha_limite" class="form-control border-secondary-subtle bg-body text-body shadow-none" required>
                             </div>
                         </div>
                         <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm mt-2">
@@ -53,8 +53,8 @@
         </div>
 
         <div class="col-md-6">
-            <div class="card shadow-sm border-0 h-100 text-center d-flex flex-column">
-                <div class="card-header bg-white py-3">
+            <div class="card shadow-sm border-0 h-100 text-center d-flex flex-column bg-body-tertiary">
+                <div class="card-header bg-transparent py-3">
                     <h5 class="fw-bold mb-0 color-negro-suave-fn">Meta Activa Principal</h5>
                 </div>
                 <div class="card-body d-flex flex-column justify-content-center p-4">
@@ -62,27 +62,27 @@
                         <div class="mb-2">
                             <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 mb-2 rounded-pill">EN CURSO</span>
                             <h1 class="display-4 fw-bold color-negro-suave-fn mb-0">$ {{ meta_activa.valor_objetivo|floatformat:0 }}</h1>
-                            <p class="text-muted fs-5 fw-semibold">{{ meta_activa.nombre }}</p>
+                            <p class="text-body fs-5 fw-semibold">{{ meta_activa.nombre }}</p>
                         </div>
                         
                         <div class="mt-auto">
                             <div class="d-flex justify-content-between fw-bold mb-1">
                                 <span class="color-verde-sena-fn">Recaudado: $ {{ recaudado|floatformat:0 }}</span>
-                                <span class="color-negro-suave-fn">{{ progreso|floatformat:1 }}%</span>
+                                <span class="text-body">{{ progreso|floatformat:1 }}%</span>
                             </div>
-                            <div class="progress mb-3 shadow-sm" style="height: 15px; border-radius: 10px;">
+                            <div class="progress mb-3 shadow-sm" style="height: 15px; border-radius: 10px; background-color: var(--bs-secondary-bg);">
                                 <div class="progress-bar progress-bar-striped progress-bar-animated color-verde-sena-bg" 
                                      role="progressbar" 
                                      style="width: {{ progreso|stringformat:'f' }}%;"></div>
                             </div>
                             <div class="row text-start mt-3">
-                                <div class="col-6 border-end text-center">
+                                <div class="col-6 border-end border-secondary-subtle text-center">
                                     <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Faltante</div>
-                                    <div class="fw-bold color-rojo-alerta-fn">$ {{ meta_activa.valor_objetivo|add:"-"|add:recaudado }}</div>
+                                    <div class="fw-bold color-rojo-alerta-fn">$ {{ faltante|floatformat:0 }}</div>
                                 </div>
                                 <div class="col-6 text-center">
                                     <div class="small text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Día Límite</div>
-                                    <div class="fw-bold text-dark">{{ meta_activa.fecha_limite|date:"d M Y" }}</div>
+                                    <div class="fw-bold text-body">{{ meta_activa.fecha_limite|date:"d M Y" }}</div>
                                 </div>
                             </div>
                         </div>
