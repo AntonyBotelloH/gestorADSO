@@ -36,6 +36,7 @@ class Usuario(AbstractUser):
         ('Admin', 'Admin'),
         ('INSTRUCTOR', 'Instructor'),
         ('APRENDIZ', 'Aprendiz'),
+        ('VOCERO', 'Vocero'),
     ]
     TIPO_DOCUMENTO_CHOICES = [
         ('CC', 'Cédula de Ciudadanía'),

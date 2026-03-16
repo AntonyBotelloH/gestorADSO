@@ -101,7 +101,7 @@
           </ul>
         </div>
       </li>
-
+{% if request.user.rol == 'VOCERO' or request.user.rol == 'INSTRUCTOR' or request.user.rol == 'Admin' %}
       <li class="nav-item mb-1">
         <a href="#collapseFondos"
           data-bs-toggle="collapse"
@@ -123,6 +123,7 @@
             false
 
           {% endif %}">
+          
           <i class="bi bi-cash-coin me-2"></i> Fondos
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
@@ -173,7 +174,7 @@
           </ul>
         </div>
       </li>
-
+{% endif %}
       <li class="nav-item mb-1">
         <a href="#collapseProyectos"
           data-bs-toggle="collapse"
@@ -250,10 +251,10 @@
         <div class="collapse {% if '/ficha/' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
-              <a href="{% url "inicio_usuario" %}" class="nav-link text-white-50 py-1">Resumen Ficha</a>
+              <a href="{% url "inicio_ficha" %}" class="nav-link text-white-50 py-1">Resumen Ficha</a>
             </li>
             <li>
-              <a href="#" class="nav-link text-white-50 py-1">Aprendices y Roles</a>
+              <a href="{% url "inicio_usuario" %}" class="nav-link text-white-50 py-1">Usuarios y Roles</a>
             </li>
           </ul>
         </div>
@@ -416,10 +417,14 @@
 
     <div class="dropdown border-top border-secondary pt-3 px-2">
       <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        <img src="https://ui-avatars.com/api/?name={{ request.user.first_name|default:'Antony' }}+{{ request.user.last_name|default:'Botello' }}&background=39A900&color=fff&rounded=true" alt="Perfil" width="42" height="42" class="rounded-circle me-2 border border-2 border-secondary" />
-        <div class="d-flex flex-column text-start lh-1">
-          <span class="fw-bold small mb-1 text-truncate" style="max-width: 140px;">{{ request.user.first_name|default:'Antony Botello' }}</span>
-          <span class="badge color-verde-sena-bg text-white" style="font-size: 0.65rem; width: fit-content;">Instructor</span>
+        {% if request.user.foto %}
+    <img src="{{ request.user.foto.url }}" alt="Perfil de {{ request.user.first_name }}" width="42" height="42" class="rounded-circle me-2 border border-2 border-secondary" style="object-fit: cover;" />
+{% else %}
+    <img src="https://ui-avatars.com/api/?name={{ request.user.first_name }}+{{ request.user.last_name }}&background=39A900&color=fff&rounded=true" alt="Perfil" width="42" height="42" class="rounded-circle me-2 border border-2 border-secondary" />
+{% endif %}
+ <div class="d-flex flex-column text-start lh-1">
+          <span class="fw-bold small mb-1 text-truncate" style="max-width: 140px;">{{ request.user.first_name }}</span>
+          <span class="badge color-verde-sena-bg text-white" style="font-size: 0.65rem; width: fit-content;">{{ request.user.rol|default:'Usuario' }}</span>
         </div>
       </a>
       <ul class="dropdown-menu dropdown-menu-dark text-small shadow w-100 mb-2">

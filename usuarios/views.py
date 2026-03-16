@@ -8,7 +8,7 @@ def inicio_usuario(request):
 
     context = {
         'nombre': 'Antony',
-        'titulo': 'Aprendices y Roles',
+        'titulo': 'Usuarios y Roles',
         'breadcrumbs': [
             {'nombre': 'Ficha', 'url': '#'},
             {'nombre': 'Directorio', 'url': ''} 
@@ -99,8 +99,6 @@ def set_ficha_activa(request):
     # Si alguien intenta acceder a esta URL escribiéndola en el navegador (GET), lo echamos al inicio
     return redirect('/')
 
-from django.shortcuts import render, get_object_or_404
-from .models import Ficha, Usuario
 
 def inicio_ficha(request):
     # 1. Leemos el código de la ficha que el instructor seleccionó en el menú lateral
