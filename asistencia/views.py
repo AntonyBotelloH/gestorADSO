@@ -27,7 +27,6 @@ def inicio_asistencia(request):
         # Si venimos del historial a editar una sesión específica
         sesion = get_object_or_404(SesionClase, id=sesion_id, ficha=ficha)
     else:
-        # LÓGICA CORREGIDA PARA EVITAR DUPLICADOS
         # 1. Obtenemos la fecha exacta de HOY en nuestra zona horaria local
         hoy = timezone.localtime(timezone.now()).date()
         
@@ -42,25 +41,49 @@ def inicio_asistencia(request):
         sesion.tema_tratado = request.POST.get('tema_tratado', '')
         sesion.save()
 
+        # 1. Traemos TODOS los registros existentes de esta sesión de un solo golpe
+        registros_existentes = RegistroAsistencia.objects.filter(sesion=sesion)
+        dict_registros_bd = {reg.aprendiz_id: reg for reg in registros_existentes}
+
+        registros_a_crear = []
+        registros_a_actualizar = []
+
+        # 2. Preparamos las listas en memoria
         for aprendiz in aprendices:
             estado = request.POST.get(f'estado_{aprendiz.id}', 'Presente')
             comentario = request.POST.get(f'comentario_{aprendiz.id}', '')
             
-            RegistroAsistencia.objects.update_or_create(
-                sesion=sesion, 
-                aprendiz=aprendiz,
-                defaults={'estado': estado, 'comentario': comentario}
-            )
+            if aprendiz.id in dict_registros_bd:
+                registro = dict_registros_bd[aprendiz.id]
+                if registro.estado != estado or registro.comentario != comentario:
+                    registro.estado = estado
+                    registro.comentario = comentario
+                    registros_a_actualizar.append(registro)
+            else:
+                nuevo_registro = RegistroAsistencia(
+                    sesion=sesion, 
+                    aprendiz=aprendiz, 
+                    estado=estado, 
+                    comentario=comentario
+                )
+                registros_a_crear.append(nuevo_registro)
+
+        # 3. Guardado en bloque ultrarrápido
+        if registros_a_actualizar:
+            RegistroAsistencia.objects.bulk_update(registros_a_actualizar, ['estado', 'comentario'])
+            
+        if registros_a_crear:
+            RegistroAsistencia.objects.bulk_create(registros_a_crear)
         
         messages.success(request, "¡Asistencia guardada correctamente!")
         if sesion_id:
             return redirect(f"/asistencia/?sesion_id={sesion_id}")
         return redirect('inicio_asistencia')
 
+    # --- ESTA ES LA PARTE QUE FALTABA PARA QUE LA PÁGINA RENDERICE BIEN ---
     registros_hoy = RegistroAsistencia.objects.filter(sesion=sesion)
     dict_registros = {reg.aprendiz.id: reg for reg in registros_hoy}
 
-    # Se eliminó la variable 'titulo' redundante
     contexto = {
         'sesion': sesion,
         'aprendices': aprendices,
@@ -100,7 +123,6 @@ def historial_asistencias(request):
     if fecha_fin:
         sesiones = sesiones.filter(fecha__lte=fecha_fin)
 
-    # Se eliminó la variable 'titulo' redundante
     contexto = {
         'sesiones': sesiones,
         'total_aprendices': total_aprendices,
@@ -140,6 +162,7 @@ def estadisticas_asistencia(request):
         else:
             aprendiz.porcentaje_falla = 0
             
+        # Alerta crítica a partir de 5 fallas
         if aprendiz.total_fallas >= 5:
             aprendices_riesgo += 1
 
@@ -158,7 +181,6 @@ def estadisticas_asistencia(request):
         pct_falla = (fallas / total_registros) * 100
         pct_retardo = (retardos / total_registros) * 100
 
-    # Se eliminó la variable 'titulo' redundante
     contexto = {
         'total_sesiones': total_sesiones,
         'aprendices_riesgo': aprendices_riesgo,
