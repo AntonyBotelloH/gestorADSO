@@ -140,3 +140,13 @@ MEDIA_URL = '/media/'
 
 # Ruta física en tu computador/servidor donde Django creará la carpeta y guardará los archivos
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# A dónde redirigir después de un login exitoso
+LOGIN_REDIRECT_URL = '/' 
+
+# A dónde enviar a los intrusos que no han iniciado sesión
+LOGIN_URL = '/login/'
+
+# Manda los correos a la consola en vez de usar internet (Solo para desarrollo)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

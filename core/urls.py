@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 from core.views import inicio, configuraciones, cambiar_ficha
 from usuarios.views import set_ficha_activa
 
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,6 +37,24 @@ urlpatterns = [
     path('planeacion/', include('planeacion.urls')),
     path('pendientes/', include('pendientes.urls')),
     path('set-ficha/', set_ficha_activa, name='set_ficha_activa'),
+    
+    
+    # Ruta nativa de Login apuntando a nuestro nuevo HTML
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    
+    # Ruta para cerrar sesión
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    
+    path('recuperar-password/', auth_views.PasswordResetView.as_view(template_name='registration/recuperar.html'), name='password_reset'),
+    
+    # 2. Pantalla de "Correo enviado con éxito"
+    path('recuperar-password/enviado/', auth_views.PasswordResetDoneView.as_view(template_name='registration/recuperar_enviado.html'), name='password_reset_done'),
+    
+    # 3. Pantalla donde el usuario escribe su nueva contraseña (viene del link del correo)
+    path('recuperar/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/recuperar_confirmar.html'), name='password_reset_confirm'),
+    
+    # 4. Pantalla de "Contraseña cambiada exitosamente"
+    path('recuperar/completo/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/recuperar_completo.html'), name='password_reset_complete'),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="auto"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gestor SENA</title>
+    <link rel="shortcut icon" href="{% static 'img/Logo.png' %}" type="image/png">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* Centrado perfecto en pantalla completa */
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bs-body-bg);
+        }
+        .tarjeta-login {
+            max-width: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="tarjeta-login p-4 rounded-4 shadow-lg border border-secondary-subtle bg-body-tertiary">
+        <div class="text-center mb-4 mt-2">
+            <img src="{% static 'img/Logo.png' %}" alt="Logo Gestor SENA" width="85" class="mb-3 rounded">
+            <h3 class="fw-bold color-negro-suave-fn mb-1">Bienvenido</h3>
+            <p class="text-muted small">Gestor de Ficha - Centro Minero</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small text-center shadow-sm border-0" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545;">
+            <i class="bi bi-exclamation-circle me-1"></i> Documento o contraseña incorrectos.
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted text-uppercase">Número de Documento:</label>
+                <input type="text" name="username" class="form-control form-control-lg border-secondary-subtle bg-body text-body shadow-none fs-6" placeholder="Ingrese su documento" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-muted text-uppercase">Contraseña:</label>
+                <input type="password" name="password" class="form-control form-control-lg border-secondary-subtle bg-body text-body shadow-none fs-6" placeholder="••••••••" required>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                    <input class="form-check-input border-secondary" type="checkbox" id="recordar">
+                    <label class="form-check-label small text-muted mt-1" for="recordar">Recordarme</label>
+                </div>
+                <a href="{% url 'password_reset' %}" class="small text-decoration-none fw-bold" style="color: #39A900;">¿Olvidó su contraseña?</a>
+            </div>
+
+            <button type="submit" class="btn text-white fw-bold w-100 shadow-sm py-2 mb-2" style="background-color: #39A900; font-size: 1.1rem;">Ingresar al Sistema</button>
+            
+            <input type="hidden" name="next" value="{{ next|default:'/' }}">
+        </form>
+    </div>
+
+</body>
+</html>
