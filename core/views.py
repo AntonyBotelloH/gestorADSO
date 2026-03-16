@@ -11,6 +11,9 @@ from proyectos.models import Proyecto
 from asistencia.models import SesionClase, RegistroAsistencia
 from fondos.models import Movimiento, MetaFinanciera
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def inicio(request):
     """Vista del Panel de Control principal (Dashboard) 100% Dinámico."""
     
