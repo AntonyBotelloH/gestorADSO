@@ -25,4 +25,5 @@ urlpatterns = [
     # Evaluación de avance técnico realizada por el Instructor
     # URL: /proyectos/5/avance/
     path('<int:proyecto_id>/avance/', views.registrar_avance, name='registrar_avance'),
+    path('tarea/<int:tarea_id>/estado/', views.cambiar_estado_tarea, name='cambiar_estado_tarea'),
 ]

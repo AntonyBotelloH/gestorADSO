@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Registro de Daily Scrum</h3>
+            <p class="text-muted small mb-0">Reporte de avance para: <strong class="text-body">{{ proyecto.nombre }}</strong></p>
+        </div>
+        <a href="{% url 'detalles_proyecto' proyecto.id %}" class="btn btn-outline-secondary fw-bold btn-sm shadow-sm">
+            <i class="bi bi-arrow-left"></i> Cancelar
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 border-top border-4 bg-body-tertiary" style="border-top-color: #212529 !important;">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-5">
+                <div class="p-3 bg-dark text-white rounded-circle d-inline-block shadow-sm mb-3">
+                    <i class="bi bi-stopwatch fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-body">Sincronización del Equipo</h4>
+                <p class="text-muted small">Responde las tres preguntas clave del día para mantener el flujo de trabajo.</p>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge color-verde-sena-bg me-2">1</span>
+                            <label class="form-label fw-bold mb-0 text-body">¿Qué se logró desde la última sesión?</label>
+                        </div>
+                        <textarea name="logros" class="form-control bg-body text-body border-secondary-subtle shadow-none" rows="3" 
+                                  placeholder="Ej. Se terminó el diseño del MER y se crearon las tablas iniciales en Postgres." required></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">2</span>
+                            <label class="form-label fw-bold mb-0 text-body">¿En qué se trabajará hoy?</label>
+                        </div>
+                        <textarea name="planes" class="form-control bg-body text-body border-secondary-subtle shadow-none" rows="3" 
+                                  placeholder="Ej. Implementar el CRUD de usuarios y validar los permisos del Scrum Master." required></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-danger me-2">3</span>
+                            <label class="form-label fw-bold mb-0 text-body">¿Existe algún impedimento o bloqueo?</label>
+                        </div>
+                        <textarea name="bloqueos" class="form-control bg-body text-body border-secondary-subtle shadow-none" rows="3" 
+                                  placeholder="Ej. No tenemos acceso a la API externa de pruebas o hay dudas con la normalización."></textarea>
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Deja este espacio vacío si el equipo fluye sin problemas.</small>
+                    </div>
+
+                    <div class="col-12 text-end border-top border-secondary-subtle pt-4 mt-5">
+                        <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-5 py-2 shadow-sm">
+                            <i class="bi bi-send-fill me-2"></i>Enviar Reporte Daily
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

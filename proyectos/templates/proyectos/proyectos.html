@@ -15,7 +15,7 @@
 
     <div class="row g-3 mb-4 text-center">
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100 py-2">
+            <div class="card shadow-sm border-0 h-100 py-2 bg-body-tertiary">
                 <div class="card-body">
                     <h6 class="text-muted fw-bold small text-uppercase">Grupos Registrados</h6>
                     <h2 class="fw-bold color-negro-suave-fn">{{ proyectos|length|stringformat:"02d" }}</h2>
@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2" style="border-left-color: #39A900 !important;">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #39A900 !important;">
                 <div class="card-body">
                     <h6 class="text-muted fw-bold small text-uppercase">Proyectos al Día</h6>
                     <h2 class="fw-bold color-verde-sena-fn">--</h2>
@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2" style="border-left-color: #dc3545 !important;">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #dc3545 !important;">
                 <div class="card-body">
                     <h6 class="text-muted fw-bold small text-uppercase">Atrasados / Bloqueados</h6>
                     <h2 class="fw-bold color-rojo-alerta-fn">--</h2>
@@ -40,14 +40,14 @@
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
         <div class="card-body py-2">
             <form class="row g-2">
                 <div class="col-md-8">
-                    <input type="text" class="form-control border-0 shadow-none" placeholder="🔍 Buscar proyecto por nombre o integrante...">
+                    <input type="text" class="form-control border-0 shadow-none bg-body text-body" placeholder="🔍 Buscar proyecto por nombre o integrante...">
                 </div>
                 <div class="col-md-4">
-                    <select class="form-select border-0 shadow-none">
+                    <select class="form-select border-0 shadow-none bg-body text-body">
                         <option>Todos los estados</option>
                         <option>🟢 Al Día</option>
                         <option>🔴 Atrasado</option>
@@ -60,7 +60,7 @@
     <div class="row g-4">
         {% for proyecto in proyectos %}
         <div class="col-md-6 col-lg-4">
-            <div class="card shadow-sm h-100 border-0 border-top border-4" 
+            <div class="card shadow-sm h-100 border-0 border-top border-4 bg-body-tertiary" 
                  style="border-top-color: {% if proyecto.estado == 'Al Día' %}#39A900{% elif proyecto.estado == 'Atrasado' %}#dc3545{% else %}#ffc107{% endif %} !important;">
                 
                 <div class="card-body d-flex flex-column">
@@ -88,7 +88,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <a href="{% url 'detalles_proyecto' proyecto.id %}" class="btn btn-outline-secondary btn-sm fw-bold">
+                        <a href="{% url 'detalles_proyecto' proyecto.id %}" class="btn btn-outline-secondary btn-sm fw-bold shadow-sm">
                             <i class="bi bi-gear-fill me-1"></i> Gestionar Proyecto
                         </a>
                     </div>

@@ -17,20 +17,20 @@
         {% csrf_token %}
         <div class="row g-4">
             <div class="col-md-7">
-                <div class="card shadow-sm border-0 border-top border-4 h-100" style="border-top-color: #39A900 !important;">
+                <div class="card shadow-sm border-0 border-top border-4 h-100 bg-body-tertiary" style="border-top-color: #39A900 !important;">
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Nombre del Proyecto:</label>
-                            <input type="text" name="nombre" class="form-control border-secondary-subtle shadow-none" placeholder="Ej. Sistema de Inventario para el Centro Minero" required>
+                            <input type="text" name="nombre" class="form-control bg-body text-body border-secondary-subtle shadow-none" placeholder="Ej. Sistema de Inventario para el Centro Minero" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted text-uppercase">Objetivo General:</label>
-                            <textarea name="objetivo" class="form-control border-secondary-subtle shadow-none" rows="5" placeholder="Describa el alcance técnico del software..."></textarea>
+                            <textarea name="objetivo" class="form-control bg-body text-body border-secondary-subtle shadow-none" rows="5" placeholder="Describa el alcance técnico del software..."></textarea>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold small text-muted text-uppercase">Fecha Inicio (Sprint 1):</label>
-                                <input type="date" name="fecha_inicio" class="form-control border-secondary-subtle shadow-none" required>
+                                <input type="date" name="fecha_inicio" class="form-control bg-body text-body border-secondary-subtle shadow-none" required>
                             </div>
                         </div>
                     </div>
@@ -38,11 +38,11 @@
             </div>
 
             <div class="col-md-5">
-                <div class="card shadow-sm border-0 h-100">
+                <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
                     <div class="card-body p-4 d-flex flex-column">
                         <div class="mb-4">
                             <label class="form-label fw-bold small text-muted text-uppercase">Designar Scrum Master:</label>
-                            <select name="scrum_master" class="form-select border-secondary-subtle shadow-none" required>
+                            <select name="scrum_master" class="form-select bg-body text-body border-secondary-subtle shadow-none" required>
                                 <option value="" disabled selected>-- Seleccione al líder --</option>
                                 {% for aprendiz in aprendices %}
                                     <option value="{{ aprendiz.id }}">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</option>
@@ -53,11 +53,11 @@
 
                         <div class="flex-grow-1">
                             <label class="form-label fw-bold small text-muted text-uppercase">Seleccionar Integrantes:</label>
-                            <div class="border rounded p-3 bg-light" style="max-height: 250px; overflow-y: auto;">
+                            <div class="border border-secondary-subtle rounded p-3 bg-body-secondary" style="max-height: 250px; overflow-y: auto;">
                                 {% for aprendiz in aprendices %}
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" name="integrantes" value="{{ aprendiz.id }}" id="ap_{{ aprendiz.id }}">
-                                    <label class="form-check-label small" for="ap_{{ aprendiz.id }}">
+                                    <input class="form-check-input border-secondary" type="checkbox" name="integrantes" value="{{ aprendiz.id }}" id="ap_{{ aprendiz.id }}">
+                                    <label class="form-check-label small text-body" for="ap_{{ aprendiz.id }}">
                                         {{ aprendiz.first_name }} {{ aprendiz.last_name }}
                                     </label>
                                 </div>
@@ -69,7 +69,7 @@
             </div>
 
             <div class="col-12">
-                <div class="card border-0 shadow-sm color-gris-claro-bg">
+                <div class="card border-0 shadow-sm bg-body-tertiary border-top border-secondary-subtle">
                     <div class="card-body d-flex justify-content-end py-3 px-4">
                         <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-5 shadow-sm">
                             <i class="bi bi-rocket-takeoff me-2"></i>Crear Grupo y Activar Tablero
