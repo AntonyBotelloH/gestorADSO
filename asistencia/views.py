@@ -19,7 +19,7 @@ def inicio_asistencia(request):
         return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
-    aprendices = Usuario.objects.filter(rol='APRENDIZ') 
+    aprendices = Usuario.objects.filter( ficha=ficha).order_by('last_name') 
 
     sesion_id = request.GET.get('sesion_id')
     

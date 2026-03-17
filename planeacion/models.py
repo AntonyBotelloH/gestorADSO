@@ -17,10 +17,11 @@ class ResultadoAprendizaje(models.Model):
         return f"RAP: {self.descripcion[:60]}..."
 
 class FaseProyecto(models.Model):
+    # Ajustado a las fases pedagógicas institucionales del SENA
     NOMBRE_CHOICES = [
         ('Análisis', 'Análisis'),
-        ('Diseño', 'Diseño'),
-        ('Desarrollo', 'Desarrollo'),
+        ('Planeación', 'Planeación'),
+        ('Ejecución', 'Ejecución'),
         ('Evaluación', 'Evaluación'),
     ]
     nombre = models.CharField(max_length=20, choices=NOMBRE_CHOICES, unique=True)
@@ -43,7 +44,10 @@ class ActividadPlaneacion(models.Model):
     
     ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='planeaciones')
     fase = models.ForeignKey(FaseProyecto, on_delete=models.PROTECT)
-    rap = models.ForeignKey(ResultadoAprendizaje, on_delete=models.CASCADE)
+    
+    # CAMBIO CLAVE: ManyToManyField permite asociar varios RAPs a una sola actividad
+    raps = models.ManyToManyField(ResultadoAprendizaje, related_name='actividades', verbose_name="Resultados de Aprendizaje")
+    
     instructor = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, limit_choices_to={'rol': 'INSTRUCTOR'})
     
     actividad_proyecto = models.TextField(verbose_name="Actividad de Proyecto")
@@ -57,4 +61,3 @@ class ActividadPlaneacion(models.Model):
 
     def __str__(self):
         return f"{self.ficha.codigo_ficha} - {self.fase.nombre} - {self.actividad_proyecto[:30]}"
-    

@@ -1,37 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Planeación Pedagógica | Gestor SENA{% endblock %}
-
 {% block content %}
 <div class="container-fluid py-3">
 
     {% if ficha_activa %}
     
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <h3 class="fw-bold mb-2">Planeación Pedagógica</h3>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a href="/" class="text-decoration-none text-success">Inicio</a>
-                        </li>
-                        {% for miga in breadcrumbs %}
-                            {% if not forloop.last %}
-                                <li class="breadcrumb-item">
-                                    <a href="{{ miga.url }}" class="text-decoration-none text-success">{{ miga.nombre }}</a>
-                                </li>
-                            {% else %}
-                                <li class="breadcrumb-item active" aria-current="page">{{ miga.nombre }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ol>
-                </nav>
-            </div>
-            
+        <div class="d-flex justify-content-end align-items-center mb-4">
             <div class="d-flex align-items-center gap-2">
                 <span class="text-muted small fw-bold">Contexto Actual:</span>
-                <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 fs-6 shadow-sm">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6 shadow-sm rounded-pill">
                     <i class="bi bi-layers me-1"></i> {{ ficha_activa.codigo_ficha }} - {{ ficha_activa.programa|truncatechars:20 }}
                 </span>
             </div>
@@ -39,108 +17,120 @@
 
         <div class="row g-4 mb-4">
             <div class="col-md-4">
-                <div class="card shadow-sm border-0 border-start border-4 border-success h-100">
+                <div class="card shadow-sm border-0 border-start border-4 border-success h-100 bg-body-tertiary">
                     <div class="card-body">
                         <h6 class="text-muted fw-bold text-uppercase mb-1">Fase Actual</h6>
-                        <h2 class="text-success fw-bold mb-0">Análisis</h2>
-                        <small class="text-muted d-block mt-2">Mes 3 de 18 (Etapa Lectiva)</small>
+                        <h2 class="text-success fw-bold mb-0">{{ ficha_activa.etapa|default:"Lectiva" }}</h2>
+                        <small class="text-muted d-block mt-2">Fin estimado: {{ ficha_activa.fecha_fin_lectiva|date:"d M Y"|default:"No registrado" }}</small>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card shadow-sm border-0 border-start border-4 border-primary h-100">
+                <div class="card shadow-sm border-0 border-start border-4 border-primary h-100 bg-body-tertiary">
                     <div class="card-body">
-                        <h6 class="text-muted fw-bold text-uppercase mb-1">Resultados (RAP)</h6>
-                        <h2 class="fw-bold mb-0">8 <span class="fs-5 text-muted fw-normal">/ 45</span></h2>
-                        <small class="text-muted d-block mt-2">17% del programa evaluado</small>
+                        <h6 class="text-muted fw-bold text-uppercase mb-1">Total Actividades</h6>
+                        <h2 class="fw-bold text-body mb-0">{{ total_actividades|default:"0" }}</h2>
+                        <small class="text-muted d-block mt-2">En el cronograma actual</small>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card shadow-sm border-0 border-start border-4 border-warning h-100">
+                <div class="card shadow-sm border-0 border-start border-4 border-warning h-100 bg-body-tertiary">
                     <div class="card-body">
                         <h6 class="text-muted fw-bold text-uppercase mb-1">Actividades en Curso</h6>
-                        <h2 class="fw-bold mb-0">2</h2>
-                        <small class="text-muted d-block mt-2">3 finalizadas / 12 programadas</small>
+                        <h2 class="fw-bold text-body mb-0">{{ act_en_curso|default:"0" }}</h2>
+                        <small class="text-muted d-block mt-2">{{ act_terminadas|default:"0" }} finalizadas / {{ act_pendientes|default:"0" }} pendientes</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
-                <h5 class="mb-0 fw-bold">Cronograma de Actividades</h5>
-                <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i> Nueva Actividad</button>
+        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+            <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom border-secondary-subtle">
+                <h5 class="mb-0 fw-bold text-body">Cronograma de Actividades</h5>
+                <a href="{% url "crear_actividad" %}" class="btn color-verde-sena-bg text-white btn-sm fw-bold shadow-sm"><i class="bi bi-plus-lg me-1"></i> Nueva Actividad</a>
             </div>
             <div class="card-body">
-                <table id="tablaDatos" class="table table-hover table-striped align-middle w-100 nowrap">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Fase</th>
-                            <th>Actividad de Proyecto</th>
-                            <th>Competencia / RAP</th>
-                            <th>Fechas</th>
-                            <th>Estado</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><span class="badge bg-secondary">1. Análisis</span></td>
-                            <td>
-                                <h6 class="mb-0 fw-bold">AP1. Recolectar requisitos</h6>
-                                <small class="text-muted">Instructor: Antony Botello</small>
-                            </td>
-                            <td>
-                                <p class="mb-0 small fw-bold text-truncate" style="max-width: 200px;" title="220501092 - Establecer requisitos de la solución de software">220501092</p>
-                                <small class="text-muted">RAP 1 y RAP 2</small>
-                            </td>
-                            <td>
-                                <small class="d-block"><i class="bi bi-play-circle text-success me-1"></i> 01/Feb/2026</small>
-                                <small class="d-block"><i class="bi bi-stop-circle text-danger me-1"></i> 28/Feb/2026</small>
-                            </td>
-                            <td><span class="badge bg-success bg-opacity-10 text-success border border-success">Terminada</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye"></i></button>
-                                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><span class="badge bg-primary">2. Diseño</span></td>
-                            <td>
-                                <h6 class="mb-0 fw-bold">AP2. Diseñar la arquitectura</h6>
-                                <small class="text-muted">Instructor: Antony Botello</small>
-                            </td>
-                            <td>
-                                <p class="mb-0 small fw-bold text-truncate" style="max-width: 200px;" title="220501095 - Diseñar la solución de software">220501095</p>
-                                <small class="text-muted">RAP 3, RAP 4 y RAP 5</small>
-                            </td>
-                            <td>
-                                <small class="d-block"><i class="bi bi-play-circle text-success me-1"></i> 01/Mar/2026</small>
-                                <small class="d-block"><i class="bi bi-stop-circle text-danger me-1"></i> 15/Abr/2026</small>
-                            </td>
-                            <td><span class="badge bg-warning bg-opacity-10 text-warning border border-warning">En Curso</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-eye"></i></button>
-                                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></button>
-                            </td>
-                        </tr>
-                        
-                    </tbody>
-                </table>
+                <div class="table-responsive overflow-hidden">
+                    <table id="tablaFormacion" class="table table-hover table-striped align-middle w-100 nowrap">
+                        <thead class="table-secondary small text-uppercase">
+                            <tr>
+                                <th class="ps-3">Fase</th>
+                                <th>Actividad de Proyecto</th>
+                                <th>Competencias / RAPs</th>
+                                <th>Fechas</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-end pe-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for actividad in actividades %}
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="badge 
+                                        {% if actividad.fase.nombre == 'Análisis' %}bg-secondary-subtle text-body border-secondary-subtle
+                                        {% elif actividad.fase.nombre == 'Planeación' %}bg-primary-subtle text-primary border-primary-subtle
+                                        {% elif actividad.fase.nombre == 'Ejecución' %}bg-warning-subtle text-warning-emphasis border-warning-subtle
+                                        {% else %}bg-info-subtle text-info border-info-subtle{% endif %} 
+                                        border rounded-pill">
+                                        {{ actividad.fase.nombre }}
+                                    </span>
+                                </td>
+                                
+                                <td>
+                                    <h6 class="mb-0 fw-bold text-body text-wrap" style="max-width: 250px;">{{ actividad.actividad_proyecto }}</h6>
+                                    <small class="text-muted"><i class="bi bi-person me-1"></i>{{ actividad.instructor.get_full_name|default:"Sin instructor asignado" }}</small>
+                                </td>
+                                
+                                <td>
+                                    {% for rap in actividad.raps.all %}
+                                        <div class="mb-2">
+                                            <p class="mb-0 small fw-bold text-truncate text-body" style="max-width: 250px;" title="{{ rap.competencia.codigo }} - {{ rap.competencia.nombre }}">{{ rap.competencia.codigo }}</p>
+                                            <small class="text-muted d-inline-block text-truncate" style="max-width: 250px;" title="{{ rap.descripcion }}">{{ rap.descripcion }}</small>
+                                        </div>
+                                    {% empty %}
+                                        <small class="text-muted fst-italic">Sin RAPs asociados</small>
+                                    {% endfor %}
+                                </td>
+                                
+                                <td>
+                                    <small class="d-block text-body"><i class="bi bi-play-circle color-verde-sena-fn me-1"></i> {{ actividad.fecha_inicio|date:"d M Y" }}</small>
+                                    <small class="d-block text-body"><i class="bi bi-stop-circle text-danger me-1"></i> {{ actividad.fecha_fin|date:"d M Y" }}</small>
+                                </td>
+                                
+                                <td class="text-center">
+                                    <span class="badge 
+                                        {% if actividad.estado == 'Terminada' %}bg-success-subtle text-success border-success-subtle
+                                        {% elif actividad.estado == 'En Curso' %}bg-warning-subtle text-warning-emphasis border-warning-subtle
+                                        {% else %}bg-secondary-subtle text-body border-secondary-subtle{% endif %} 
+                                        border rounded-pill px-3">
+                                        {{ actividad.estado }}
+                                    </span>
+                                </td>
+                                
+                                <td class="text-end pe-3">
+                                    <div class="btn-group shadow-sm">
+                                        <button class="btn btn-outline-secondary btn-sm" title="Ver detalles"><i class="bi bi-eye"></i></button>
+                                        <button class="btn btn-outline-secondary btn-sm" title="Editar actividad"><i class="bi bi-pencil"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     {% else %}
         <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
             <div class="col-md-6 text-center">
-                <i class="bi bi-journal-x display-1 text-muted mb-4 d-block opacity-50"></i>
-                <h2 class="fw-bold text-secondary mb-3">No hay un contexto activo</h2>
+                <i class="bi bi-journal-x display-1 text-muted mb-4 d-block opacity-25"></i>
+                <h2 class="fw-bold text-body mb-3">No hay un contexto activo</h2>
                 <p class="text-muted fs-5 mb-4">Para visualizar y gestionar la Planeación Pedagógica, por favor selecciona una ficha de formación en el menú lateral izquierdo.</p>
-                <button class="btn btn-success px-4 py-2" onclick="document.getElementById('sidebarFichaSelect').focus();">
+                <button class="btn color-verde-sena-bg text-white px-4 py-2 fw-bold shadow-sm" onclick="document.getElementById('sidebarFichaSelect').focus();">
                     <i class="bi bi-arrow-left-circle me-2"></i> Seleccionar Ficha
                 </button>
             </div>
@@ -152,5 +142,5 @@
 
 {% block scripts %}
 <script src="{% static 'js/datatables.min.js' %}"></script>
-<script src="{% static 'js/table-config.js' %}"></script>
+<script src="{% static 'js/tconf/tFormacion-config.js' %}"></script>
 {% endblock scripts %}

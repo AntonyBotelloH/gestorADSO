@@ -1,5 +1,5 @@
     $(document).ready(function() {
-        $('#tablaDatos').DataTable({
+        $('#tablaUsuarios').DataTable({
             // 1. Activar extensiones
             responsive: true,
             deferRender: true, // Requerido para Scroller

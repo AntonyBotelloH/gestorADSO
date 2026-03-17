@@ -62,7 +62,8 @@ def nuevo_grupo(request):
             messages.error(request, f"Error al guardar: {e}")
 
     # Filtramos aprendices de la ficha activa para el equipo
-    aprendices = Usuario.objects.filter(rol='APRENDIZ') 
+    aprendices = Usuario.objects.filter(rol__in=['APRENDIZ', 'VOCERO'], ficha=ficha).order_by('last_name')
+
 
     contexto = {
         'aprendices': aprendices,

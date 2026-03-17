@@ -1,98 +1,82 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ titulo }} | Gestor SENA{% endblock %}
-
 {% block content %}
 <div class="container-fluid py-3">
 
     {% if ficha_activa %}
     
-        <div class="d-flex justify-content-between align-items-end mb-4">
-            <div>
-                <h3 class="fw-bold mb-2">{{ titulo }}</h3>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-success">Inicio</a></li>
-                        {% for miga in breadcrumbs %}
-                            {% if not forloop.last %}
-                                <li class="breadcrumb-item">
-                                    <a href="{{ miga.url }}" class="text-decoration-none text-success">{{ miga.nombre }}</a>
-                                </li>
-                            {% else %}
-                                <li class="breadcrumb-item active" aria-current="page">{{ miga.nombre }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ol>
-                </nav>
-            </div>
-            
+        <div class="d-flex justify-content-end align-items-center mb-4">
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3 py-2 fs-6 shadow-sm">
-                    <i class="bi bi-journal-check me-1"></i> Ficha: {{ ficha_activa.codigo_ficha }}
+                <span class="text-muted small fw-bold">Contexto Actual:</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6 shadow-sm rounded-pill">
+                    <i class="bi bi-layers me-1"></i> {{ ficha_activa.codigo_ficha }}
                 </span>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold text-dark">Estructura Curricular y Logros</h5>
+        <div class="card shadow-sm border-0 bg-body-tertiary">
+            <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom border-secondary-subtle">
+                <h5 class="mb-0 fw-bold text-body">Estructura Curricular y Logros</h5>
                 <div class="btn-group shadow-sm">
-                    <button class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i> Exportar</button>
-                    <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i> Nuevo RAP</button>
+                    <a href="{% url 'importar_curriculo' %}" class="btn btn-outline-secondary btn-sm fw-bold"><i class="bi bi-download me-1"></i> Importar</a>
+                    <button class="btn color-verde-sena-bg text-white btn-sm fw-bold"><i class="bi bi-plus-lg me-1"></i> Nuevo RAP</button>
                 </div>
             </div>
             <div class="card-body">
-                <table id="tablaDatos" class="table table-hover align-middle w-100">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 15%;">Competencia</th>
-                            <th style="width: 55%;">Resultado de Aprendizaje (RAP)</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rap in raps %}
-                        <tr>
-                            <td>
-                                <span class="badge bg-dark px-2 py-1" title="{{ rap.competencia.nombre }}">
-                                    {{ rap.competencia.codigo }}
-                                </span>
-                            </td>
-                            <td>
-                                <p class="mb-0 fw-bold small text-dark">{{ rap.descripcion }}</p>
-                                <small class="text-muted">Asociado a: {{ rap.competencia.nombre|truncatechars:80 }}</small>
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group">
-                                    <a href="#" class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="3" class="text-center py-4 text-muted">
-                                <i class="bi bi-info-circle me-2"></i> No hay Resultados de Aprendizaje registrados en la base de datos.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive overflow-hidden">
+                    <table id="tablaRaps" class="table table-hover table-striped align-middle w-100">
+                        <thead class="table-secondary small text-uppercase">
+                            <tr>
+                                <th class="ps-3" style="width: 15%;">Competencia</th>
+                                <th style="width: 55%;">Resultado de Aprendizaje (RAP)</th>
+                                <th class="text-end pe-3" style="width: 15%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rap in raps %}
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="badge bg-secondary-subtle text-body border border-secondary-subtle px-2 py-1 shadow-sm" title="{{ rap.competencia.nombre }}">
+                                        {{ rap.competencia.codigo }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <p class="mb-0 fw-bold small text-body">{{ rap.descripcion }}</p>
+                                    <small class="text-muted">Asociado a: {{ rap.competencia.nombre|truncatechars:80 }}</small>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group shadow-sm">
+                                        <button class="btn btn-sm btn-outline-secondary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="bi bi-info-circle display-6 d-block mb-3 opacity-25"></i>
+                                    No hay Resultados de Aprendizaje registrados en la base de datos.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     {% else %}
         <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
             <div class="col-md-6 text-center">
-                <i class="bi bi-journal-x display-1 text-muted mb-4 d-block opacity-50"></i>
-                <h2 class="fw-bold text-secondary mb-3">Contexto no definido</h2>
+                <i class="bi bi-journal-x display-1 text-muted mb-4 d-block opacity-25"></i>
+                <h2 class="fw-bold text-body mb-3">Contexto no definido</h2>
                 <p class="text-muted fs-5 mb-4">Por favor, selecciona una ficha en el menú lateral para gestionar sus Resultados de Aprendizaje.</p>
-                <button class="btn btn-success px-4 py-2" onclick="document.getElementById('sidebarFichaSelect').focus();">
+                <button class="btn color-verde-sena-bg text-white px-4 py-2 fw-bold shadow-sm" onclick="document.getElementById('sidebarFichaSelect').focus();">
                     <i class="bi bi-arrow-left-circle me-2"></i> Seleccionar Ficha
                 </button>
             </div>
@@ -104,5 +88,5 @@
 
 {% block scripts %}
 <script src="{% static 'js/datatables.min.js' %}"></script>
-<script src="{% static 'js/table-config.js' %}"></script>
+<script src="{% static 'js/tconf/tRaps-config.js' %}"></script>
 {% endblock %}

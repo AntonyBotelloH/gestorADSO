@@ -5,7 +5,7 @@ from .models import Usuario, Ficha
 from .forms import UsuarioForm, UsuarioEditarForm, FichaForm, FichaEditarForm
 
 def inicio_usuario(request):
-    lista_usuarios = Usuario.objects.all().order_by('first_name')
+    lista_usuarios = Usuario.objects.all().order_by('last_name')
 
     context = {
         'nombre': 'Antony',

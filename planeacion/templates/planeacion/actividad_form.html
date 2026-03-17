@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+                
+                <div class="card-header bg-transparent py-3 border-bottom border-secondary-subtle">
+                    <h5 class="mb-0 fw-bold text-body">
+                        <i class="bi bi-calendar-plus me-2 color-verde-sena-fn"></i>Formulario de Actividad
+                    </h5>
+                </div>
+                
+                <div class="card-body p-4 p-md-5 text-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {{ form|crispy }}
+                        
+                        <hr class="my-4 border-secondary opacity-25">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'inicio_planeacion' %}" class="btn btn-outline-secondary fw-bold px-4 shadow-sm">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm">
+                                <i class="bi bi-save me-1"></i> Guardar Actividad
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            
+            <div class="alert bg-primary-subtle border-primary-subtle text-body small mt-3 border shadow-sm rounded">
+                <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                <b>Tip:</b> Puedes seleccionar múltiples Resultados de Aprendizaje (RAPs) manteniendo presionada la tecla <code>Ctrl</code> (Windows) o <code>Cmd</code> (Mac) al hacer clic.
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}
