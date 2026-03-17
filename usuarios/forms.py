@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, DateInput
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from .models import Usuario, Ficha, GrupoProyecto
 
@@ -29,7 +29,7 @@ class UsuarioEditarForm(ModelForm):
             'tipo_documento', 'rol', 'ficha', 'is_active','foto'
         ]
 
-   
+
 # ==========================================
 # FORMULARIOS DE FICHA
 # ==========================================
@@ -37,9 +37,52 @@ class UsuarioEditarForm(ModelForm):
 class FichaForm(ModelForm):
     class Meta:
         model = Ficha
-        fields = "__all__"
+        # Es mejor listar los campos para controlar el orden en el HTML
+        fields = [
+            'codigo_ficha', 
+            'programa', 
+            'jornada', 
+            'fecha_inicio', 
+            'fecha_fin_lectiva', 
+            'etapa', 
+        ]
+        
+        # Le decimos a Django que los campos de fecha usen el input type="date" de HTML5
+        widgets = {
+            'fecha_inicio': DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control'}
+            ),
+            'fecha_fin_lectiva': DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control'}
+            ),
+        }
 
-   
+
+class FichaEditarForm(ModelForm):
+    class Meta:
+        model = Ficha
+        # En la edición excluimos 'codigo_ficha' por seguridad e incluimos 'is_active'
+        fields = [
+            'programa', 
+            'jornada', 
+            'fecha_inicio', 
+            'fecha_fin_lectiva', 
+            'etapa',
+            'is_active',
+        ]
+        
+        widgets = {
+            'fecha_inicio': DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control'}
+            ),
+            'fecha_fin_lectiva': DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control'}
+            ),
+        }
 
 # ==========================================
 # FORMULARIOS DE GRUPO DE PROYECTO (SCRUM)

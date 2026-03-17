@@ -20,9 +20,23 @@ class Ficha(models.Model):
         ('Nocturna', 'Nocturna'),
         ('Mixta', 'Mixta'),
     ]
-    codigo_ficha = models.CharField(max_length=8, unique=True, verbose_name='Código de Ficha')
+    
+    # Agregamos las etapas del SENA
+    ETAPA_CHOICES = [
+        ('Lectiva', 'Etapa Lectiva'),
+        ('Productiva', 'Etapa Productiva'),
+        ('Terminada', 'Terminada / Certificada'),
+    ]
+
+    codigo_ficha = models.CharField(max_length=15, unique=True, verbose_name='Código de Ficha') # Le subí a 15 por si acaso los códigos crecen
     programa = models.CharField(max_length=150, verbose_name='Programa de Formación')
     jornada = models.CharField(max_length=10, choices=JORNADA_CHOICES, verbose_name='Jornada')
+    
+    # --- NUEVOS CAMPOS ---
+    fecha_inicio = models.DateField(null=True, blank=True, verbose_name='Fecha de Inicio')
+    fecha_fin_lectiva = models.DateField(null=True, blank=True, verbose_name='Fin Etapa Lectiva')
+    etapa = models.CharField(max_length=15, choices=ETAPA_CHOICES, default='Lectiva', verbose_name='Etapa Actual')
+    is_active = models.BooleanField(default=True, verbose_name='Ficha Activa')
     
     class Meta:
         verbose_name = 'Ficha'

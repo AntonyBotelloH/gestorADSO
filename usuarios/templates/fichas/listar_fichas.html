@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+    
+    <div class="card-header bg-transparent d-flex justify-content-end align-items-center py-3 border-bottom border-secondary-subtle">
+      <a href="{% url 'crear_ficha' %}" class="btn color-verde-sena-bg text-white btn-sm fw-bold shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Nueva Ficha
+      </a>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="tablaDatos" class="table table-hover align-middle w-100">
+          <thead class="table-secondary small text-uppercase">
+            <tr>
+              <th class="ps-3">Código de Ficha</th>
+              <th>Programa de Formación</th>
+              <th>Jornada</th>
+              <th class="text-center">Etapa</th>
+              <th class="text-end pe-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ficha in fichas %}
+              <tr>
+                <td class="ps-3 text-body fw-bold">
+                  <i class="bi bi-layers me-2 text-muted"></i>{{ ficha.codigo_ficha }}
+                </td>
+                
+                <td>
+                  <div class="fw-bold text-body">{{ ficha.programa.nombre|default:ficha.programa }}</div>
+                  <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>Inicio: {{ ficha.fecha_inicio|date:"d M Y"|default:"No registrada" }}</small>
+                </td>
+                
+                <td class="text-muted small">{{ ficha.jornada }}</td>
+                
+                <td class="text-center">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                    {{ ficha.etapa }}
+                  </span>
+                </td>
+                
+                <td class="text-end pe-3">
+                  <div class="btn-group shadow-sm">
+                    <a href="{% url 'editar_ficha' ficha.codigo_ficha %}" class="btn btn-outline-secondary btn-sm" title="Editar Ficha">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <form action="{% url 'cambiar_ficha' %}" method="POST" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="ficha_id" value="{{ ficha.codigo_ficha }}">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm rounded-end" title="Establecer como Contexto Activo">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted">
+                  <i class="bi bi-folder-x display-4 d-block mb-3 opacity-25"></i>
+                  No hay fichas registradas en el sistema.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/datatables.min.js' %}"></script>
+  <script src="{% static 'js/table-config.js' %}"></script>
+{% endblock %}

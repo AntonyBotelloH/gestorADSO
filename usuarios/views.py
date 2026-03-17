@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import Usuario, Ficha
-from .forms import UsuarioForm, UsuarioEditarForm, FichaForm
+from .forms import UsuarioForm, UsuarioEditarForm, FichaForm, FichaEditarForm
 
 def inicio_usuario(request):
     lista_usuarios = Usuario.objects.all().order_by('first_name')
@@ -99,7 +100,6 @@ def set_ficha_activa(request):
     # Si alguien intenta acceder a esta URL escribiéndola en el navegador (GET), lo echamos al inicio
     return redirect('/')
 
-
 def inicio_ficha(request):
     # 1. Leemos el código de la ficha que el instructor seleccionó en el menú lateral
     codigo_seleccionado = request.session.get('ficha_activa_id')
@@ -138,6 +138,21 @@ def inicio_ficha(request):
     }
     
     return render(request, 'fichas/inicio_ficha.html', context)
+@login_required
+def listar_fichas(request):
+    """Listado general de todas las fichas registradas en el sistema."""
+    lista_fichas = Ficha.objects.all()
+
+    context = {
+        'titulo': 'Listado de Fichas',
+        'breadcrumbs': [
+            {'nombre': 'Administración', 'url': '#'},
+            {'nombre': 'Fichas', 'url': ''}
+        ],
+        'fichas': lista_fichas,
+    }
+    
+    return render(request, 'fichas/listar_fichas.html', context)
 def crear_ficha(request):
     if request.method == 'POST':
         form = FichaForm(request.POST)
@@ -163,4 +178,36 @@ def crear_ficha(request):
             {'nombre': 'Nueva Ficha', 'url': ''}
         ],
     }
+    return render(request, 'fichas/agregar_ficha.html', context)
+
+@login_required
+def editar_ficha(request, codigo_ficha):
+    """Permite editar los detalles de una ficha y cambiar su estado activo/inactivo."""
+    # Buscamos la ficha por su código, si no existe lanza un 404
+    ficha = get_object_or_404(Ficha, codigo_ficha=codigo_ficha)
+
+    if request.method == 'POST':
+        # Pasamos la instancia de la ficha para que Django sepa que estamos actualizando, no creando
+        form = FichaEditarForm(request.POST, instance=ficha)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Datos de la Ficha {ficha.codigo_ficha} actualizados correctamente.")
+            return redirect('listar_fichas')
+        else:
+            messages.error(request, "Error al actualizar la ficha. Revisa los datos ingresados.")
+    else:
+        # Si es GET, cargamos el formulario con los datos actuales de la ficha
+        form = FichaEditarForm(instance=ficha)
+
+    context = {
+        'form': form,
+        'titulo': f'Editar Ficha {ficha.codigo_ficha}',
+        'breadcrumbs': [
+            {'nombre': 'Administración', 'url': '#'},
+            {'nombre': 'Listado de Fichas', 'url': '/fichas/listar/'}, 
+            {'nombre': 'Editar', 'url': ''}
+        ],
+    }
+    
+    # Reutilizamos el mismo template de agregar, ya que Crispy Forms se encarga de pintar los inputs
     return render(request, 'fichas/agregar_ficha.html', context)

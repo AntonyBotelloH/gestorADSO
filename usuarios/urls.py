@@ -10,5 +10,7 @@ urlpatterns = [
     
     path('ficha/', inicio_ficha, name='inicio_ficha'),
     path('fichas/crear/', crear_ficha, name='crear_ficha'),
-    
+    path('fichas/listar/', listar_fichas, name='listar_fichas'),
+    path('fichas/cambiar/', set_ficha_activa, name='cambiar_ficha'),
+    path('fichas/editar/<str:codigo_ficha>/', editar_ficha, name='editar_ficha'),
 ]
