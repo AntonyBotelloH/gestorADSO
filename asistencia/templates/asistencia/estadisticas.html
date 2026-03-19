@@ -15,30 +15,39 @@
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #39A900 !important;">
                 <div class="card-body">
                     <h6 class="text-muted fw-bold small text-uppercase">Clases Dictadas</h6>
                     <h2 class="fw-bold color-verde-sena-fn mb-1">{{ total_sesiones }}</h2>
-                    <small class="text-muted">Total sesiones en base de datos</small>
+                    <small class="text-muted">Sesiones en base de datos</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #dc3545 !important;">
                 <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Inasistencias Críticas</h6>
+                    <h6 class="text-muted fw-bold small text-uppercase">Riesgo Deserción</h6>
                     <h2 class="fw-bold color-rojo-alerta-fn mb-1">{{ aprendices_riesgo }}</h2>
-                    <small class="text-muted">Aprendices con riesgo (>15%)</small>
+                    <small class="text-muted">Aprendices con >15% fallas</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #ffc107 !important;">
                 <div class="card-body">
                     <h6 class="text-muted fw-bold small text-uppercase">Retardos Totales</h6>
                     <h2 class="fw-bold text-warning mb-1">{{ retardos_totales }}</h2>
-                    <small class="text-muted">Acumulado general de la ficha</small>
+                    <small class="text-muted">Acumulado de la ficha</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" style="border-left-color: #0dcaf0 !important;">
+                <div class="card-body">
+                    <h6 class="text-muted fw-bold small text-uppercase">Excusas (Justificadas)</h6>
+                    <h2 class="fw-bold text-info mb-1">{{ excusas_totales }}</h2>
+                    <small class="text-muted">Inasistencias con soporte</small>
                 </div>
             </div>
         </div>
@@ -51,6 +60,7 @@
                     <h5 class="mb-0 fw-bold color-negro-suave-fn">Distribución de Novedades</h5>
                 </div>
                 <div class="card-body px-4">
+                    
                     <div class="mb-4">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="fw-bold small text-body">Asistencias Puntuales</span>
@@ -80,6 +90,17 @@
                             <div class="progress-bar bg-warning" role="progressbar" style="width: {{ pct_retardo|stringformat:'f' }}%"></div>
                         </div>
                     </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold small text-body">Excusas Justificadas</span>
+                            <span class="small fw-bold text-info">{{ pct_excusa|floatformat:1 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 12px; border-radius: 10px; background-color: var(--bs-secondary-bg);">
+                            <div class="progress-bar bg-info text-dark" role="progressbar" style="width: {{ pct_excusa|stringformat:'f' }}%"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -137,7 +158,7 @@
     <div class="card shadow-sm border-0 mt-4 bg-body-tertiary border-top border-secondary-subtle border-2">
         <div class="card-body d-flex justify-content-between align-items-center py-3">
             <span class="text-muted small fw-bold"><i class="bi bi-info-circle-fill me-2 color-verde-sena-fn"></i> Información consolidada para reporte de quincena.</span>
-            <button class="btn color-verde-sena-bg text-white btn-sm px-4 fw-bold shadow-sm">
+            <button class="btn color-verde-sena-bg text-white btn-sm px-4 fw-bold shadow-sm" onclick="window.print()">
                 <i class="bi bi-file-earmark-pdf-fill me-1"></i> Descargar Reporte PDF
             </button>
         </div>

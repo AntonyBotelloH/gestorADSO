@@ -59,19 +59,24 @@
                             <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3">Activo</span>
                         </td>
                         <td class="text-center">
-                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Presente" id="pres_{{ aprendiz.id }}" checked>
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Presente" id="pres_{{ aprendiz.id }}" 
+                                {% if not aprendiz.registro_actual or aprendiz.registro_actual.estado == 'Presente' %}checked{% endif %}>
                         </td>
                         <td class="text-center">
-                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Retardo" id="ret_{{ aprendiz.id }}">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Retardo" id="ret_{{ aprendiz.id }}"
+                                {% if aprendiz.registro_actual.estado == 'Retardo' %}checked{% endif %}>
                         </td>
                         <td class="text-center">
-                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Falla" id="fal_{{ aprendiz.id }}">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Falla" id="fal_{{ aprendiz.id }}"
+                                {% if aprendiz.registro_actual.estado == 'Falla' %}checked{% endif %}>
                         </td>
                         <td class="text-center">
-                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Excusa" id="exc_{{ aprendiz.id }}">
+                            <input class="form-check-input border-secondary" type="radio" name="estado_{{ aprendiz.id }}" value="Excusa" id="exc_{{ aprendiz.id }}"
+                                {% if aprendiz.registro_actual.estado == 'Excusa' %}checked{% endif %}>
                         </td>
                         <td class="pe-4">
-                            <input type="text" name="comentario_{{ aprendiz.id }}" id="com_{{ aprendiz.id }}" class="form-control form-control-sm bg-body text-body border-secondary-subtle shadow-none" placeholder="Opcional...">
+                            <input type="text" name="comentario_{{ aprendiz.id }}" id="com_{{ aprendiz.id }}" class="form-control form-control-sm bg-body text-body border-secondary-subtle shadow-none" placeholder="Opcional..." 
+                                value="{{ aprendiz.registro_actual.comentario|default:'' }}">
                         </td>
                     </tr>
                     {% empty %}

@@ -77,24 +77,27 @@ def inicio_asistencia(request):
         
         messages.success(request, "¡Asistencia guardada correctamente!")
         if sesion_id:
-            return redirect(f"/asistencia/?sesion_id={sesion_id}")
-        return redirect('inicio_asistencia')
+            return redirect('historial_asistencia')
+        return redirect('historial_asistencia')
 
     # --- ESTA ES LA PARTE QUE FALTABA PARA QUE LA PÁGINA RENDERICE BIEN ---
     registros_hoy = RegistroAsistencia.objects.filter(sesion=sesion)
-    dict_registros = {reg.aprendiz.id: reg for reg in registros_hoy}
+    # Usamos aprendiz_id por seguridad
+    dict_registros = {reg.aprendiz_id: reg for reg in registros_hoy}
+
+    # Inyectamos el registro actual directamente en el objeto aprendiz
+    for aprendiz in aprendices:
+        aprendiz.registro_actual = dict_registros.get(aprendiz.id)
 
     contexto = {
         'sesion': sesion,
-        'aprendices': aprendices,
-        'dict_registros': dict_registros,
+        'aprendices': aprendices, # Ahora cada aprendiz trae su .registro_actual pegado
         'breadcrumbs': [
             {'nombre': 'Asistencia', 'url': '/asistencia/'},
             {'nombre': 'Toma de Asistencia', 'url': ''}
         ]
     }
     return render(request, 'asistencia/asistencia.html', contexto)
-
 
 @login_required
 @rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
@@ -107,12 +110,19 @@ def historial_asistencias(request):
         return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
-    total_aprendices = Usuario.objects.filter(rol='APRENDIZ').count()
+    
+    # CORRECCIÓN 1: Contar solo el quórum de esta ficha específica (Aprendices + Vocero)
+    total_aprendices = Usuario.objects.filter(
+        ficha=ficha, 
+        rol__in=['APRENDIZ', 'VOCERO']
+    ).count()
 
+    # CORRECCIÓN 2: Agregar total_excusas al annotate
     sesiones = SesionClase.objects.filter(ficha=ficha).annotate(
         total_presentes=Count('registros', filter=Q(registros__estado='Presente')),
         total_retardos=Count('registros', filter=Q(registros__estado='Retardo')),
-        total_fallas=Count('registros', filter=Q(registros__estado='Falla'))
+        total_fallas=Count('registros', filter=Q(registros__estado='Falla')),
+        total_excusas=Count('registros', filter=Q(registros__estado='Excusa')) # <--- Aquí está la magia
     ).order_by('-fecha')
 
     fecha_inicio = request.GET.get('fecha_inicio')
@@ -132,8 +142,6 @@ def historial_asistencias(request):
         ]
     }
     return render(request, 'asistencia/historial.html', contexto)
-
-
 @login_required
 @rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def estadisticas_asistencia(request):
@@ -147,7 +155,11 @@ def estadisticas_asistencia(request):
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
     total_sesiones = SesionClase.objects.filter(ficha=ficha).count()
     
-    aprendices = Usuario.objects.filter(rol='APRENDIZ').annotate(
+    # CORRECCIÓN 1: Filtrar estrictamente por la ficha seleccionada y agregar al VOCERO
+    aprendices = Usuario.objects.filter(
+        ficha=ficha,
+        rol__in=['APRENDIZ', 'VOCERO']
+    ).annotate(
         total_fallas=Count('registroasistencia', filter=Q(registroasistencia__estado='Falla', registroasistencia__sesion__ficha=ficha)),
         total_retardos=Count('registroasistencia', filter=Q(registroasistencia__estado='Retardo', registroasistencia__sesion__ficha=ficha)),
         total_excusas=Count('registroasistencia', filter=Q(registroasistencia__estado='Excusa', registroasistencia__sesion__ficha=ficha))
@@ -155,6 +167,7 @@ def estadisticas_asistencia(request):
 
     aprendices_riesgo = 0
     retardos_totales = sum(a.total_retardos for a in aprendices)
+    excusas_totales = sum(a.total_excusas for a in aprendices) # <-- NUEVO
 
     for aprendiz in aprendices:
         if total_sesiones > 0:
@@ -162,7 +175,7 @@ def estadisticas_asistencia(request):
         else:
             aprendiz.porcentaje_falla = 0
             
-        # Alerta crítica a partir de 5 fallas
+        # Alerta crítica a partir de 5 fallas (Riesgo de Deserción)
         if aprendiz.total_fallas >= 5:
             aprendices_riesgo += 1
 
@@ -170,24 +183,30 @@ def estadisticas_asistencia(request):
     aprendices_ordenados = sorted(aprendices_con_fallas, key=lambda x: x.total_fallas, reverse=True)
 
     total_registros = RegistroAsistencia.objects.filter(sesion__ficha=ficha).count()
-    pct_asistencia = pct_falla = pct_retardo = 0
+    
+    # CORRECCIÓN 2: Inicializar y calcular también el porcentaje de Excusas
+    pct_asistencia = pct_falla = pct_retardo = pct_excusa = 0
     
     if total_registros > 0:
         asistencias = RegistroAsistencia.objects.filter(sesion__ficha=ficha, estado='Presente').count()
         fallas = RegistroAsistencia.objects.filter(sesion__ficha=ficha, estado='Falla').count()
         retardos = RegistroAsistencia.objects.filter(sesion__ficha=ficha, estado='Retardo').count()
+        excusas = RegistroAsistencia.objects.filter(sesion__ficha=ficha, estado='Excusa').count()
         
         pct_asistencia = (asistencias / total_registros) * 100
         pct_falla = (fallas / total_registros) * 100
         pct_retardo = (retardos / total_registros) * 100
+        pct_excusa = (excusas / total_registros) * 100
 
     contexto = {
         'total_sesiones': total_sesiones,
         'aprendices_riesgo': aprendices_riesgo,
         'retardos_totales': retardos_totales,
+        'excusas_totales': excusas_totales,  # <-- AQUÍ ENVIAMOS EL NUEVO DATO
         'pct_asistencia': pct_asistencia,
         'pct_falla': pct_falla,
         'pct_retardo': pct_retardo,
+        'pct_excusa': pct_excusa,
         'aprendices': aprendices_ordenados,
         'breadcrumbs': [
             {'nombre': 'Asistencia', 'url': '/asistencia/'},
