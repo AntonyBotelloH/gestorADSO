@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Nuevo Plan de Mejoramiento</h3>
+            <p class="text-muted small mb-0">Asignación de compromisos y estrategias pedagógicas</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'detalle_llamado' llamado.id %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+                <i class="bi bi-x-circle me-1"></i> Cancelar
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
+                <div class="card-body">
+                    <h6 class="text-muted fw-bold text-uppercase mb-3"><i class="bi bi-info-circle me-2"></i>Resumen del Caso</h6>
+                    
+                    <p class="mb-1 small text-muted">Aprendiz:</p>
+                    <p class="fw-bold text-body mb-3">{{ llamado.aprendiz.get_full_name }}</p>
+
+                    <p class="mb-1 small text-muted">Falta / Motivo:</p>
+                    <p class="fw-bold text-danger mb-3">{{ llamado.motivo_principal }}</p>
+
+                    <p class="mb-1 small text-muted">Instancia:</p>
+                    <p class="fw-bold text-body mb-0">{{ llamado.get_instancia_display }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 border-start border-4" style="border-left-color: #39A900 !important;">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-check me-2 text-success"></i>Configuración del Plan</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Fecha de Inicio:</label>
+                                {{ form.fecha_inicio }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite (Fin):</label>
+                                {{ form.fecha_fin }}
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Estrategias Asignadas (Selección múltiple):</label>
+                                {{ form.estrategias }}
+                                <small class="text-muted d-block mt-1"><i class="bi bi-lightbulb text-warning me-1"></i>Puedes seleccionar varias presionando Ctrl (Windows) o Cmd (Mac).</small>
+                            </div>
+
+                            <div class="col-md-12 mt-4">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Estado Inicial:</label>
+                                {{ form.estado }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Observaciones (Opcional):</label>
+                                {{ form.observaciones }}
+                            </div>
+                        </div>
+
+                        <hr class="my-4 border-secondary opacity-25">
+                        <div class="text-end">
+                            <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm">
+                                <i class="bi bi-save me-1"></i> Guardar Plan de Mejoramiento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -40,9 +40,8 @@ def inicio(request):
         # --- QUÓRUM (Asistencia) ---
         total_aprendices = Usuario.objects.filter(
             ficha__codigo_ficha=ficha_actual, 
-            rol='APRENDIZ'
+            rol__in=['APRENDIZ', 'VOCERO']
         ).count()
-
         sesion_hoy = SesionClase.objects.filter(ficha__codigo_ficha=ficha_actual, fecha=hoy).first()
         if sesion_hoy:
             asistentes_hoy = RegistroAsistencia.objects.filter(
@@ -82,24 +81,22 @@ def inicio(request):
                 'estado': p.estado, 
                 'color': color
             })
-
         # --- ALERTAS DISCIPLINARIAS ---
         alertas_pendientes = LlamadoAtencion.objects.filter(
             ficha__codigo_ficha=ficha_actual
-        ).exclude(plan_mejora__estado='Cumplido').count()
+        ).exclude(plan_mejoramiento__estado='Cumplido').count()
         
         ultimos_llamados = LlamadoAtencion.objects.filter(
             ficha__codigo_ficha=ficha_actual
-        ).order_by('-fecha_incidente')[:5]
+        ).order_by('-fecha_registro')[:5]
         
         for llamado in ultimos_llamados:
-            color = 'warning' if llamado.instancia == 'Escrito' else 'info' if llamado.instancia == 'Verbal' else 'dark'
+            color = 'warning' if llamado.instancia == 'Escrito' else 'info' if llamado.instancia == 'Verbal' else 'danger'
             alertas_reales.append({
                 'aprendiz': llamado.aprendiz.get_full_name(), 
                 'tipo': llamado.get_instancia_display(), 
                 'color': color
             })
-
     # ==========================================
     # 3. TAREAS (Ficha actual + Generales)
     # ==========================================

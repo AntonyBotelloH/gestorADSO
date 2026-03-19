@@ -335,12 +335,12 @@
       <li class="nav-item mb-1">
         <a href="#collapseLlamados"
           data-bs-toggle="collapse"
-          class="nav-link rounded d-flex align-items-center text-white {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}
+          class="nav-link rounded d-flex align-items-center text-white {% if 'llamado' in request.resolver_match.url_name or 'estrategia' in request.resolver_match.url_name or 'estadistica' in request.resolver_match.url_name or 'plan' in request.resolver_match.url_name %}
 
           {% else %}
             collapsed
           {% endif %}"
-          aria-expanded="{% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}
+          aria-expanded="{% if 'llamado' in request.resolver_match.url_name or 'estrategia' in request.resolver_match.url_name or 'estadistica' in request.resolver_match.url_name or 'plan' in request.resolver_match.url_name %}
             true
           {% else %}
             false
@@ -349,11 +349,11 @@
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
 
-        <div class="collapse {% if 'llamado' in request.resolver_match.url_name or 'estrategias' in request.resolver_match.url_name or 'estadisticas' in request.resolver_match.url_name %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if 'llamado' in request.resolver_match.url_name or 'estrategia' in request.resolver_match.url_name or 'estadistica' in request.resolver_match.url_name or 'plan' in request.resolver_match.url_name %}show{% endif %}" id="collapseLlamados" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
               <a href="{% url 'listar_llamados' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_llamados' or request.resolver_match.url_name == 'detalle_llamado' %}
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'listar_llamados' or request.resolver_match.url_name == 'detalle_llamado' or 'plan' in request.resolver_match.url_name %}
                   text-white fw-bold color-verde-sena-fn
                 {% else %}
                   text-white-50
@@ -363,7 +363,7 @@
             </li>
             <li>
               <a href="{% url 'estrategias' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'estrategias' %}
+                class="nav-link py-1 {% if 'estrategia' in request.resolver_match.url_name %}
                   text-white fw-bold color-verde-sena-fn
                 {% else %}
                   text-white-50
@@ -373,7 +373,7 @@
             </li>
             <li>
               <a href="{% url 'estadisticas' %}"
-                class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas' %}
+                class="nav-link py-1 {% if 'estadistica' in request.resolver_match.url_name %}
                   text-white fw-bold color-verde-sena-fn
                 {% else %}
                   text-white-50

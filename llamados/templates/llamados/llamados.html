@@ -8,43 +8,49 @@
             <p class="text-muted small mb-0">Gestión de novedades y llamados de atención de la ficha</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="#" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-gear me-1"></i> Estrategias</a>
-            <a href="#" class="btn color-verde-sena-bg text-white fw-bold shadow-sm"><i class="bi bi-bar-chart-line me-1"></i> Estadísticas</a>
+            <a href="{% url 'estrategias' %}" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-gear me-1"></i> Estrategias</a>
+            <a href="{% url 'estadisticas' %}" class="btn color-verde-sena-bg text-white fw-bold shadow-sm"><i class="bi bi-bar-chart-line me-1"></i> Estadísticas</a>
         </div>
     </div>
 
+    {% if ficha_activa %}
     <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
         <div class="card-header bg-transparent py-3">
-            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-plus me-2 text-success"></i>Registrar Novedad</h5>
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-plus me-2 text-success"></i>Registrar Novedad (Acuerdo 009/2024)</h5>
         </div>
         <div class="card-body bg-body-tertiary rounded-bottom">
-            <form class="row g-4">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Aprendiz Implicado:</label>
-                        <select class="form-select border-secondary-subtle bg-body-tertiary text-body shadow-none">
-                            <option selected disabled>-- Seleccione un aprendiz --</option>
-                            <option>Juan Pérez</option>
-                            <option>Samuel Echeverria Bernate</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Instancia del Llamado:</label>
-                        <select class="form-select border-secondary-subtle bg-body-tertiary text-body shadow-none">
-                            <option>🟡 Llamado Verbal</option>
-                            <option>🔴 Llamado Escrito</option>
-                            <option>⚫ Comité de Evaluación</option>
-                        </select>
-                    </div>
+            <form method="POST" action="{% url 'listar_llamados' %}" class="row g-3" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Aprendiz Implicado:</label>
+                    {{ form.aprendiz }}
                 </div>
-                <div class="col-md-6 d-flex flex-column">
-                    <div class="mb-3 flex-grow-1 d-flex flex-column">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos:</label>
-                        <textarea class="form-control border-secondary-subtle bg-body-tertiary text-body shadow-none flex-grow-1" rows="4" placeholder="Detalle la situación ocurrida..."></textarea>
-                    </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Naturaleza de la Falta:</label>
+                    {{ form.tipo_falta }}
                 </div>
-                <div class="col-12 text-end mt-2">
-                    <button type="button" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm">Registrar Caso</button>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Gravedad:</label>
+                    {{ form.gravedad }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Instancia / Sanción:</label>
+                    {{ form.instancia }}
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Motivo Principal:</label>
+                    {{ form.motivo_principal }}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos:</label>
+                    {{ form.descripcion }}
+                </div>
+                
+                <div class="col-12 text-end mt-3">
+                    <button type="submit" class="btn color-verde-sena-bg text-white fw-bold px-4 shadow-sm"><i class="bi bi-journal-plus me-1"></i> Registrar Caso</button>
                 </div>
             </form>
         </div>
@@ -61,36 +67,67 @@
                         <tr>
                             <th class="ps-4 py-3">Fecha</th>
                             <th>Aprendiz</th>
+                            <th>Clasificación</th>
                             <th>Instancia</th>
                             <th>Motivo Principal</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="border-top-0">
+                        {% for llamado in llamados %}
                         <tr>
-                            <td class="ps-4 text-muted small">20 Feb 2026</td>
-                            <td class="text-body fw-bold">Juan Pérez</td>
-                            <td><span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Escrito</span></td>
-                            <td class="text-muted text-truncate" style="max-width: 200px;">Inasistencia reiterada.</td>
+                            <td class="ps-4 text-muted small">{{ llamado.fecha_registro|date:"d M Y" }}</td>
+                            <td class="text-body fw-bold">{{ llamado.aprendiz.get_full_name }}</td>
+                            <td>
+                                <span class="d-block text-body">{{ llamado.get_tipo_falta_display }}</span>
+                                <small class="text-muted">{{ llamado.get_gravedad_display }}</small>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if llamado.instancia == 'Verbal' %}bg-info text-dark
+                                    {% elif llamado.instancia == 'Escrito' %}bg-warning text-dark
+                                    {% elif llamado.instancia == 'Comite' %}bg-danger text-white
+                                    {% else %}bg-dark text-white{% endif %} 
+                                    px-3 py-2 rounded-pill">
+                                    {{ llamado.get_instancia_display }}
+                                </span>
+                            </td>
+                            <td class="text-muted text-truncate" style="max-width: 200px;" title="{{ llamado.motivo_principal }}">
+                                {{ llamado.motivo_principal }}
+                            </td>
                             <td class="text-end pe-4">
-                                <a href="#" class="btn btn-outline-secondary btn-sm fw-bold me-1">Ver Detalle</a>
-                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta"><i class="bi bi-file-earmark-pdf"></i></button>
+                                <a href="{% url 'detalle_llamado' llamado.pk %}" class="btn btn-outline-secondary btn-sm fw-bold me-1" title="Ver Detalle"><i class="bi bi-eye"></i> Ver</a>
+                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" {% if not llamado.acta_adjunta %}disabled{% endif %}>
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </button>
                             </td>
                         </tr>
+                        {% empty %}
                         <tr>
-                            <td class="ps-4 text-muted small">15 Feb 2026</td>
-                            <td class="text-body fw-bold">Samuel Echeverria</td>
-                            <td><span class="badge bg-info text-dark px-3 py-2 rounded-pill">Verbal</span></td>
-                            <td class="text-muted text-truncate" style="max-width: 200px;">Uso indebido de equipos.</td>
-                            <td class="text-end pe-4">
-                                <a href="#" class="btn btn-outline-secondary btn-sm fw-bold me-1">Ver Detalle</a>
-                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" disabled><i class="bi bi-file-earmark-pdf"></i></button>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-shield-check display-6 d-block mb-3 opacity-25"></i>
+                                No hay novedades disciplinarias registradas en esta ficha.
                             </td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+    
+    {% else %}
+    <div class="row justify-content-center align-items-center" style="min-height: 50vh;">
+        <div class="col-md-6 text-center">
+            <i class="bi bi-exclamation-triangle display-1 text-muted mb-4 d-block opacity-25"></i>
+            <h2 class="fw-bold text-body mb-3">Contexto no definido</h2>
+            <p class="text-muted fs-5 mb-4">Por favor, selecciona una ficha de formación en el menú lateral para gestionar sus llamados de atención.</p>
+            <button class="btn color-verde-sena-bg text-white px-4 py-2 fw-bold shadow-sm" onclick="document.getElementById('sidebarFichaSelect').focus();">
+                <i class="bi bi-arrow-left-circle me-2"></i> Seleccionar Ficha
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}
