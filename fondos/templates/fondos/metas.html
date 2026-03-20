@@ -98,5 +98,79 @@
         </div>
     </div>
 
+    <div class="mt-5">
+        <div class="card shadow-sm border-0 bg-body-tertiary">
+            <div class="card-header bg-transparent py-3 border-bottom border-secondary-subtle">
+                <h5 class="fw-bold mb-0 color-negro-suave-fn">
+                    <i class="bi bi-clock-history me-2 text-info"></i>Histórico de Metas
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if todas_metas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-secondary small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Nombre</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Valor Objetivo</th>
+                                    <th class="text-center">Fecha Límite</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for meta in todas_metas %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="fw-semibold text-body">{{ meta.nombre }}</span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ meta.descripcion|default:"-" }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary-subtle text-primary px-3">$ {{ meta.valor_objetivo|floatformat:0 }}</span>
+                                    </td>
+                                    <td class="text-center text-muted small">
+                                        {{ meta.fecha_limite|date:"d/m/Y" }}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if meta.activa %}
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3">ACTIVA</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-body px-3">INACTIVA</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            {% if not meta.activa %}
+                                                <a href="{% url 'activar_meta' meta.id %}" class="btn btn-outline-success btn-sm shadow-sm" title="Establecer como activa">
+                                                    <i class="bi bi-check-circle"></i> Activar
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'finalizar_meta' meta.id %}" class="btn btn-outline-danger btn-sm shadow-sm" title="Finalizar esta meta">
+                                                    <i class="bi bi-x-circle"></i> Finalizar
+                                                </a>
+                                            {% endif %}
+                                            <a href="{% url 'editar_meta' meta.id %}" class="btn btn-outline-primary btn-sm shadow-sm">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="py-5 text-center">
+                        <i class="bi bi-clock-history display-5 text-muted opacity-25 mb-3 d-block"></i>
+                        <p class="text-muted fw-bold">No hay histórico de metas.</p>
+                        <small class="text-muted d-block mt-n2">Crea una nueva meta en el formulario superior.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

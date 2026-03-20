@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">{{ titulo }}</h3>
+            <p class="text-muted small mb-0">Actualiza los detalles de la meta financiera</p>
+        </div>
+        <a href="{% url 'metas' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 border-top border-4 bg-body-tertiary" style="border-top-color: #39A900 !important;">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="fw-bold mb-0 color-negro-suave-fn"><i class="bi bi-pencil-square me-2 text-primary"></i>Editar Meta</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Meta:</label>
+                            <input type="text" name="nombre" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. Visita técnica a Bogotá" value="{{ meta.nombre }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Justificación:</label>
+                            <textarea name="descripcion" class="form-control border-secondary-subtle bg-body text-body shadow-none" rows="3" placeholder="Transporte y viáticos de la ficha">{{ meta.descripcion }}</textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Valor Requerido ($):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+                                    <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. 250000" value="{{ meta.valor_objetivo }}" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite:</label>
+                                <input type="date" name="fecha_limite" class="form-control border-secondary-subtle bg-body text-body shadow-none" value="{{ meta.fecha_limite|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="{% url 'metas' %}" class="btn btn-outline-secondary w-50 fw-bold">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn color-verde-sena-bg text-white w-50 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

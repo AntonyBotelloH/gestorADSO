@@ -10,6 +10,9 @@ urlpatterns = [
     
     # Configuración de Metas Financieras
     path('metas/', views.configurar_metas, name='metas'),
+    path('metas/<int:meta_id>/editar/', views.editar_meta, name='editar_meta'),
+    path('metas/<int:meta_id>/activar/', views.activar_meta, name='activar_meta'),
+    path('metas/<int:meta_id>/finalizar/', views.finalizar_meta, name='finalizar_meta'),
     
     # Detalle / Comprobante en PDF o vista web de un movimiento específico
     path('recibo/<int:movimiento_id>/', views.ver_recibo, name='ver_recibo'),
