@@ -1,5 +1,5 @@
 from django import forms
-from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento
+from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento, FaltaReglamento
 from usuarios.models import Usuario
 
 class PlanMejoramientoForm(forms.ModelForm):
@@ -34,33 +34,50 @@ class PlanMejoramientoForm(forms.ModelForm):
 class LlamadoAtencionForm(forms.ModelForm):
     class Meta:
         model = LlamadoAtencion
-        # Agregamos los nuevos campos a la lista
-        fields = ['aprendiz', 'tipo_falta', 'gravedad', 'instancia', 'motivo_principal', 'descripcion']
+        # OJO: Cambiamos motivo_principal por falta_cometida
+        fields = ['aprendiz', 'falta_cometida', 'tipo_falta', 'gravedad', 'instancia', 'descripcion']
         
         widgets = {
-            'aprendiz': forms.Select(attrs={'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'}),
-            # Widgets para los nuevos campos
-            'tipo_falta': forms.Select(attrs={'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'}),
-            'gravedad': forms.Select(attrs={'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'}),
-            
-            'instancia': forms.Select(attrs={'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'}),
-            'motivo_principal': forms.TextInput(attrs={'class': 'form-control border-secondary-subtle bg-body-tertiary text-body shadow-none', 'placeholder': 'Ej. Plagio, Inasistencia, Agresión...'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-control border-secondary-subtle bg-body-tertiary text-body shadow-none', 'rows': 4, 'placeholder': 'Detalle objetivamente la situación ocurrida...'}),
+            'aprendiz': forms.Select(attrs={
+                'class': 'form-select select2-busqueda border-secondary-subtle bg-body-tertiary text-body shadow-none'
+            }),
+            # El nuevo catálogo del Acuerdo 009
+            'falta_cometida': forms.Select(attrs={
+                'class': 'form-select select2-busqueda border-secondary-subtle bg-body-tertiary text-body shadow-none'
+            }),
+            # Estos dos se llenarán solos con JavaScript, les ponemos una clase visual para diferenciarlos
+            'tipo_falta': forms.Select(attrs={
+                'class': 'form-select border-secondary-subtle bg-secondary text-white shadow-none bg-opacity-25'
+            }),
+            'gravedad': forms.Select(attrs={
+                'class': 'form-select border-secondary-subtle bg-secondary text-white shadow-none bg-opacity-25'
+            }),
+            'instancia': forms.Select(attrs={
+                'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control border-secondary-subtle bg-body-tertiary text-body shadow-none', 
+                'rows': 4, 
+                'placeholder': 'Detalle objetivamente la situación ocurrida...'
+            }),
         }
 
     def __init__(self, ficha_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Filtramos dinámicamente los aprendices
+        # Filtramos dinámicamente los aprendices y voceros de la ficha
         if ficha_id:
-            # Nota: Asegúrate de que esta consulta coincida con cómo relacionaste Usuario y Ficha en tu proyecto.
-            # Si un aprendiz pertenece a una ficha mediante un campo ForeignKey llamado 'ficha':
-            self.fields['aprendiz'].queryset = Usuario.objects.filter(rol='APRENDIZ', ficha__codigo_ficha=ficha_id)
+            self.fields['aprendiz'].queryset = Usuario.objects.filter(
+                rol__in=['APRENDIZ', 'VOCERO'], 
+                ficha__codigo_ficha=ficha_id
+            ).order_by('first_name')
             self.fields['aprendiz'].empty_label = "-- Seleccione el aprendiz implicado --"
         else:
-            # Si por alguna razón no hay ficha, vaciamos la lista por seguridad
             self.fields['aprendiz'].queryset = Usuario.objects.none()
             
+        # Filtro estético para el catálogo normativo
+        self.fields['falta_cometida'].empty_label = "-- Busque y seleccione la tipificación de la falta --"
+
 
 class EstrategiaPedagogicaForm(forms.ModelForm):
     class Meta:

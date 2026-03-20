@@ -1,9 +1,13 @@
 from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento
+from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento, FaltaReglamento
 from .forms import EstrategiaPedagogicaForm, LlamadoAtencionForm, PlanMejoramientoForm
 from usuarios.models import Ficha
+from django.contrib.auth.decorators import login_required
+
+from django.http import JsonResponse
+
 
 def listar_llamados(request):
     """Vista principal para registrar y listar los llamados de atención de una ficha."""
@@ -263,3 +267,34 @@ def estadisticas(request):
         ]
     }
     return render(request, 'llamados/estadisticas.html', context)
+
+
+# ... tus otras vistas ...
+
+def api_detalle_falta(request, falta_id):
+    """Devuelve la gravedad y tipo de una falta tipificada para autocompletar en el frontend"""
+    try:
+        falta = FaltaReglamento.objects.get(id=falta_id)
+        return JsonResponse({
+            'success': True,
+            'tipo_falta': falta.tipo_falta,
+            'gravedad': falta.gravedad
+        })
+    except FaltaReglamento.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Falta no encontrada'})
+    
+@login_required
+def catalogo_faltas(request):
+    """Vista para visualizar el catálogo del Acuerdo 009 en formato tarjetas."""
+    # Traemos todas las faltas ordenadas por tipo y gravedad
+    faltas = FaltaReglamento.objects.all().order_by('tipo_falta', 'gravedad', 'capitulo')
+    
+    contexto = {
+        'titulo': 'Manual de Convivencia - Catálogo de Faltas',
+        'faltas': faltas,
+        'breadcrumbs': [
+            {'nombre': 'Llamados', 'url': '/llamados/'},
+            {'nombre': 'Manual de Convivencia', 'url': ''}
+        ]
+    }
+    return render(request, 'manual/catalogo_faltas.html', contexto)

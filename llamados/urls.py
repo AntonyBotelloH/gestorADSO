@@ -12,4 +12,6 @@ urlpatterns = [
     path('estrategias/eliminar/<int:pk>/', views.eliminar_estrategia, name='eliminar_estrategia'),
     
     path('estadisticas/', views.estadisticas, name='estadisticas'),
+    path('api/falta/<int:falta_id>/', views.api_detalle_falta, name='api_detalle_falta'),
+    path('manual-convivencia/', views.catalogo_faltas, name='catalogo_faltas'),
 ]
