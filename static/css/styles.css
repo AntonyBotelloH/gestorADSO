@@ -1,3 +1,86 @@
+/* ==========================================
+   ESTILOS SELECT2 - APARIENCIA BOOTSTRAP 5 NATIVO
+   ========================================== */
+
+/* 1. Igualar la caja cerrada al form-select de Bootstrap 5 */
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: calc(1.5em + .75rem + 2px) !important;
+    padding: .375rem 2.25rem .375rem .75rem !important;
+    font-family: inherit !important;
+    font-size: 1rem !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-tertiary-bg) !important;
+    border: 1px solid var(--bs-border-color-translucent) !important;
+    border-radius: var(--bs-border-radius) !important;
+    box-shadow: none !important;
+}
+
+/* 2. Centrar texto verticalmente */
+.select2-container--bootstrap-5 .select2-selection .select2-selection__rendered {
+    padding: 0 !important;
+    line-height: 1.5 !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* 3. Flecha nativa de Bootstrap 5 (reemplaza el triángulo de Select2) */
+.select2-container--bootstrap-5 .select2-selection__arrow {
+    position: absolute !important;
+    top: 50% !important;
+    right: .75rem !important;
+    width: 16px !important;
+    height: 16px !important;
+    transform: translateY(-50%) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-size: 16px 12px !important;
+}
+.select2-container--bootstrap-5 .select2-selection__arrow b {
+    display: none !important; /* Oculta la flecha por defecto */
+}
+
+/* 4. Efecto Focus azul de Bootstrap */
+.select2-container--bootstrap-5.select2-container--focus .select2-selection {
+    border-color: #86b7fe !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25) !important;
+}
+
+
+/* ==========================================
+   SOPORTE PARA MODO OSCURO (DARK THEME)
+   ========================================== */
+
+/* Caja cerrada en modo oscuro */
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+    border-color: var(--bs-border-color) !important;
+}
+
+/* Flecha SVG en modo oscuro (se vuelve gris clarito para verse en el fondo negro) */
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection__arrow {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Lista desplegable abierta en modo oscuro */
+[data-bs-theme="dark"] .select2-dropdown {
+    background-color: var(--bs-body-bg) !important;
+    border-color: var(--bs-border-color) !important;
+}
+
+/* Texto de los aprendices en la lista */
+[data-bs-theme="dark"] .select2-results__option {
+    color: var(--bs-body-color) !important;
+    background-color: transparent !important;
+}
+
+/* Hover al pasar el mouse por un aprendiz (Verde SENA) */
+[data-bs-theme="dark"] .select2-results__option--highlighted[aria-selected] {
+    background-color: #39A900 !important; 
+    color: white !important;
+}
 .color-verde-sena-bg {
     background-color: #39A900 !important;
 }
