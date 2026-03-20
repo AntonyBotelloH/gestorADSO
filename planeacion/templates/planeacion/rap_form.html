@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 bg-body-tertiary">
+                <div class="card-header bg-transparent py-3 border-bottom border-secondary-subtle">
+                    <h5 class="mb-0 fw-bold text-body">{{ titulo }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <a href="{% url 'listar_raps' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn color-verde-sena-bg text-white">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

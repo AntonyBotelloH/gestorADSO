@@ -50,7 +50,9 @@
         <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
             <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom border-secondary-subtle">
                 <h5 class="mb-0 fw-bold text-body">Cronograma de Actividades</h5>
-                <a href="{% url "crear_actividad" %}" class="btn color-verde-sena-bg text-white btn-sm fw-bold shadow-sm"><i class="bi bi-plus-lg me-1"></i> Nueva Actividad</a>
+                <div>
+                    <a href="{% url "crear_actividad" %}" class="btn color-verde-sena-bg text-white btn-sm fw-bold shadow-sm"><i class="bi bi-plus-lg me-1"></i> Nueva Actividad</a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive overflow-hidden">
@@ -70,12 +72,12 @@
                             <tr>
                                 <td class="ps-3">
                                     <span class="badge 
-                                        {% if actividad.fase.nombre == 'Análisis' %}bg-secondary-subtle text-body border-secondary-subtle
-                                        {% elif actividad.fase.nombre == 'Planeación' %}bg-primary-subtle text-primary border-primary-subtle
-                                        {% elif actividad.fase.nombre == 'Ejecución' %}bg-warning-subtle text-warning-emphasis border-warning-subtle
+                                        {% if actividad.fase == 'Análisis' %}bg-secondary-subtle text-body border-secondary-subtle
+                                        {% elif actividad.fase == 'Planeación' %}bg-primary-subtle text-primary border-primary-subtle
+                                        {% elif actividad.fase == 'Ejecución' %}bg-warning-subtle text-warning-emphasis border-warning-subtle
                                         {% else %}bg-info-subtle text-info border-info-subtle{% endif %} 
                                         border rounded-pill">
-                                        {{ actividad.fase.nombre }}
+                                        {{ actividad.fase }}
                                     </span>
                                 </td>
                                 
@@ -112,8 +114,8 @@
                                 
                                 <td class="text-end pe-3">
                                     <div class="btn-group shadow-sm">
-                                        <button class="btn btn-outline-secondary btn-sm" title="Ver detalles"><i class="bi bi-eye"></i></button>
-                                        <button class="btn btn-outline-secondary btn-sm" title="Editar actividad"><i class="bi bi-pencil"></i></button>
+                                        <a href="{% url 'editar_actividad' actividad.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar actividad"><i class="bi bi-pencil"></i></a>
+                                        <a href="{% url 'detalle_actividad' actividad.pk %}" class="btn btn-outline-secondary btn-sm" title="Ver detalles"><i class="bi bi-eye"></i></a>
                                     </div>
                                 </td>
                             </tr>

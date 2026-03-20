@@ -1,9 +1,11 @@
 import pandas as pd
-import re  
+import re
+import io
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from planeacion.forms import ActividadPlaneacionForm
+from planeacion.forms import ActividadPlaneacionForm, CompetenciaForm, ResultadoAprendizajeForm
 from .models import Competencia, ResultadoAprendizaje, ActividadPlaneacion
 from usuarios.models import Ficha
 
@@ -21,7 +23,8 @@ def inicio_planeacion(request):
     if codigo_ficha:
         ficha = get_object_or_404(Ficha, codigo_ficha=codigo_ficha)
         # prefetch_related es OBLIGATORIO para los campos ManyToMany (raps) para no saturar la BD
-        actividades = ActividadPlaneacion.objects.filter(ficha=ficha).select_related('fase', 'instructor').prefetch_related('raps').order_by('fecha_inicio')
+        # 'fase' es CharField con choices, no es relación, por eso no debe ir en select_related
+        actividades = ActividadPlaneacion.objects.filter(ficha=ficha).select_related('instructor').prefetch_related('raps').order_by('fecha_inicio')
         
         # Cálculos para el Dashboard (Tarjetas superiores)
         total_actividades = actividades.count()
@@ -37,7 +40,7 @@ def inicio_planeacion(request):
         'act_terminadas': act_terminadas,
         'act_pendientes': act_pendientes,
         'breadcrumbs': [
-            {'nombre': 'Inicio', 'url': '/'},
+            
             {'nombre': 'Planeación', 'url': ''}
         ]
     }
@@ -45,20 +48,133 @@ def inicio_planeacion(request):
 def listar_raps(request):
     """Lista todos los Resultados de Aprendizaje."""
     raps = ResultadoAprendizaje.objects.all().select_related('competencia')
+    ficha_activa_id = request.session.get('ficha_activa_id')
+    ficha_activa = None
+    if ficha_activa_id:
+        ficha_activa = Ficha.objects.filter(codigo_ficha=ficha_activa_id).first()
+
     return render(request, 'planeacion/rap_list.html', {
         'titulo': 'Resultados de Aprendizaje',
         'raps': raps,
-        'breadcrumbs': [{'nombre': 'Inicio', 'url': '/'}, {'nombre': 'RAPs', 'url': ''}]
+        'ficha_activa': ficha_activa,
+        'breadcrumbs': [ {'nombre': 'RAPs', 'url': ''}]
     })
 
 def listar_competencias(request):
     """Lista todas las Competencias."""
-    competencias = Competencia.objects.all()
+    competencias = Competencia.objects.all().order_by('codigo')
+    ficha_activa_id = request.session.get('ficha_activa_id')
+    ficha_activa = None
+    if ficha_activa_id:
+        ficha_activa = Ficha.objects.filter(codigo_ficha=ficha_activa_id).first()
+    
     return render(request, 'planeacion/competencia_list.html', {
         'titulo': 'Competencias',
         'competencias': competencias,
-        'breadcrumbs': [{'nombre': 'Inicio', 'url': '/'}, {'nombre': 'Competencias', 'url': ''}]
+        'ficha_activa': ficha_activa,
+        'breadcrumbs': [ {'nombre': 'Competencias', 'url': ''}]
     })
+
+
+def crear_competencia(request):
+    """Crea una competencia nueva."""
+    if request.method == 'POST':
+        form = CompetenciaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Competencia creada correctamente.')
+            return redirect('listar_competencias')
+    else:
+        form = CompetenciaForm()
+
+    return render(request, 'planeacion/competencia_form.html', {
+        'titulo': 'Nueva Competencia',
+        'form': form,
+        'breadcrumbs': [
+            {'nombre': 'Planeación', 'url': '/planeacion/'},
+            {'nombre': 'Competencias', 'url': '/planeacion/competencias/'},
+            {'nombre': 'Nueva', 'url': ''}
+        ]
+    })
+
+
+def editar_competencia(request, pk):
+    competencia = get_object_or_404(Competencia, pk=pk)
+    if request.method == 'POST':
+        form = CompetenciaForm(request.POST, instance=competencia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Competencia actualizada correctamente.')
+            return redirect('listar_competencias')
+    else:
+        form = CompetenciaForm(instance=competencia)
+
+    return render(request, 'planeacion/competencia_form.html', {
+        'titulo': 'Editar Competencia',
+        'form': form,
+        'breadcrumbs': [
+            {'nombre': 'Planeación', 'url': '/planeacion/'},
+            {'nombre': 'Competencias', 'url': '/planeacion/competencias/'},
+            {'nombre': 'Editar', 'url': ''}
+        ]
+    })
+
+
+def eliminar_competencia(request, pk):
+    competencia = get_object_or_404(Competencia, pk=pk)
+    competencia.delete()
+    messages.success(request, 'Competencia eliminada correctamente.')
+    return redirect('listar_competencias')
+
+
+def crear_rap(request):
+    if request.method == 'POST':
+        form = ResultadoAprendizajeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Resultado de Aprendizaje creado correctamente.')
+            return redirect('listar_raps')
+    else:
+        form = ResultadoAprendizajeForm()
+
+    return render(request, 'planeacion/rap_form.html', {
+        'titulo': 'Nuevo Resultado de Aprendizaje',
+        'form': form,
+        'breadcrumbs': [
+            {'nombre': 'Planeación', 'url': '/planeacion/'},
+            {'nombre': 'RAPs', 'url': '/planeacion/raps/'},
+            {'nombre': 'Nuevo', 'url': ''}
+        ]
+    })
+
+
+def editar_rap(request, pk):
+    rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
+    if request.method == 'POST':
+        form = ResultadoAprendizajeForm(request.POST, instance=rap)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Resultado de Aprendizaje actualizado correctamente.')
+            return redirect('listar_raps')
+    else:
+        form = ResultadoAprendizajeForm(instance=rap)
+
+    return render(request, 'planeacion/rap_form.html', {
+        'titulo': 'Editar Resultado de Aprendizaje',
+        'form': form,
+        'breadcrumbs': [
+            {'nombre': 'Planeación', 'url': '/planeacion/'},
+            {'nombre': 'RAPs', 'url': '/planeacion/raps/'},
+            {'nombre': 'Editar', 'url': ''}
+        ]
+    })
+
+
+def eliminar_rap(request, pk):
+    rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
+    rap.delete()
+    messages.success(request, 'Resultado de Aprendizaje eliminado correctamente.')
+    return redirect('listar_raps')
 
 def importar_curriculo(request):
     """Procesa el archivo Excel original de Planeación de SOFIA Plus automáticamente."""
@@ -146,7 +262,7 @@ def importar_curriculo(request):
     return render(request, 'planeacion/importar.html', {
         'titulo': 'Importar Diseño Curricular',
         'breadcrumbs': [
-            {'nombre': 'Inicio', 'url': '/'}, 
+             
             {'nombre': 'Planeación', 'url': '/planeacion/'},
             {'nombre': 'Importar', 'url': ''}
         ]
@@ -187,7 +303,7 @@ def crear_actividad(request):
         'form': form,
         'titulo': 'Nueva Actividad de Proyecto',
         'breadcrumbs': [
-            {'nombre': 'Inicio', 'url': '/'},
+            
             {'nombre': 'Planeación', 'url': '/planeacion/'},
             {'nombre': 'Nueva Actividad', 'url': ''}
         ]
@@ -210,8 +326,84 @@ def editar_actividad(request, pk):
         'form': form,
         'titulo': 'Editar Actividad',
         'breadcrumbs': [
-            {'nombre': 'Inicio', 'url': '/'},
+            
             {'nombre': 'Planeación', 'url': '/planeacion/'},
             {'nombre': 'Editar', 'url': ''}
         ]
     })
+
+
+def detalle_actividad(request, pk):
+    """Muestra los datos de una actividad."""
+    actividad = get_object_or_404(ActividadPlaneacion, pk=pk)
+    return render(request, 'planeacion/actividad_detalle.html', {
+        'actividad': actividad,
+        'titulo': 'Detalle de Actividad',
+        'breadcrumbs': [
+            {'nombre': 'Planeación', 'url': '/planeacion/'},
+            {'nombre': 'Cronograma', 'url': '/planeacion/'},
+            {'nombre': 'Detalle', 'url': ''}
+        ]
+    })
+
+def exportar_planeacion_excel(request):
+    """Exporta el cronograma de la ficha activa a un archivo Excel."""
+    codigo_ficha = request.session.get('ficha_activa_id')
+    if not codigo_ficha:
+        messages.error(request, "No hay una ficha activa para exportar.")
+        return redirect('inicio_planeacion')
+
+    ficha = get_object_or_404(Ficha, codigo_ficha=codigo_ficha)
+    
+    # Usamos prefetch_related para optimizar la consulta de RAPs y Competencias
+    actividades = ActividadPlaneacion.objects.filter(ficha=ficha).select_related(
+        'instructor'
+    ).prefetch_related(
+        'raps', 'raps__competencia'
+    ).order_by('fecha_inicio')
+
+    if not actividades.exists():
+        messages.warning(request, "No hay actividades en la planeación para exportar.")
+        return redirect('inicio_planeacion')
+
+    # Preparamos los datos para el DataFrame
+    data = []
+    for act in actividades:
+        # Concatenamos los RAPs y competencias
+        raps_str = "\n".join([rap.descripcion for rap in act.raps.all()])
+        # Usamos un set para evitar competencias duplicadas si varios RAPs son de la misma
+        competencias_set = {rap.competencia.nombre for rap in act.raps.all()}
+        competencias_str = "\n".join(list(competencias_set))
+
+        data.append({
+            'FASE': act.fase if act.fase else '',
+            'ACTIVIDAD DE PROYECTO': act.actividad_proyecto,
+            'RESULTADOS DE APRENDIZAJE': raps_str,
+            'COMPETENCIA': competencias_str,
+            'INSTRUCTOR': act.instructor.get_full_name() if act.instructor else 'No asignado',
+            'FECHA DE INICIO': act.fecha_inicio,
+            'FECHA DE FIN': act.fecha_fin,
+        })
+
+    # Crear DataFrame y el archivo Excel en memoria
+    df = pd.DataFrame(data)
+    
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name=f'Planeacion {ficha.codigo_ficha}', index=False)
+        # Opcional: Auto-ajustar el ancho de las columnas
+        for column in df:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets[f'Planeacion {ficha.codigo_ficha}'].column_dimensions[chr(65 + col_idx)].width = column_length + 2
+
+    output.seek(0)
+
+    # Preparar la respuesta HTTP
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="Plan_C1_{ficha.codigo_ficha}.xlsx"'
+
+    return response

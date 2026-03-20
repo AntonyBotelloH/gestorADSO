@@ -16,24 +16,13 @@ class ResultadoAprendizaje(models.Model):
     def __str__(self):
         return f"RAP: {self.descripcion[:60]}..."
 
-class FaseProyecto(models.Model):
-    # Ajustado a las fases pedagógicas institucionales del SENA
-    NOMBRE_CHOICES = [
-        ('Análisis', 'Análisis'),
-        ('Planeación', 'Planeación'),
-        ('Ejecución', 'Ejecución'),
-        ('Evaluación', 'Evaluación'),
-    ]
-    nombre = models.CharField(max_length=20, choices=NOMBRE_CHOICES, unique=True)
-    orden = models.PositiveIntegerField(default=1)
-
-    class Meta:
-        ordering = ['orden']
-        verbose_name = "Fase de Proyecto"
-        verbose_name_plural = "Fases de Proyecto"
-
-    def __str__(self):
-        return self.nombre
+# Fases fijas del proceso pedagógico SENA
+FASE_CHOICES = [
+    ('Análisis', 'Análisis'),
+    ('Planeación', 'Planeación'),
+    ('Ejecución', 'Ejecución'),
+    ('Evaluación', 'Evaluación'),
+]
 
 class ActividadPlaneacion(models.Model):
     ESTADO_CHOICES = [
@@ -41,9 +30,9 @@ class ActividadPlaneacion(models.Model):
         ('En Curso', 'En Curso'),
         ('Terminada', 'Terminada'),
     ]
-    
+
     ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='planeaciones')
-    fase = models.ForeignKey(FaseProyecto, on_delete=models.PROTECT)
+    fase = models.CharField(max_length=20, choices=FASE_CHOICES, verbose_name='Fase')
     
     # CAMBIO CLAVE: ManyToManyField permite asociar varios RAPs a una sola actividad
     raps = models.ManyToManyField(ResultadoAprendizaje, related_name='actividades', verbose_name="Resultados de Aprendizaje")
@@ -60,4 +49,4 @@ class ActividadPlaneacion(models.Model):
         verbose_name_plural = "Actividades de Planeación"
 
     def __str__(self):
-        return f"{self.ficha.codigo_ficha} - {self.fase.nombre} - {self.actividad_proyecto[:30]}"
+        return f"{self.ficha.codigo_ficha} - {self.fase} - {self.actividad_proyecto[:30]}"
