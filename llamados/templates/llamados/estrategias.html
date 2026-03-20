@@ -4,139 +4,103 @@
 <div class="py-2">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1 color-negro-suave-fn">Métricas Disciplinarias</h3>
-            <p class="text-muted small mb-0">Consolidado de novedades y análisis de la ficha {{ ficha_activa.codigo_ficha }}</p>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Estrategias Pedagógicas</h3>
+            <p class="text-muted small mb-0">Catálogo de actividades formativas para Planes de Mejoramiento</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'listar_llamados' %}" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-arrow-left me-1"></i> Volver al Listado</a>
-            <button class="btn btn-danger fw-bold shadow-sm" onclick="window.print()"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar Informe</button>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4 text-center">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 h-100 py-2 bg-body-tertiary">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Total Casos</h6>
-                    <h2 class="fw-bold color-negro-suave-fn mb-0">{{ total_casos|default:"0" }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #17a2b8 !important;">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Llamados Verbales</h6>
-                    <h2 class="fw-bold text-info mb-0">{{ verbales|default:"0" }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-body-tertiary" style="border-left-color: #ffc107 !important;">
-                <div class="card-body">
-                    <h6 class="text-muted fw-bold small text-uppercase">Llamados Escritos</h6>
-                    <h2 class="fw-bold text-warning mb-0">{{ escritos|default:"0" }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 border-start border-4 h-100 py-2 bg-danger bg-opacity-10" style="border-left-color: #dc3545 !important;">
-                <div class="card-body">
-                    <h6 class="text-danger fw-bold small text-uppercase">Casos en Comité</h6>
-                    <h2 class="fw-bold text-danger mb-0">{{ comite|default:"0" }}</h2>
-                </div>
-            </div>
+            <a href="{% url 'listar_llamados' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Volver a Llamados
+            </a>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        
-        <div class="col-lg-7">
-            <div class="card shadow-sm border-0 h-100">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-top border-4" style="border-top-color: #39A900 !important;">
                 <div class="card-header bg-transparent py-3">
-                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Análisis de Cumplimiento</h5>
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-plus-circle me-2 text-success"></i>Nueva Estrategia</h5>
                 </div>
                 <div class="card-body bg-body-tertiary">
-                    
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold text-body small">Faltas Académicas</span>
-                            <span class="fw-bold text-muted small">--%</span>
+                    <form method="POST" action="{% url 'estrategias' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Estrategia:</label>
+                            {{ form.nombre }}
                         </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;"></div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Descripción de la actividad:</label>
+                            {{ form.descripcion }}
                         </div>
-                    </div>
-                    
-                    <div class="mb-5">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold text-body small">Faltas Disciplinarias</span>
-                            <span class="fw-bold text-muted small">--%</span>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Plazo sugerido (Días):</label>
+                            <div class="input-group">
+                                {{ form.plazo_dias }}
+                                <span class="input-group-text bg-body border-secondary-subtle">Días</span>
+                            </div>
+                            <div class="form-text small">Tiempo límite que tendrá el aprendiz para cumplirla.</div>
                         </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 0%;"></div>
-                        </div>
-                    </div>
 
-                    <hr class="border-secondary opacity-25 mb-4">
-                    <h6 class="fw-bold color-negro-suave-fn mb-3">Efectividad de Planes de Mejora</h6>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold text-body small">Planes Ejecutados y Cerrados</span>
-                            <span class="fw-bold text-success small">{{ pct_cerrados }}%</span>
+                        <div class="d-grid mt-2">
+                            <button type="submit" class="btn color-verde-sena-bg text-white fw-bold shadow-sm">
+                                <i class="bi bi-save me-1"></i> Guardar Estrategia
+                            </button>
                         </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ pct_cerrados }}%;"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="fw-bold text-body small">Planes en Riesgo / Incumplidos</span>
-                            <span class="fw-bold text-danger small">{{ pct_riesgo }}%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ pct_riesgo }}%;"></div>
-                        </div>
-                    </div>
-
+                    </form>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="card shadow-sm border-0 border-start border-4 h-100" style="border-left-color: #dc3545 !important;">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
                 <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Alerta de Reincidencia</h5>
-                    <span class="badge bg-danger rounded-pill">Seguimiento Crítico</span>
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-card-checklist me-2 text-primary"></i>Catálogo Disponible</h5>
+                    <span class="badge bg-primary rounded-pill">{{ estrategias.count|default:"0" }} Registradas</span>
                 </div>
                 <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for r in reincidentes %}
-                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-start p-4">
-                            <div>
-                                <strong class="d-block text-body fs-5">{{ forloop.counter }}. {{ r.aprendiz__first_name }} {{ r.aprendiz__last_name }}</strong>
-                                <small class="text-muted">CC. {{ r.aprendiz__numero_documento }}</small>
-                                <div class="mt-2">
-                                    {% if r.cant_escritos > 0 %}<span class="badge bg-warning text-dark me-1">{{ r.cant_escritos }} Escrito</span>{% endif %}
-                                    {% if r.cant_verbales > 0 %}<span class="badge bg-info text-dark">{{ r.cant_verbales }} Verbal</span>{% endif %}
-                                    {% if r.cant_comite > 0 %}<span class="badge bg-danger text-white">{{ r.cant_comite }} Comité</span>{% endif %}
-                                </div>
-                            </div>
-                            <span class="badge {% if r.total > 2 %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill px-3 py-2 fs-6">{{ r.total }} Casos</span>
-                        </li>
-                        {% empty %}
-                        <li class="list-group-item bg-transparent text-center py-5">
-                            <i class="bi bi-shield-check display-4 text-success opacity-50 mb-3 d-block"></i>
-                            <span class="text-muted d-block">No hay aprendices reincidentes en esta ficha.</span>
-                            <small class="text-muted opacity-75">(Solo aparecen aprendices con 2 o más casos)</small>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="card-footer bg-body-tertiary p-3">
-                    <div class="border-start border-4 p-2 rounded" style="border-left-color: #39A900 !important; background-color: rgba(57, 169, 0, 0.05);">
-                        <p class="mb-0 small text-muted"><strong>Nota Técnica:</strong> El cálculo de reincidencia se basa en el registro histórico de la ficha. Solo se muestran los Top 5 infractores recurrentes.</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-secondary border-bottom">
+                                <tr>
+                                    <th class="ps-4 py-3">Estrategia</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Plazo</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for estrategia in estrategias %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-body">{{ estrategia.nombre }}</td>
+                                    <td class="text-muted small" style="max-width: 250px;">
+                                        <div class="text-truncate" title="{{ estrategia.descripcion }}">
+                                            {{ estrategia.descripcion }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle rounded-pill">
+                                            <i class="bi bi-clock me-1"></i> {{ estrategia.plazo_dias }} Días
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <button class="btn btn-outline-secondary btn-sm" title="Editar (Próximamente)" disabled>
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inboxes display-6 d-block mb-3 opacity-25"></i>
+                                        Aún no has configurado ninguna estrategia pedagógica.<br>
+                                        <small>Usa el formulario de la izquierda para agregar la primera.</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

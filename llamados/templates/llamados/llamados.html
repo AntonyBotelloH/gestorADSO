@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
 <div class="py-2">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1 color-negro-suave-fn">Control Disciplinario</h3>
-            <p class="text-muted small mb-0">Gestión de novedades y llamados de atención de la ficha</p>
+            <p class="text-muted small mb-0">Gestión de novedades normativas (Acuerdo 009 de 2024)</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{% url 'estrategias' %}" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-gear me-1"></i> Estrategias</a>
@@ -16,7 +16,7 @@
     {% if ficha_activa %}
     <div class="card shadow-sm border-0 mb-4 border-start border-4" style="border-left-color: #39A900 !important;">
         <div class="card-header bg-transparent py-3">
-            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-plus me-2 text-success"></i>Registrar Novedad (Acuerdo 009/2024)</h5>
+            <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clipboard-plus me-2 text-success"></i>Registrar Novedad Normativa</h5>
         </div>
         <div class="card-body bg-body-tertiary rounded-bottom">
             <form method="POST" action="{% url 'listar_llamados' %}" class="row g-3" enctype="multipart/form-data">
@@ -26,26 +26,30 @@
                     <label class="form-label fw-bold small text-muted text-uppercase">Aprendiz Implicado:</label>
                     {{ form.aprendiz }}
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Naturaleza de la Falta:</label>
-                    {{ form.tipo_falta }}
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Gravedad:</label>
-                    {{ form.gravedad }}
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Falta Tipificada (Catálogo Normativo):</label>
+                    {{ form.falta_cometida }}
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Instancia / Sanción:</label>
-                    {{ form.instancia }}
+                    <label class="form-label fw-bold small text-muted text-uppercase">Naturaleza de la Falta:</label>
+                    <div class="pe-none opacity-75">
+                        {{ form.tipo_falta }}
+                    </div>
                 </div>
-                <div class="col-md-8">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Motivo Principal:</label>
-                    {{ form.motivo_principal }}
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Gravedad de la Falta:</label>
+                    <div class="pe-none opacity-75">
+                        {{ form.gravedad }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Instancia / Sanción a aplicar:</label>
+                    {{ form.instancia }}
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos:</label>
+                    <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos (Circunstancias de modo, tiempo y lugar):</label>
                     {{ form.descripcion }}
                 </div>
                 
@@ -69,7 +73,7 @@
                             <th>Aprendiz</th>
                             <th>Clasificación</th>
                             <th>Instancia</th>
-                            <th>Motivo Principal</th>
+                            <th>Falta Tipificada</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
@@ -80,7 +84,7 @@
                             <td class="text-body fw-bold">{{ llamado.aprendiz.get_full_name }}</td>
                             <td>
                                 <span class="d-block text-body">{{ llamado.get_tipo_falta_display }}</span>
-                                <small class="text-muted">{{ llamado.get_gravedad_display }}</small>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle rounded-pill fw-normal">{{ llamado.get_gravedad_display }}</span>
                             </td>
                             <td>
                                 <span class="badge 
@@ -92,8 +96,8 @@
                                     {{ llamado.get_instancia_display }}
                                 </span>
                             </td>
-                            <td class="text-muted text-truncate" style="max-width: 200px;" title="{{ llamado.motivo_principal }}">
-                                {{ llamado.motivo_principal }}
+                            <td class="text-muted text-truncate" style="max-width: 250px;" title="{{ llamado.falta_cometida.descripcion|default:'No tipificada' }}">
+                                {{ llamado.falta_cometida.descripcion|default:"Falta sin tipificar (Histórico)" }}
                             </td>
                             <td class="text-end pe-4">
                                 <a href="{% url 'detalle_llamado' llamado.pk %}" class="btn btn-outline-secondary btn-sm fw-bold me-1" title="Ver Detalle"><i class="bi bi-eye"></i> Ver</a>
@@ -130,4 +134,10 @@
     {% endif %}
 
 </div>
+
+
 {% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/api-falta.js' %}"></script>
+{% endblock scripts %}
