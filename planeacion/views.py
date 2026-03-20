@@ -4,11 +4,14 @@ import io
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from usuarios.decorators import rol_requerido
 
 from planeacion.forms import ActividadPlaneacionForm, CompetenciaForm, ResultadoAprendizajeForm
 from .models import Competencia, ResultadoAprendizaje, ActividadPlaneacion
 from usuarios.models import Ficha
 
+@login_required
 def inicio_planeacion(request):
     """Vista principal con el cronograma de la ficha activa."""
     codigo_ficha = request.session.get('ficha_activa_id')
@@ -45,6 +48,7 @@ def inicio_planeacion(request):
         ]
     }
     return render(request, 'planeacion/inicio_planeacion.html', contexto)
+@login_required
 def listar_raps(request):
     """Lista todos los Resultados de Aprendizaje."""
     raps = ResultadoAprendizaje.objects.all().select_related('competencia')
@@ -60,6 +64,7 @@ def listar_raps(request):
         'breadcrumbs': [ {'nombre': 'RAPs', 'url': ''}]
     })
 
+@login_required
 def listar_competencias(request):
     """Lista todas las Competencias."""
     competencias = Competencia.objects.all().order_by('codigo')
@@ -76,6 +81,8 @@ def listar_competencias(request):
     })
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def crear_competencia(request):
     """Crea una competencia nueva."""
     if request.method == 'POST':
@@ -98,6 +105,8 @@ def crear_competencia(request):
     })
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def editar_competencia(request, pk):
     competencia = get_object_or_404(Competencia, pk=pk)
     if request.method == 'POST':
@@ -120,6 +129,8 @@ def editar_competencia(request, pk):
     })
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def eliminar_competencia(request, pk):
     competencia = get_object_or_404(Competencia, pk=pk)
     competencia.delete()
@@ -127,6 +138,8 @@ def eliminar_competencia(request, pk):
     return redirect('listar_competencias')
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def crear_rap(request):
     if request.method == 'POST':
         form = ResultadoAprendizajeForm(request.POST)
@@ -148,6 +161,8 @@ def crear_rap(request):
     })
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def editar_rap(request, pk):
     rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
     if request.method == 'POST':
@@ -170,6 +185,8 @@ def editar_rap(request, pk):
     })
 
 
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def eliminar_rap(request, pk):
     rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
     rap.delete()

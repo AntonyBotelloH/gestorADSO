@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
 
+@login_required
 def listar_llamados(request):
     """Vista principal para registrar y listar los llamados de atención de una ficha."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -282,7 +283,7 @@ def api_detalle_falta(request, falta_id):
         })
     except FaltaReglamento.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Falta no encontrada'})
-    
+
 @login_required
 def catalogo_faltas(request):
     """Vista para visualizar el catálogo del Acuerdo 009 en formato tarjetas."""

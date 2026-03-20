@@ -126,6 +126,7 @@ def tablero_kanban(request, proyecto_id):
     return render(request, 'proyectos/tablero.html', contexto)
 
 @login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def cambiar_estado_tarea(request, tarea_id):
     """Mueve una tarea de columna en el tablero."""
     if request.method == 'POST':
@@ -141,6 +142,7 @@ def cambiar_estado_tarea(request, tarea_id):
     return redirect('proyectos')
 
 @login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
 def registrar_daily(request, proyecto_id):
     """Reporte diario Scrum del equipo."""
     proyecto = get_object_or_404(Proyecto, id=proyecto_id)

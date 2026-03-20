@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from usuarios.decorators import rol_requerido
 from .models import Usuario, Ficha
 from .forms import UsuarioForm, UsuarioEditarForm, FichaForm, FichaEditarForm
 from datetime import datetime
 
+@login_required
 def inicio_usuario(request):
     lista_usuarios = Usuario.objects.all().order_by('last_name')
 
@@ -18,6 +20,8 @@ def inicio_usuario(request):
         'usuarios_ficha': lista_usuarios,
     }
     return render(request, 'usuarios/inicio_usuarios.html', context)
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST, request.FILES) 
@@ -52,6 +56,8 @@ def crear_usuario(request):
         ],
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def editar_usuario(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
 
@@ -77,6 +83,7 @@ def editar_usuario(request, pk):
     return render(request, 'usuarios/agregar_usuarios.html', context)
 
 
+@login_required
 def set_ficha_activa(request):
     """
     Recibe el ID de la ficha desde el selector del menú lateral,
@@ -100,6 +107,7 @@ def set_ficha_activa(request):
     # Si alguien intenta acceder a esta URL escribiéndola en el navegador (GET), lo echamos al inicio
     return redirect('/')
 
+@login_required
 def inicio_ficha(request):
     # 1. Leemos el código de la ficha que el instructor seleccionó en el menú lateral
     codigo_seleccionado = request.session.get('ficha_activa_id')
@@ -173,6 +181,10 @@ def listar_fichas(request):
     }
     
     return render(request, 'fichas/listar_fichas.html', context)
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def crear_ficha(request):
     if request.method == 'POST':
         form = FichaForm(request.POST)
@@ -201,6 +213,9 @@ def crear_ficha(request):
     return render(request, 'fichas/agregar_ficha.html', context)
 
 @login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
+@login_required
+@rol_requerido('INSTRUCTOR', 'Admin')
 def editar_ficha(request, codigo_ficha):
     """Permite editar los detalles de una ficha y cambiar su estado activo/inactivo."""
     # Buscamos la ficha por su código, si no existe lanza un 404
