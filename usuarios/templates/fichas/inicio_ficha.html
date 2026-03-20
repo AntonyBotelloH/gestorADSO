@@ -166,6 +166,66 @@
             </div>
         </div>
 
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
+                    <div class="card-header bg-transparent py-3 border-bottom border-secondary-subtle">
+                        <h5 class="mb-0 fw-bold text-body">
+                            <i class="bi bi-cake-fill me-2 text-warning"></i>Cumpleaños Trimestre Actual
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if cumpleaños_trimestre_actual %}
+                            <ul class="list-group list-group-flush">
+                                {% for usuario in cumpleaños_trimestre_actual %}
+                                <li class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-semibold text-body">{{ usuario.first_name }} {{ usuario.last_name }}</span>
+                                        <small class="text-muted d-block">{{ usuario.fecha_nacimiento|date:"d M" }}</small>
+                                    </div>
+                                    {% if usuario.edad %}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ usuario.edad }} años</span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No hay cumpleaños en este trimestre.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
+                    <div class="card-header bg-transparent py-3 border-bottom border-secondary-subtle">
+                        <h5 class="mb-0 fw-bold text-body">
+                            <i class="bi bi-calendar-event me-2 text-info"></i>Cumpleaños Trimestre Próximo
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if cumpleaños_trimestre_proximo %}
+                            <ul class="list-group list-group-flush">
+                                {% for usuario in cumpleaños_trimestre_proximo %}
+                                <li class="list-group-item bg-transparent px-0 py-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="fw-semibold text-body">{{ usuario.first_name }} {{ usuario.last_name }}</span>
+                                        <small class="text-muted d-block">{{ usuario.fecha_nacimiento|date:"d M" }}</small>
+                                    </div>
+                                    {% if usuario.edad %}
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle">{{ usuario.edad }} años</span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">No hay cumpleaños en el próximo trimestre.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal fade" id="modalAsignarInstructor" tabindex="-1" aria-labelledby="modalAsignarInstructorLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content bg-body-tertiary border-0 shadow">

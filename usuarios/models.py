@@ -2,6 +2,8 @@ import os
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 def renombrar_foto_perfil(instance, filename):
@@ -71,6 +73,9 @@ class Usuario(AbstractUser):
     # upload_to indica la subcarpeta donde se guardarán (adentro de tu carpeta MEDIA)
     foto = models.ImageField(upload_to=renombrar_foto_perfil, null=True, blank=True, verbose_name='Foto de Perfil')
     
+    # Nuevo campo: Fecha de nacimiento
+    fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name='Fecha de Nacimiento')
+    
     REQUIRED_FIELDS = ['documento', 'first_name', 'last_name']
     
     class Meta:
@@ -79,7 +84,13 @@ class Usuario(AbstractUser):
         
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-    def save(self, *args, **kwargs):
+    @property
+    def edad(self):
+        from datetime import date
+        if self.fecha_nacimiento:
+            today = date.today()
+            return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+        return None
         # Si first_name tiene texto, lo convertimos a formato Título
         if self.first_name:
             self.first_name = self.first_name.title()
@@ -101,4 +112,19 @@ class GrupoProyecto(models.Model):
         
     def __str__(self):
         return self.nombre
+
+class UsuarioAuditoria(models.Model):
+    usuario_editado = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='auditorias', verbose_name='Usuario Editado')
+    editor = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='ediciones', verbose_name='Editor')
+    ip_editor = models.CharField(max_length=45, null=True, blank=True, verbose_name='IP del Editor')  # IPv6 puede ser hasta 45 chars
+    fecha_edicion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Edición')
+    cambios = models.TextField(null=True, blank=True, verbose_name='Cambios Realizados')  # Opcional para describir cambios
+    
+    class Meta:
+        verbose_name = 'Auditoría de Usuario'
+        verbose_name_plural = 'Auditorías de Usuarios'
+        ordering = ['-fecha_edicion']
+        
+    def __str__(self):
+        return f"Edición de {self.usuario_editado} por {self.editor or 'Anónimo'} el {self.fecha_edicion.strftime('%Y-%m-%d %H:%M')}"
     

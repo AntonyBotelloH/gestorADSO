@@ -15,8 +15,12 @@ class UsuarioForm(ModelForm):
         # Es mejor definir exactamente qué campos puede llenar el administrador.
         fields = [
             'first_name', 'last_name', 'email', 
-            'tipo_documento', 'documento', 'rol', 'ficha','foto'
+            'tipo_documento', 'documento', 'rol', 'ficha','foto', 'fecha_nacimiento'
         ]
+        
+        widgets = {
+            'fecha_nacimiento': DateInput(attrs={'type': 'date'}),
+        }
 
     
 class UsuarioEditarForm(ModelForm):
@@ -26,8 +30,17 @@ class UsuarioEditarForm(ModelForm):
         # Agregamos 'is_active' por si necesitas desactivar a un aprendiz que se retiró.
         fields = [
             'first_name', 'last_name', 'email', 
-            'tipo_documento', 'rol', 'ficha', 'is_active','foto'
+            'tipo_documento', 'rol', 'ficha', 'is_active','foto', 'fecha_nacimiento'
         ]
+        
+        widgets = {
+            'fecha_nacimiento': DateInput(attrs={'type': 'date'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.fecha_nacimiento:
+            self.fields['fecha_nacimiento'].widget.attrs['value'] = self.instance.fecha_nacimiento.strftime('%Y-%m-%d')
 
 
 # ==========================================

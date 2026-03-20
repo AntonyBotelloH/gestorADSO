@@ -19,6 +19,7 @@
                 <th class="ps-3">Documento</th>
                 <th>Usuario</th>
                 <th>Correo Electrónico</th>
+                <th class="text-center">Fecha Nacimiento</th>
                 <th class="text-center">Rol</th>
                 <th class="text-center">Estado</th>
                 <th class="text-end pe-3">Acciones</th>
@@ -41,6 +42,10 @@
                   </td>
                   
                   <td class="text-muted small">{{ usuario.email }}</td>
+                  
+                  <td class="text-center text-muted small">
+                    {% if usuario.fecha_nacimiento %}{{ usuario.fecha_nacimiento|date:"d/m/Y" }}{% else %}-{% endif %}
+                  </td>
                   
                   <td class="text-center">
                     {% if usuario.rol == 'INSTRUCTOR' %}

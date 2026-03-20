@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Usuario, Ficha
 from .forms import UsuarioForm, UsuarioEditarForm, FichaForm, FichaEditarForm
+from datetime import datetime
 
 def inicio_usuario(request):
     lista_usuarios = Usuario.objects.all().order_by('last_name')
@@ -11,8 +12,8 @@ def inicio_usuario(request):
         'nombre': 'Antony',
         'titulo': 'Usuarios y Roles',
         'breadcrumbs': [
-            {'nombre': 'Ficha', 'url': '#'},
-            {'nombre': 'Directorio', 'url': ''} 
+            
+            {'nombre': 'Usuarios', 'url': ''} 
         ],
         'usuarios_ficha': lista_usuarios,
     }
@@ -45,9 +46,9 @@ def crear_usuario(request):
         'form': form,
         'titulo': 'Registrar Nuevo Usuario', # Renombrado
         'breadcrumbs': [
-            {'nombre': 'Ficha', 'url': '#'},
-            {'nombre': 'Directorio', 'url': '/usuarios/'}, 
-            {'nombre': 'Nuevo Usuario', 'url': ''} # Renombrado
+            
+            {'nombre': 'Usuarios', 'url': '/usuarios/'},
+            {'nombre': 'Nuevo Usuario', 'url': ''}
         ],
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
@@ -55,7 +56,7 @@ def editar_usuario(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
 
     if request.method == 'POST':
-        form = UsuarioEditarForm(request.POST, instance=usuario)
+        form = UsuarioEditarForm(request.POST, request.FILES, instance=usuario)
         if form.is_valid():
             form.save()
             messages.success(request, f"Datos de {usuario.first_name} actualizados correctamente.")
@@ -69,9 +70,8 @@ def editar_usuario(request, pk):
         'form': form,
         'titulo': f'Editar a {usuario.first_name}',
         'breadcrumbs': [
-            {'nombre': 'Ficha', 'url': '#'},
-            {'nombre': 'Directorio', 'url': '/usuarios/'},
-            {'nombre': 'Editar Aprendiz', 'url': ''}
+            {'nombre': 'Usuarios', 'url': '/usuarios/usuario'},
+            {'nombre': 'Editar Usuario', 'url': ''}
         ],
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
@@ -120,9 +120,27 @@ def inicio_ficha(request):
     # 4. Lógica del Equipo Ejecutor (Tabla de Instructores)
     equipo_ejecutor = Usuario.objects.filter(ficha=ficha, rol='INSTRUCTOR')
     
-    # 5. Construcción dinámica de tus Breadcrumbs (Migas de pan)
+    # 5. Lógica de Cumpleaños por Trimestre
+    mes_actual = datetime.now().month
+    if mes_actual <= 3:
+        trimestre_actual = [1, 2, 3]
+        trimestre_proximo = [4, 5, 6]
+    elif mes_actual <= 6:
+        trimestre_actual = [4, 5, 6]
+        trimestre_proximo = [7, 8, 9]
+    elif mes_actual <= 9:
+        trimestre_actual = [7, 8, 9]
+        trimestre_proximo = [10, 11, 12]
+    else:
+        trimestre_actual = [10, 11, 12]
+        trimestre_proximo = [1, 2, 3]
+    
+    cumpleaños_trimestre_actual = Usuario.objects.filter(ficha=ficha, fecha_nacimiento__month__in=trimestre_actual).order_by('fecha_nacimiento__month', 'fecha_nacimiento__day')
+    cumpleaños_trimestre_proximo = Usuario.objects.filter(ficha=ficha, fecha_nacimiento__month__in=trimestre_proximo).order_by('fecha_nacimiento__month', 'fecha_nacimiento__day')
+    
+    # 6. Construcción dinámica de tus Breadcrumbs (Migas de pan)
     breadcrumbs = [
-        {'nombre': 'Inicio', 'url': '/'}, 
+         
         {'nombre': f'Ficha {ficha.codigo_ficha}', 'url': ''}
     ]
     
@@ -134,6 +152,8 @@ def inicio_ficha(request):
         'aprendices_activos': aprendices_activos,
         'aprendices_retirados': aprendices_retirados,
         'equipo_ejecutor': equipo_ejecutor,
+        'cumpleaños_trimestre_actual': cumpleaños_trimestre_actual,
+        'cumpleaños_trimestre_proximo': cumpleaños_trimestre_proximo,
         'breadcrumbs': breadcrumbs,
     }
     
@@ -146,7 +166,7 @@ def listar_fichas(request):
     context = {
         'titulo': 'Listado de Fichas',
         'breadcrumbs': [
-            {'nombre': 'Administración', 'url': '#'},
+            
             {'nombre': 'Fichas', 'url': ''}
         ],
         'fichas': lista_fichas,
