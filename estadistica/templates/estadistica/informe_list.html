@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mis Informes de Ejecución</h2>
+        <a href="{% url 'informe_create' %}" class="btn btn-primary">Subir Nuevo Informe</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Mes Reportado</th>
+                    <th>Contrato</th>
+                    <th>Fecha de Subida</th>
+                    <th>Planilla PILA</th>
+                    <th>Documento PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for informe in informes %}
+                <tr>
+                    <td><strong>{{ informe.mes_reporte }}</strong></td>
+                    <td>{{ informe.contrato.numero_contrato }}</td>
+                    <td>{{ informe.fecha_presentacion|date:"d M Y" }}</td>
+                    <td>{{ informe.numero_planilla_pila }}</td>
+                    <td>
+                        {% if informe.archivo_informe %}
+                            <a href="{{ informe.archivo_informe.url }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                Ver PDF
+                            </a>
+                        {% else %}
+                            <span class="text-muted">Sin archivo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No has subido ningún informe aún.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

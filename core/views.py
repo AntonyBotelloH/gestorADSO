@@ -5,9 +5,9 @@ from django.utils import timezone
 
 # Importación de todos tus modelos
 from pendientes.models import Pendiente
-from usuarios.models import Usuario
+from usuarios.models import Usuario, Ficha
 from llamados.models import LlamadoAtencion
-from proyectos.models import Proyecto
+from proyectos.models import Proyecto, DailyScrum
 from asistencia.models import SesionClase, RegistroAsistencia
 from fondos.models import Movimiento, MetaFinanciera
 
@@ -37,6 +37,8 @@ def inicio(request):
     # ==========================================
     if ficha_actual and ficha_actual != 'general':
         
+        ficha_obj = Ficha.objects.filter(codigo_ficha=ficha_actual).first()
+
         # --- QUÓRUM (Asistencia) ---
         total_aprendices = Usuario.objects.filter(
             ficha__codigo_ficha=ficha_actual, 
@@ -97,13 +99,25 @@ def inicio(request):
                 'tipo': llamado.get_instancia_display(), 
                 'color': color
             })
+        
+        # --- RESUMEN DE NOVEDADES (NUEVO) ---
+        bloqueos_hoy = DailyScrum.objects.filter(
+            proyecto__ficha__codigo_ficha=ficha_actual,
+            fecha__date=hoy,
+            bloqueos__isnull=False
+        ).exclude(bloqueos__exact='').count()
+
     # ==========================================
     # 3. TAREAS (Ficha actual + Generales)
     # ==========================================
     if ficha_actual == 'general' or not ficha_actual:
-        tareas_reales = Pendiente.objects.filter(ficha_vinculada__isnull=True).order_by('completada', '-creado_en')
+        tareas_reales = Pendiente.objects.filter(instructor=request.user, ficha_vinculada__isnull=True).order_by('completada', '-creado_en')
+        ficha_obj = None # No hay ficha para el resumen general
+        bloqueos_hoy = 0
     else:
         tareas_reales = Pendiente.objects.filter(
+            instructor=request.user
+        ).filter(
             Q(ficha_vinculada__codigo_ficha=ficha_actual) | Q(ficha_vinculada__isnull=True)
         ).order_by('completada', '-creado_en')
 
@@ -117,6 +131,8 @@ def inicio(request):
         'sprints': sprints_reales,
         'tareas': tareas_reales,
         'alertas': alertas_reales,
+        'ficha_obj': ficha_obj,
+        'bloqueos_hoy': bloqueos_hoy,
         
         # KPIs de la parte superior
         'alertas_pendientes': alertas_pendientes,

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'planeacion',
     'llamados',
     'pendientes',
+    'estadistica',
     #pip install Pillow
     #pip install pandas openpyxl
     #pip install xlrd
