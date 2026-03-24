@@ -23,20 +23,18 @@
                 {% csrf_token %}
                 <div class="col-md-12">
                     <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Estrategia:</label>
-                    <input type="text" name="nombre" class="form-control border-secondary-subtle shadow-none" value="{{ estrategia.nombre }}" required>
+                    {{ form.nombre }}
                 </div>
                 <div class="col-md-12">
                     <label class="form-label fw-bold small text-muted text-uppercase">Descripción de la actividad:</label>
-                    <input type="text" name="descripcion" class="form-control border-secondary-subtle shadow-none" value="{{ estrategia.descripcion }}" required>
+                    {{ form.descripcion }}
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold small text-muted text-uppercase">Plazo (Días):</label>
-                    <select name="plazo_dias" class="form-select border-secondary-subtle shadow-none">
-                        <option value="3" {% if estrategia.plazo_dias == 3 %}selected{% endif %}>3 Días</option>
-                        <option value="5" {% if estrategia.plazo_dias == 5 %}selected{% endif %}>5 Días</option>
-                        <option value="8" {% if estrategia.plazo_dias == 8 %}selected{% endif %}>8 Días</option>
-                        <option value="15" {% if estrategia.plazo_dias == 15 %}selected{% endif %}>15 Días</option>
-                    </select>
+                    <div class="input-group">
+                        {{ form.plazo_dias }}
+                        <span class="input-group-text bg-body border-secondary-subtle">Días</span>
+                    </div>
                 </div>
                 
                 <div class="col-12 text-end mt-4">

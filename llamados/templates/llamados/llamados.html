@@ -73,6 +73,7 @@
                             <th>Aprendiz</th>
                             <th>Clasificación</th>
                             <th>Instancia</th>
+                            <th>Estado Plan</th>
                             <th>Falta Tipificada</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
@@ -84,7 +85,7 @@
                             <td class="text-body fw-bold">{{ llamado.aprendiz.get_full_name }}</td>
                             <td>
                                 <span class="d-block text-body">{{ llamado.get_tipo_falta_display }}</span>
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle rounded-pill fw-normal">{{ llamado.get_gravedad_display }}</span>
+                               <span class="badge {% if llamado.gravedad == 'Leve' %}bg-info text-dark{% elif llamado.gravedad == 'Grave' %}bg-warning text-dark{% elif llamado.gravedad == 'Gravisima' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %} rounded-pill fw-bold">{{ llamado.get_gravedad_display }}</span>
                             </td>
                             <td>
                                 <span class="badge 
@@ -95,6 +96,19 @@
                                     px-3 py-2 rounded-pill">
                                     {{ llamado.get_instancia_display }}
                                 </span>
+                            </td>
+                            <td>
+                                {% if llamado.plan_mejoramiento %}
+                                    <span class="badge 
+                                        {% if llamado.plan_mejoramiento.estado == 'En Curso' %}bg-primary
+                                        {% elif llamado.plan_mejoramiento.estado == 'Cumplido' %}bg-success
+                                        {% else %}bg-danger{% endif %} 
+                                        rounded-pill">
+                                        {{ llamado.plan_mejoramiento.get_estado_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary-subtle rounded-pill">Sin Plan</span>
+                                {% endif %}
                             </td>
                             <td class="text-muted text-truncate" style="max-width: 250px;" title="{{ llamado.falta_cometida.descripcion|default:'No tipificada' }}">
                                 {{ llamado.falta_cometida.descripcion|default:"Falta sin tipificar (Histórico)" }}
@@ -108,7 +122,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-shield-check display-6 d-block mb-3 opacity-25"></i>
                                 No hay novedades disciplinarias registradas en esta ficha.
                             </td>
