@@ -40,6 +40,14 @@ class UsuarioCustomAdmin(UserAdmin):
                 cambios="Edición desde admin"  # Puedes personalizar esto
             )
         super().save_model(request, obj, form, change)
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

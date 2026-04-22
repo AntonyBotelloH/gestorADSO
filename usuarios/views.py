@@ -21,7 +21,7 @@ def inicio_usuario(request):
     }
     return render(request, 'usuarios/inicio_usuarios.html', context)
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST, request.FILES) 
@@ -57,7 +57,7 @@ def crear_usuario(request):
     }
     return render(request, 'usuarios/agregar_usuarios.html', context)
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def editar_usuario(request, pk):
     usuario = get_object_or_404(Usuario, pk=pk)
 
@@ -182,9 +182,7 @@ def listar_fichas(request):
     
     return render(request, 'fichas/listar_fichas.html', context)
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
-@login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def crear_ficha(request):
     if request.method == 'POST':
         form = FichaForm(request.POST)
@@ -213,9 +211,7 @@ def crear_ficha(request):
     return render(request, 'fichas/agregar_ficha.html', context)
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
-@login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def editar_ficha(request, codigo_ficha):
     """Permite editar los detalles de una ficha y cambiar su estado activo/inactivo."""
     # Buscamos la ficha por su código, si no existe lanza un 404
