@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <div class="col-lg-8">
             <div class="card shadow-sm border-0 border-start border-4 h-100 bg-body-tertiary" 
                  style="border-left-color: {% if proyecto.estado == 'Al Día' %}#39A900{% else %}#dc3545{% endif %} !important;">
@@ -34,36 +34,31 @@
                     <div class="table-responsive">
                         <table class="table table-sm table-borderless align-middle">
                             <tbody>
-                                {% if proyecto.scrum_master %}
+                                {% for integrante in proyecto.integrantes.all %}
                                 <tr class="border-bottom border-secondary-subtle">
                                     <td width="50px" class="py-3">
-                                        <img src="https://ui-avatars.com/api/?name={{ proyecto.scrum_master.first_name }}+{{ proyecto.scrum_master.last_name }}&background=39A900&color=fff" class="rounded-circle shadow-sm" width="45" />
+                                        <img src="https://ui-avatars.com/api/?name={{ integrante.first_name }}+{{ integrante.last_name }}&background={% if integrante == proyecto.scrum_master %}39A900{% else %}6c757d{% endif %}&color=fff" class="rounded-circle shadow-sm" width="45" />
                                     </td>
                                     <td class="py-3">
-                                        <div class="fw-bold text-body">{{ proyecto.scrum_master.get_full_name }}</div>
-                                        <span class="badge bg-dark text-white small px-2">Scrum Master / Líder</span>
+                                        <div class="fw-bold text-body">{{ integrante.get_full_name }}</div>
+                                        {% if integrante == proyecto.scrum_master %}
+                                            <span class="badge bg-dark text-white small px-2">Scrum Master / Líder</span>
+                                        {% else %}
+                                            <span class="text-muted small">Developer / Aprendiz</span>
+                                        {% endif %}
                                     </td>
                                     <td class="text-end py-3">
-                                        <span class="text-muted small">Responsable del tablero</span>
+                                        {% if request.user.rol == 'INSTRUCTOR' or request.user.rol == 'ADMIN' %}
+                                            <form action="{% url 'detalles_proyecto' proyecto.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="scrum_master" value="{{ integrante.id }}">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm" {% if integrante == proyecto.scrum_master %}disabled{% endif %}>
+                                                    Asignar como Líder
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
-                                {% endif %}
-
-                                {% for integrante in proyecto.integrantes.all %}
-                                    {% if integrante != proyecto.scrum_master %}
-                                    <tr class="border-bottom border-secondary-subtle">
-                                        <td width="50px" class="py-2">
-                                            <img src="https://ui-avatars.com/api/?name={{ integrante.first_name }}+{{ integrante.last_name }}&background=6c757d&color=fff" class="rounded-circle" width="38" />
-                                        </td>
-                                        <td class="py-2">
-                                            <div class="text-body fw-semibold">{{ integrante.get_full_name }}</div>
-                                            <span class="text-muted small">Developer / Aprendiz</span>
-                                        </td>
-                                        <td class="text-end py-2">
-                                            <i class="bi bi-envelope text-muted small me-2"></i>
-                                        </td>
-                                    </tr>
-                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -81,9 +76,23 @@
                     <a href="{% url 'tablero_kanban' proyecto.id %}" class="btn btn-dark py-3 fw-bold shadow-sm transition-hover">
                         <i class="bi bi-kanban me-2"></i> Tablero Kanban (Sprint)
                     </a>
-                    <a href="{% url 'registrar_daily' proyecto.id %}" class="btn color-verde-sena-bg text-white py-3 fw-bold shadow-sm transition-hover">
-                        <i class="bi bi-stopwatch me-2"></i> Reporte Daily Scrum
-                    </a>
+                    
+                    {% if request.user == proyecto.scrum_master or request.user.rol == 'INSTRUCTOR' or request.user.rol == 'ADMIN' %}
+                        <button type="button" class="btn btn-outline-primary py-3 fw-bold shadow-sm transition-hover" data-bs-toggle="modal" data-bs-target="#modalNuevoSprint">
+                            <i class="bi bi-calendar-plus me-2"></i> Planificar Nuevo Sprint
+                        </button>
+                    {% endif %}
+                    
+                    {% if request.user == proyecto.scrum_master or request.user.rol == 'INSTRUCTOR' or request.user.rol == 'ADMIN' %}
+                        <a href="{% url 'registrar_daily' proyecto.id %}" class="btn color-verde-sena-bg text-white py-3 fw-bold shadow-sm transition-hover">
+                            <i class="bi bi-stopwatch me-2"></i> Reporte Daily Scrum
+                        </a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary py-3 fw-bold shadow-sm" disabled title="Solo el Scrum Master ({{ proyecto.scrum_master.first_name }}) puede registrarlo">
+                            <i class="bi bi-lock me-2"></i> Daily Restringido
+                        </button>
+                    {% endif %}
+
                     <a href="{% url 'registrar_avance' proyecto.id %}" class="btn btn-outline-success py-3 fw-bold shadow-sm transition-hover">
                         <i class="bi bi-star me-2"></i> Evaluar Avance Técnico
                     </a>
@@ -96,10 +105,240 @@
             </div>
         </div>
     </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100 border-start border-4 bg-body-tertiary" style="border-left-color: #6f42c1 !important;">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">
+                        <i class="bi bi-arrow-repeat me-2" style="color: #6f42c1;"></i>Historial de Sprints
+                    </h5>
+                    <span class="badge rounded-pill" style="background-color: #6f42c1; color: white;">{{ sprints.count|default:"0" }} Iteraciones</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-secondary border-bottom">
+                                <tr>
+                                    <th class="ps-4 py-3">Nombre</th>
+                                    <th>Fechas</th>
+                                    <th>Líder del Sprint</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="border-top-0">
+                                {% for sprint in sprints %}
+                                <tr>
+                                    <td class="ps-4 fw-bold text-body">
+                                        {{ sprint.nombre }}
+                                        <span class="d-block text-muted small fw-normal text-truncate" style="max-width: 150px;" title="{{ sprint.objetivo }}">{{ sprint.objetivo|default:"Sin objetivo" }}</span>
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ sprint.fecha_inicio|date:"d M" }} - {{ sprint.fecha_fin|date:"d M y" }}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ sprint.scrum_master.get_full_name|default:"No asignado" }}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if sprint.estado == 'Activo' %}bg-primary
+                                            {% elif sprint.estado == 'Completado' %}bg-success
+                                            {% else %}bg-secondary{% endif %} rounded-pill">
+                                            {{ sprint.get_estado_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inboxes display-6 opacity-25 d-block mb-3"></i>
+                                        No hay Sprints planificados aún.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100 border-start border-4 bg-body-tertiary" style="border-left-color: #ffc107 !important;">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">
+                        <i class="bi bi-star-fill me-2 text-warning"></i>Evaluaciones Técnicas
+                    </h5>
+                    <span class="badge bg-warning text-dark rounded-pill">{{ revisiones.count|default:"0" }} Revisiones</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if revisiones %}
+                    <div class="accordion accordion-flush" id="accordionRevisiones">
+                        {% for rev in revisiones %}
+                        <div class="accordion-item border-bottom bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-body bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#rev-{{ rev.id }}">
+                                    <i class="bi bi-bookmark-check me-2 text-muted"></i> 
+                                    {{ rev.fecha|date:"d M y" }} - 
+                                    {% if rev.sprint_evaluado %}{{ rev.sprint_evaluado.nombre }}{% else %}Revisión General{% endif %}
+                                    <span class="ms-auto badge 
+                                        {% if rev.estado_resultado == 'Aprobado' %}bg-success
+                                        {% elif rev.estado_resultado == 'Observaciones' %}bg-warning text-dark
+                                        {% else %}bg-danger{% endif %} rounded-pill ms-2">
+                                        {{ rev.get_estado_resultado_display }}
+                                    </span>
+                                    
+                                    {% if rev.aplicado %}
+                                        <i class="bi bi-check-all text-success ms-2 fs-5" title="Correcciones Aplicadas"></i>
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="rev-{{ rev.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionRevisiones">
+                                <div class="accordion-body bg-body-tertiary">
+                                    <h6 class="fw-bold small text-uppercase mb-2 text-muted">Observaciones del Instructor:</h6>
+                                    <p class="text-body small mb-3">{{ rev.observaciones|linebreaksbr }}</p>
+                                    
+                                    {% if rev.estado_resultado != 'Aprobado' %}
+                                        <div class="d-flex justify-content-end border-top border-secondary-subtle pt-3 mt-2">
+                                            {% if rev.aplicado %}
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                                    <i class="bi bi-check2-all me-1"></i> El equipo ya aplicó estos cambios
+                                                </span>
+                                            {% else %}
+                                                {% if request.user.rol == 'INSTRUCTOR' %}
+                                                    <form action="{% url 'marcar_revision_aplicada' rev.id %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-sm btn-outline-success fw-bold shadow-sm transition-hover">
+                                                            <i class="bi bi-check-circle me-1"></i> Marcar como Corregido
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <span class="text-muted small fst-italic">Correcciones pendientes por el equipo</span>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-x text-muted display-6 opacity-25 d-block mb-3"></i>
+                        <h6 class="fw-bold text-body mb-1">Sin evaluaciones</h6>
+                        <p class="text-muted small mb-0">El instructor no ha registrado revisiones técnicas aún.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 mb-4 border-start border-4 bg-body-tertiary" style="border-left-color: #0dcaf0 !important;">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">
+                        <i class="bi bi-clock-history me-2 text-info"></i>Bitácora de Daily Scrum
+                    </h5>
+                    <span class="badge bg-info text-dark rounded-pill">{{ dailies.count|default:"0" }} Reportes</span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if dailies %}
+                    <div class="accordion accordion-flush" id="accordionDailies">
+                        {% for daily in dailies %}
+                        <div class="accordion-item border-bottom bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-body bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#daily-{{ daily.id }}">
+                                    <i class="bi bi-calendar2-day me-2 text-muted"></i> Reporte #{{ daily.id }} - {{ daily.fecha|date:"d M, Y" }}
+                                    {% if daily.sprint %}
+                                        <span class="ms-2 badge bg-primary bg-opacity-10 text-primary fw-normal border border-primary-subtle">{{ daily.sprint.nombre }}</span>
+                                    {% endif %}
+                                    <span class="ms-auto badge bg-secondary bg-opacity-10 text-secondary fw-normal">Ver Detalles</span>
+                                </button>
+                            </h2>
+                            <div id="daily-{{ daily.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionDailies">
+                                <div class="accordion-body bg-body-tertiary">
+                                    <div class="row g-4">
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-success small text-uppercase mb-2"><i class="bi bi-check-circle me-1"></i> ¿Qué hicimos ayer?</h6>
+                                            <p class="text-body small mb-0">{{ daily.logros|linebreaksbr }}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-primary small text-uppercase mb-2"><i class="bi bi-arrow-right-circle me-1"></i> ¿Qué haremos hoy?</h6>
+                                            <p class="text-body small mb-0">{{ daily.planes|linebreaksbr }}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-danger small text-uppercase mb-2"><i class="bi bi-exclamation-octagon me-1"></i> ¿Hay impedimentos?</h6>
+                                            {% if daily.bloqueos %}
+                                                <p class="text-danger small fw-semibold mb-0">{{ daily.bloqueos|linebreaksbr }}</p>
+                                            {% else %}
+                                                <p class="text-muted small mb-0 fst-italic">Sin bloqueos reportados.</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inboxes text-muted display-6 opacity-25 d-block mb-3"></i>
+                        <h6 class="fw-bold text-body mb-1">Aún no hay reportes</h6>
+                        <p class="text-muted small mb-0">El Scrum Master no ha registrado ningún Daily Scrum para este equipo.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoSprint" tabindex="-1" aria-labelledby="modalNuevoSprintLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-body-tertiary border-bottom-0">
+                <h5 class="modal-title fw-bold color-negro-suave-fn" id="modalNuevoSprintLabel">
+                    <i class="bi bi-calendar-plus me-2 text-primary"></i>Planificar Iteración
+                </h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'crear_sprint' proyecto.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Nombre del Sprint</label>
+                        <input type="text" name="nombre" class="form-control border-secondary-subtle shadow-none" placeholder="Ej. Sprint 1, Sprint 2..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Objetivo (Sprint Goal)</label>
+                        <textarea name="objetivo" class="form-control border-secondary-subtle shadow-none" rows="2" placeholder="¿Qué valor entregaremos al finalizar este sprint?"></textarea>
+                    </div>
+                    <div class="row g-3 mb-2">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Fecha de Inicio</label>
+                            <input type="date" name="fecha_inicio" class="form-control border-secondary-subtle shadow-none" value="{% now 'Y-m-d' %}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Fecha de Fin</label>
+                            <input type="date" name="fecha_fin" class="form-control border-secondary-subtle shadow-none" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 bg-body-tertiary">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold text-white px-4">Iniciar Sprint</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
-    /* Un pequeño efecto para que los botones se sientan vivos */
     .transition-hover {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }

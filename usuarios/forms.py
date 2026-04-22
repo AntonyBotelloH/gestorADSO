@@ -19,7 +19,7 @@ class UsuarioForm(ModelForm):
         ]
         
         widgets = {
-            'fecha_nacimiento': DateInput(attrs={'type': 'date'}),
+            'fecha_nacimiento': DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
         }
 
     
@@ -34,13 +34,8 @@ class UsuarioEditarForm(ModelForm):
         ]
         
         widgets = {
-            'fecha_nacimiento': DateInput(attrs={'type': 'date'}),
+            'fecha_nacimiento': DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
         }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.fecha_nacimiento:
-            self.fields['fecha_nacimiento'].widget.attrs['value'] = self.instance.fecha_nacimiento.strftime('%Y-%m-%d')
 
 
 # ==========================================

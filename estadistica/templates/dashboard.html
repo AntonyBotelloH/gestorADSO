@@ -1,0 +1,62 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Dashboard de Estadísticas SENA</h1>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Facturado Bruto</h5>
+                    <h2 class="card-text">${{ total_facturado|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Dinero Neto Recibido</h5>
+                    <h2 class="card-text">${{ total_neto_recibido|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Gasto Total PILA</h5>
+                    <h2 class="card-text">${{ gasto_total_pila|floatformat:0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-3">Mis Contratos Activos</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>N° Contrato</th>
+                    <th>Objeto</th>
+                    <th>Valor Total</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contrato in contratos %}
+                <tr>
+                    <td>{{ contrato.numero_contrato }}</td>
+                    <td>{{ contrato.objeto_contractual|truncatechars:50 }}</td>
+                    <td>${{ contrato.valor_total|floatformat:0 }}</td>
+                    <td>{{ contrato.fecha_inicio|date:"d M Y" }}</td>
+                    <td>{{ contrato.fecha_fin|date:"d M Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay contratos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

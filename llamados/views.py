@@ -2,13 +2,14 @@ from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento, FaltaReglamento
-from .forms import EstrategiaPedagogicaForm, LlamadoAtencionForm, PlanMejoramientoForm
+from .forms import EstrategiaPedagogicaForm, LlamadoAtencionForm, PlanMejoramientoForm, PlanMejoramientoCrearForm
 from usuarios.models import Ficha
 from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse
 
 
+@login_required
 def listar_llamados(request):
     """Vista principal para registrar y listar los llamados de atención de una ficha."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -39,7 +40,7 @@ def listar_llamados(request):
         form = LlamadoAtencionForm(ficha_id=ficha_id)
 
     # Traer el historial de llamados de esta ficha específica (select_related mejora el rendimiento)
-    llamados = LlamadoAtencion.objects.filter(ficha=ficha).select_related('aprendiz')
+    llamados = LlamadoAtencion.objects.filter(ficha=ficha).select_related('aprendiz', 'falta_cometida').prefetch_related('plan_mejoramiento')
 
     context = {
         'titulo': 'Control Disciplinario',
@@ -52,7 +53,7 @@ def listar_llamados(request):
 
 def crear_plan(request, llamado_id):
     """Vista para crear un plan de mejoramiento amarrado a un llamado específico"""
-    llamado = get_object_or_404(LlamadoAtencion, pk=llamado_id)
+    llamado = get_object_or_404(LlamadoAtencion.objects.select_related('aprendiz', 'falta_cometida'), pk=llamado_id)
     
     # Validamos que no tenga un plan ya creado (relación OneToOne)
     if hasattr(llamado, 'plan_mejoramiento'):
@@ -60,7 +61,7 @@ def crear_plan(request, llamado_id):
         return redirect('detalle_llamado', pk=llamado.id)
         
     if request.method == 'POST':
-        form = PlanMejoramientoForm(request.POST)
+        form = PlanMejoramientoCrearForm(request.POST)
         if form.is_valid():
             # Guardamos con commit=False para poder asociarle el llamado
             plan = form.save(commit=False)
@@ -73,7 +74,7 @@ def crear_plan(request, llamado_id):
             messages.success(request, f"Plan de mejoramiento asignado a {llamado.aprendiz.first_name}.")
             return redirect('detalle_llamado', pk=llamado.id)
     else:
-        form = PlanMejoramientoForm()
+        form = PlanMejoramientoCrearForm()
         
     context = {
         'titulo': 'Asignar Plan de Mejoramiento',
@@ -89,7 +90,9 @@ def crear_plan(request, llamado_id):
 
 def editar_plan(request, plan_id):
     """Vista para actualizar el estado o fechas de un plan de mejoramiento existente"""
-    plan = get_object_or_404(PlanMejoramiento, pk=plan_id)
+    plan = get_object_or_404(PlanMejoramiento.objects.select_related(
+        'llamado__aprendiz', 'llamado__falta_cometida'
+    ), pk=plan_id)
     llamado = plan.llamado # Recuperamos el llamado asociado para la interfaz
     
     if request.method == 'POST':
@@ -116,13 +119,19 @@ def editar_plan(request, plan_id):
 
 def detalle_llamado(request, pk):
     """Vista para ver el expediente completo de un llamado y su plan de mejora"""
-    # Buscamos el llamado específico usando su ID (Primary Key)
-    llamado = get_object_or_404(LlamadoAtencion, pk=pk)
+    # Optimizamos la carga del aprendiz y la ficha con select_related.
+    llamado = get_object_or_404(
+        LlamadoAtencion.objects.select_related('aprendiz', 'ficha'), 
+        pk=pk
+    )
     
-    # Verificamos si ya tiene un plan de mejoramiento asociado
+    # Intentamos obtener el plan de mejoramiento asociado.
+    # Si existe, precargamos sus estrategias para optimizar.
     plan = None
-    if hasattr(llamado, 'plan_mejoramiento'):
-        plan = llamado.plan_mejoramiento
+    try:
+        plan = PlanMejoramiento.objects.prefetch_related('estrategias').get(llamado=llamado)
+    except PlanMejoramiento.DoesNotExist:
+        pass  # Si no existe, 'plan' se queda en None, lo cual es manejado en la plantilla.
         
     context = {
         'titulo': 'Expediente Disciplinario',
@@ -168,17 +177,18 @@ def editar_estrategia(request, pk):
     estrategia = get_object_or_404(EstrategiaPedagogica, pk=pk)
     
     if request.method == 'POST':
-        estrategia.nombre = request.POST.get('nombre')
-        estrategia.descripcion = request.POST.get('descripcion')
-        estrategia.plazo_dias = request.POST.get('plazo_dias')
-        estrategia.save()
-        
-        messages.success(request, "La estrategia pedagógica fue actualizada correctamente.")
-        return redirect('estrategias')
+        form = EstrategiaPedagogicaForm(request.POST, instance=estrategia)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "La estrategia pedagógica fue actualizada correctamente.")
+            return redirect('estrategias')
+    else:
+        form = EstrategiaPedagogicaForm(instance=estrategia)
 
     context = {
         'titulo': 'Editar Estrategia',
-        'estrategia': estrategia,
+        'form': form,
+        'estrategia': estrategia, # Se mantiene para el boton de cancelar y otros datos
         'breadcrumbs': [
             {'nombre': 'Llamados', 'url': '/llamados/'},
             {'nombre': 'Estrategias', 'url': '/llamados/estrategias/'},
@@ -282,7 +292,7 @@ def api_detalle_falta(request, falta_id):
         })
     except FaltaReglamento.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Falta no encontrada'})
-    
+
 @login_required
 def catalogo_faltas(request):
     """Vista para visualizar el catálogo del Acuerdo 009 en formato tarjetas."""

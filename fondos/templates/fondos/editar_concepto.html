@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">{{ titulo }}</h3>
+            <p class="text-muted small mb-0">Actualiza los detalles del concepto</p>
+        </div>
+        <a href="{% url 'conceptos' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 border-top border-4 bg-body-tertiary" style="border-top-color: #39A900 !important;">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="fw-bold mb-0 color-negro-suave-fn"><i class="bi bi-pencil-square me-2 text-primary"></i>Editar Concepto</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre del Concepto:</label>
+                            <input type="text" name="nombre" class="form-control border-secondary-subtle bg-body text-body shadow-none" value="{{ concepto.nombre }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Categoría:</label>
+                            <select name="categoria" class="form-select border-secondary-subtle bg-body text-body shadow-none">
+                                {% for cat_val, cat_disp in concepto.CATEGORIA_CHOICES %}
+                                    <option value="{{ cat_val }}" {% if cat_val == concepto.categoria %}selected{% endif %}>{{ cat_disp }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Valor Sugerido ($):</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+                                    <input type="number" name="valor_sugerido" class="form-control border-secondary-subtle bg-body text-body shadow-none" value="{{ concepto.valor_sugerido }}" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Vigente Desde:</label>
+                                <input type="date" name="vigente_desde" class="form-control border-secondary-subtle bg-body text-body shadow-none" value="{{ concepto.vigente_desde|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="activo" id="id_activo" {% if concepto.activo %}checked{% endif %}>
+                            <label class="form-check-label" for="id_activo">Activo</label>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="{% url 'conceptos' %}" class="btn btn-outline-secondary w-50 fw-bold">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn color-verde-sena-bg text-white w-50 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ urlpatterns = [
     
     # Catálogo de Conceptos y Tarifas
     path('conceptos/', views.listar_conceptos, name='conceptos'),
+    path('conceptos/<int:concepto_id>/editar/', views.editar_concepto, name='editar_concepto'),
     
     # Configuración de Metas Financieras
     path('metas/', views.configurar_metas, name='metas'),
@@ -19,4 +20,7 @@ urlpatterns = [
     
     # Ruta para procesar el pago. Fíjate que recibe el ID del movimiento en la URL
     path('pagar/<int:movimiento_id>/', views.pagar_movimiento, name='pagar_movimiento'),
+    
+    # Ruta para eliminar un movimiento
+    path('movimiento/<int:movimiento_id>/eliminar/', views.eliminar_movimiento, name='eliminar_movimiento'),
 ]

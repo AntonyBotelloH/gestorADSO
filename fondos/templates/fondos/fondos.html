@@ -97,9 +97,9 @@
         <span class="badge bg-secondary-subtle text-body border px-3 fw-normal">Historial Reciente</span>
       </div>
 
-      <div class="card-body p-0">
+      <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 text-center">
+          <table id="tablaMovimientos" class="table table-hover align-middle mb-0 text-center w-100">
             <thead class="table-secondary small text-uppercase">
               <tr>
                 <th class="text-start ps-4">Fecha</th>
@@ -151,6 +151,15 @@
                       </form>
                     {% endif %}
 
+                    {% if request.user.rol == 'INSTRUCTOR' and mov.concepto.tipo_operacion == 'Ingreso' %}
+                      <form action="{% url 'eliminar_movimiento' mov.id %}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este cobro? Esta acción no se puede deshacer.');">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill shadow-sm me-1" title="Eliminar Cobro">
+                              <i class="bi bi-trash"></i>
+                          </button>
+                      </form>
+                    {% endif %}
+
                     <a href="{% url 'ver_recibo' mov.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm" title="Ver Recibo"><i class="bi bi-receipt"></i> <span class="d-none d-md-inline ms-1">Recibo</span></a>
                   </td>
                 </tr>
@@ -168,29 +177,11 @@
       </div>
     </div>
   </div>
-  {% block scripts %}
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        // Capturamos los elementos por su ID
-        const selectElement = document.getElementById('selectConcepto')
-        const inputElement = document.getElementById('inputValor')
-      
-        // Escuchamos cada vez que el usuario cambia la opción del desplegable
-        selectElement.addEventListener('change', function () {
-          // Obtenemos la opción que está seleccionada actualmente
-          const selectedOption = this.options[this.selectedIndex]
-      
-          // Leemos el atributo oculto 'data-valor' que inyectamos con Django
-          const valorSugerido = selectedOption.getAttribute('data-valor')
-      
-          // Si tiene un valor, lo ponemos en el input; si no, lo dejamos vacío
-          if (valorSugerido) {
-            inputElement.value = valorSugerido
-          } else {
-            inputElement.value = ''
-          }
-        })
-      })
-    </script>
-  {% endblock %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/tconf/tFondos-config.js' %}"></script>
+
+
 {% endblock %}

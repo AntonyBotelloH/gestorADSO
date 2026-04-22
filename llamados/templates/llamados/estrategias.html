@@ -85,9 +85,9 @@
                                         </span>
                                     </td>
                                     <td class="text-end pe-4">
-                                        <button class="btn btn-outline-secondary btn-sm" title="Editar (Próximamente)" disabled>
+                                        <a href="{% url 'editar_estrategia' estrategia.pk %}" class="btn btn-outline-secondary btn-sm" title="Editar">
                                             <i class="bi bi-pencil"></i>
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% empty %}

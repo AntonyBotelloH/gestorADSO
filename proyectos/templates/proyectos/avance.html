@@ -23,10 +23,19 @@
                         <input type="date" class="form-control bg-body-secondary text-body border-secondary-subtle shadow-none" value="{% now 'Y-m-d' %}" readonly>
                         <small class="text-muted">La fecha se registra automáticamente.</small>
                     </div>
+                    
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Sprint / Hito Evaluado:</label>
-                        <input type="text" name="hito" class="form-control bg-body text-body border-secondary-subtle shadow-none" placeholder="Ej. Sprint 3 - Frontend / Maquetación" required>
+                        <label class="form-label fw-bold small text-muted text-uppercase">Sprint Evaluado:</label>
+                        <input type="text" class="form-control bg-body-secondary text-body border-secondary-subtle shadow-none fw-bold" 
+                               value="{{ sprint_activo.nombre|default:'General / Todo el Proyecto' }}" readonly>
+                        
+                        {% if sprint_activo %}
+                            <small class="text-success"><i class="bi bi-play-circle me-1"></i> Sprint en curso detectado.</small>
+                        {% else %}
+                            <small class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i> No hay un sprint activo.</small>
+                        {% endif %}
                     </div>
+                    
                     <div class="col-md-4">
                         <label class="form-label fw-bold small text-muted text-uppercase">Estado del Avance:</label>
                         <select name="estado" class="form-select bg-body text-body border-secondary-subtle shadow-none fw-bold">

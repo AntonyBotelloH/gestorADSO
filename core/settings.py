@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'ejemplos',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'planeacion',
     'llamados',
     'pendientes',
+    'estadistica',
     #pip install Pillow
     #pip install pandas openpyxl
     #pip install xlrd

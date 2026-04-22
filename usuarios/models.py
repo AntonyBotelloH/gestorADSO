@@ -49,7 +49,7 @@ class Ficha(models.Model):
 
 class Usuario(AbstractUser):
     ROLE_CHOICES = [
-        ('Admin', 'Admin'),
+        ('ADMIN', 'Admin'),
         ('INSTRUCTOR', 'Instructor'),
         ('APRENDIZ', 'Aprendiz'),
         ('VOCERO', 'Vocero'),
@@ -127,4 +127,15 @@ class UsuarioAuditoria(models.Model):
         
     def __str__(self):
         return f"Edición de {self.usuario_editado} por {self.editor or 'Anónimo'} el {self.fecha_edicion.strftime('%Y-%m-%d %H:%M')}"
+
+from django.contrib.auth.signals import user_logged_in
+
+@receiver(user_logged_in)
+def asignar_ficha_al_iniciar_sesion(sender, request, user, **kwargs):
+    """
+    Asigna automáticamente la ficha del aprendiz o vocero a su sesión 
+    cuando inicia sesión en el sistema.
+    """
+    if user.rol in ['APRENDIZ', 'VOCERO'] and user.ficha:
+        request.session['ficha_activa_id'] = user.ficha.codigo_ficha
     

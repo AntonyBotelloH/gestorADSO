@@ -101,7 +101,7 @@
           </ul>
         </div>
       </li>
-{% if request.user.rol == 'VOCERO' or request.user.rol == 'INSTRUCTOR' or request.user.rol == 'Admin' %}
+{% if request.user.rol == 'VOCERO' or request.user.rol == 'INSTRUCTOR' %}
       <li class="nav-item mb-1">
         <a href="#collapseFondos"
           data-bs-toggle="collapse"
@@ -388,6 +388,54 @@
           </ul>
         </div>
       </li>
+      <li class="nav-item mb-1">
+        <a href="#collapseEstadistica"
+          data-bs-toggle="collapse"
+          class="nav-link rounded d-flex align-items-center {% if '/estadistica/' in request.path %}
+            color-verde-sena-bg text-white fw-bold
+          {% else %}
+            text-white collapsed
+          {% endif %}"
+          aria-expanded="{% if '/estadistica/' in request.path %}true{% else %}false{% endif %}">
+          
+          <i class="bi bi-bar-chart-line-fill me-2"></i> Mi Estadística SENA
+          <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+        </a>
+        <div class="collapse {% if '/estadistica/' in request.path %}show{% endif %}" id="collapseEstadistica" data-bs-parent="#menuAcordeon">
+          <ul class="nav flex-column ps-4 mt-1">
+            <li>
+              <a href="{% url 'dashboard_estadistica' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'dashboard_estadistica' %}
+                  text-white fw-bold
+                {% else %}
+                  text-white-50
+                {% endif %}">
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'informe_list' %}"
+                class="nav-link py-1 {% if 'informe' in request.resolver_match.url_name %}
+                  text-white fw-bold
+                {% else %}
+                  text-white-50
+                {% endif %}">
+                Informes Mensuales
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'liquidacion_list' %}"
+                class="nav-link py-1 {% if 'liquidacion' in request.resolver_match.url_name %}
+                  text-white fw-bold
+                {% else %}
+                  text-white-50
+                {% endif %}">
+                Liquidaciones y Pagos
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
 
       <hr class="text-secondary opacity-50 mt-4" />
 
@@ -409,6 +457,16 @@
             text-white
           {% endif %}">
           <i class="bi bi-gear me-2"></i> Configuraciones
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{% url 'listar_productos' %}"
+          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' %}
+            color-verde-sena-bg text-white fw-bold
+          {% else %}
+            text-white
+          {% endif %}">
+          <i class="bi bi-gear me-2"></i> Ejemplos
         </a>
       </li>
     </ul>
@@ -445,7 +503,7 @@
           <span class="badge color-verde-sena-bg text-white" style="font-size: 0.65rem; width: fit-content;">{{ request.user.rol|default:'Usuario' }}</span>
         </div>
       </a>
-      <ul class="dropdown-menu dropdown-menu-dark text-small shadow w-100 mb-2">
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow w-100 mb-2" style="z-index: 9999;">
         <li>
           <a class="dropdown-item" href="#">Mi Perfil</a>
         </li>

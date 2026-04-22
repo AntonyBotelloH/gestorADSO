@@ -75,7 +75,8 @@
                         <th>Categoría</th>
                         <th>Valor Base</th>
                         <th>Vigencia</th>
-                        <th class="pe-4">Estado</th>
+                        <th>Estado</th>
+                        <th class="pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -94,7 +95,7 @@
                         <td class="text-muted small">
                             <i class="bi bi-calendar-event me-1"></i>{{ concepto.vigente_desde|date:"d M Y" }}
                         </td>
-                        <td class="pe-4">
+                        <td>
                             {% if concepto.activo %}
                                 <span class="badge color-verde-sena-bg text-white px-3 py-2 rounded-pill shadow-sm">
                                     <i class="bi bi-check-circle-fill me-1"></i> Activo
@@ -103,6 +104,13 @@
                                 <span class="badge bg-secondary text-white px-3 py-2 rounded-pill shadow-sm">
                                     <i class="bi bi-pause-circle-fill me-1"></i> Inactivo
                                 </span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4">
+                            {% if request.user.rol == 'INSTRUCTOR' or request.user.rol == 'ADMIN' %}
+                                <a href="{% url 'editar_concepto' concepto.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </a>
                             {% endif %}
                         </td>
                     </tr>
