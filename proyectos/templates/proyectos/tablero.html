@@ -28,7 +28,7 @@
                 </div>
                 <div class="card-body p-2 d-flex flex-column gap-2">
                     {% for tarea in todo %}
-                        {% include "proyectos/partials/card_tarea.html" with border="danger" %}
+                        {% include "proyectos/partials/card_tarea.html" with border="danger" done=False %}
                     {% empty %}
                         <div class="text-center py-4 opacity-50 small">Sin tareas pendientes</div>
                     {% endfor %}
@@ -44,7 +44,7 @@
                 </div>
                 <div class="card-body p-2 d-flex flex-column gap-2">
                     {% for tarea in doing %}
-                        {% include "proyectos/partials/card_tarea.html" with border="warning" %}
+                        {% include "proyectos/partials/card_tarea.html" with border="warning" done=False %}
                     {% empty %}
                         <div class="text-center py-4 opacity-50 small">No hay tareas en curso</div>
                     {% endfor %}
@@ -120,3 +120,4 @@
     </div>
 </div>
 {% endblock %}
+
