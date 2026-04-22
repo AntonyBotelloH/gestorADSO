@@ -84,6 +84,13 @@ class LlamadoAtencion(models.Model):
     
     descripcion = models.TextField(verbose_name="Descripción de los Hechos")
     
+    descargo_aprendiz = models.TextField(
+        verbose_name="Descargo del Aprendiz",
+        blank=True,
+        null=True,
+        help_text="Espacio para que el aprendiz presente su versión de los hechos."
+    )
+    
     fecha_registro = models.DateTimeField(auto_now_add=True)
     acta_adjunta = models.FileField(upload_to='actas_disciplinarias/', null=True, blank=True)
 

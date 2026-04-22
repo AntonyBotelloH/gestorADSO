@@ -125,3 +125,21 @@ class EstrategiaPedagogicaForm(forms.ModelForm):
                 'min': '1'
             }),
         }
+
+class DescargoForm(forms.ModelForm):
+    """Formulario para que el instructor registre el descargo del aprendiz."""
+    class Meta:
+        model = LlamadoAtencion
+        fields = ['descargo_aprendiz']
+        widgets = {
+            'descargo_aprendiz': forms.Textarea(
+                attrs={
+                    'rows': 6, 
+                    'class': 'form-control',
+                    'placeholder': 'Escribe aquí la versión de los hechos presentada por el aprendiz...'
+                }
+            ),
+        }
+        labels = {
+            'descargo_aprendiz': 'Versión de los hechos presentada por el aprendiz:'
+        }

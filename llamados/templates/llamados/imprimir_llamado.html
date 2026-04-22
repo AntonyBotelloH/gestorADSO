@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Llamado de Atención - {{ llamado.aprendiz.get_full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #fff; color: #000; font-family: Arial, sans-serif; font-size: 14px; }
+        .sena-logo { width: 80px; }
+        .header-title { font-weight: bold; text-align: center; }
+        .table-bordered th, .table-bordered td { border: 1px solid #000 !important; padding: 8px; }
+        .section-title { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .firma-box { border-top: 1px solid #000; width: 80%; margin: 40px auto 0; text-align: center; padding-top: 5px; }
+        
+        @media print {
+            @page { margin: 0.5cm; }
+            .no-print { display: none !important; }
+            .container { margin-top: 0 !important; padding: 0 !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="container mt-4">
+        <!-- Controles de pantalla (Ocultos al imprimir) -->
+        <div class="text-end mb-3 no-print">
+            <button onclick="window.print()" class="btn btn-success"><i class="bi bi-printer"></i> Imprimir Documento</button>
+            <button onclick="window.close()" class="btn btn-secondary">Cerrar</button>
+        </div>
+
+        <!-- Encabezado Institucional -->
+        <table class="table table-bordered align-middle">
+            <tr>
+                <td width="20%" class="text-center">
+                    <img src="{% static 'img/logo-del-sena-verde.jpg' %}" alt="Logo SENA" class="sena-logo">
+                </td>
+                <td width="80%" class="header-title">
+                    <h4>FORMATO DE LLAMADO DE ATENCIÓN</h4>
+                    <p class="mb-0">Gestión de Medidas Formativas y Disciplinarias</p>
+                    <p class="mb-0 mt-1" style="font-size: 13px; font-weight: normal;">Regional Boyacá - Centro Minero<br>Sogamoso - Sede Corpoune</p>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Datos del Aprendiz -->
+        <table class="table table-bordered mt-3">
+            <tr>
+                <td colspan="4" class="section-title">DATOS DEL APRENDIZ Y PROGRAMA DE FORMACIÓN</td>
+            </tr>
+            <tr>
+                <th width="20%">Nombre Completo:</th>
+                <td width="30%">{{ llamado.aprendiz.get_full_name }}</td>
+                <th width="20%">Documento:</th>
+                <td width="30%">{{ llamado.aprendiz.tipo_documento }} {{ llamado.aprendiz.documento }}</td>
+            </tr>
+            <tr>
+                <th>Ficha de Formación:</th>
+                <td>{{ llamado.ficha.codigo_ficha }}</td>
+                <th>Programa:</th>
+                <td>{{ llamado.ficha.programa }}</td>
+            </tr>
+            <tr>
+                <th>Fecha de Expedición:</th>
+                <td colspan="3">{{ llamado.fecha_registro|date:"d \d\e F \d\e Y, h:i a" }}</td>
+            </tr>
+        </table>
+
+        <!-- Detalle de la Falta y Normativa -->
+        <table class="table table-bordered mt-3">
+            <tr>
+                <td colspan="2" class="section-title">TIPIFICACIÓN DE LA FALTA</td>
+            </tr>
+            <tr>
+                <th width="30%">Nivel y Tipo:</th>
+                <td>{{ llamado.get_tipo_falta_display }} calificada como <strong>{{ llamado.get_gravedad_display|upper }}</strong>.</td>
+            </tr>
+            <tr>
+                <th>Instancia / Medida:</th>
+                <td>{{ llamado.get_instancia_display }}</td>
+            </tr>
+            {% if llamado.falta_cometida %}
+            <tr>
+                <th>Normativa Infringida:</th>
+                <td>
+                    <strong>{% if llamado.falta_cometida.capitulo %}{{ llamado.falta_cometida.capitulo }}{% else %}Reglamento del Aprendiz (Acuerdo 009 de 2024){% endif %}</strong><br>
+                    {{ llamado.falta_cometida.descripcion }}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <!-- Descripción de los hechos -->
+        <table class="table table-bordered mt-3">
+            <tr>
+                <td class="section-title">DESCRIPCIÓN DE LOS HECHOS (INSTRUCTOR)</td>
+            </tr>
+            <tr>
+                <td style="min-height: 120px; padding: 15px; text-align: justify; white-space: pre-wrap;">{{ llamado.descripcion }}</td>
+            </tr>
+        </table>
+
+        <!-- Descargo del Aprendiz -->
+        {% if llamado.descargo_aprendiz %}
+        <table class="table table-bordered mt-3">
+            <tr>
+                <td class="section-title">DESCARGO DEL APRENDIZ</td>
+            </tr>
+            <tr>
+                <td style="min-height: 120px; padding: 15px; text-align: justify; white-space: pre-wrap;">{{ llamado.descargo_aprendiz }}</td>
+            </tr>
+        </table>
+        {% endif %}
+
+        <!-- Firmas -->
+        <div class="row mt-5 pt-5">
+            <div class="col-4">
+                <div class="firma-box">
+                    <strong>Firma del Aprendiz</strong><br>
+                    C.C. / T.I.
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="firma-box">
+                    <strong>Firma del Instructor</strong><br>
+                    {{ request.user.get_full_name }}<br>
+                    SENA
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="firma-box">
+                    <strong>Firma de Coordinación</strong><br>
+                    SENA
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,7 +2,7 @@ from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import LlamadoAtencion, EstrategiaPedagogica, PlanMejoramiento, FaltaReglamento
-from .forms import EstrategiaPedagogicaForm, LlamadoAtencionForm, PlanMejoramientoForm, PlanMejoramientoCrearForm
+from .forms import EstrategiaPedagogicaForm, LlamadoAtencionForm, PlanMejoramientoForm, PlanMejoramientoCrearForm, DescargoForm
 from usuarios.models import Ficha
 from django.contrib.auth.decorators import login_required
 
@@ -121,28 +121,53 @@ def detalle_llamado(request, pk):
     """Vista para ver el expediente completo de un llamado y su plan de mejora"""
     # Optimizamos la carga del aprendiz y la ficha con select_related.
     llamado = get_object_or_404(
-        LlamadoAtencion.objects.select_related('aprendiz', 'ficha'), 
+        LlamadoAtencion.objects.select_related('aprendiz', 'ficha', 'falta_cometida'), 
         pk=pk
     )
     
+    # --- Lógica para el formulario de descargo ---
+    if request.method == 'POST' and 'guardar_descargo' in request.POST:
+        descargo_form = DescargoForm(request.POST, instance=llamado)
+        if descargo_form.is_valid():
+            descargo_form.save()
+            messages.success(request, "El descargo del aprendiz ha sido guardado correctamente.")
+            return redirect('detalle_llamado', pk=pk)
+        else:
+            messages.error(request, "Error al guardar el descargo. Revisa los datos.")
+    else:
+        descargo_form = DescargoForm(instance=llamado)
+
     # Intentamos obtener el plan de mejoramiento asociado.
     # Si existe, precargamos sus estrategias para optimizar.
     plan = None
     try:
         plan = PlanMejoramiento.objects.prefetch_related('estrategias').get(llamado=llamado)
     except PlanMejoramiento.DoesNotExist:
-        pass  # Si no existe, 'plan' se queda en None, lo cual es manejado en la plantilla.
+        pass
         
     context = {
         'titulo': 'Expediente Disciplinario',
         'llamado': llamado,
         'plan': plan,
+        'descargo_form': descargo_form,
         'breadcrumbs': [
             {'nombre': 'Llamados', 'url': '/llamados/'},
             {'nombre': 'Detalle del Caso', 'url': ''}
         ]
     }
     return render(request, 'llamados/detalle.html', context)
+
+def imprimir_llamado(request, pk):
+    """Vista para generar la versión imprimible de un llamado de atención"""
+    llamado = get_object_or_404(
+        LlamadoAtencion.objects.select_related('aprendiz', 'ficha', 'falta_cometida'), 
+        pk=pk
+    )
+    
+    context = {
+        'llamado': llamado,
+    }
+    return render(request, 'llamados/imprimir_llamado.html', context)
 
 def estrategias(request):
     """Vista para listar y crear el catálogo de estrategias pedagógicas"""

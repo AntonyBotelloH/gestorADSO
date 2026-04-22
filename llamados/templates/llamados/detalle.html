@@ -78,6 +78,34 @@
             {% endif %}
           </div>
         </div>
+        
+        <!-- Tarjeta para registrar el Descargo del Aprendiz -->
+        <div class="card shadow-sm border-0 mt-4 border-top border-4 border-primary">
+            <div class="card-header bg-transparent py-3">
+                <h5 class="mb-0 fw-bold color-negro-suave-fn">
+                    <i class="bi bi-chat-left-text me-2 text-primary"></i>Descargo del Aprendiz
+                </h5>
+            </div>
+            <div class="card-body bg-body-tertiary">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ descargo_form.descargo_aprendiz.id_for_label }}" class="form-label fw-bold small text-muted text-uppercase">
+                            {{ descargo_form.descargo_aprendiz.label }}
+                        </label>
+                        {{ descargo_form.descargo_aprendiz }}
+                        <div class="form-text mt-2">
+                            Espacio para consignar la versión de los hechos presentada por el aprendiz.
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" name="guardar_descargo" class="btn btn-primary fw-bold shadow-sm">
+                            <i class="bi bi-save me-1"></i> Guardar Descargo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
       </div>
 
       <div class="col-lg-5">

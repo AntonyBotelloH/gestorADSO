@@ -118,6 +118,10 @@
                                 <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" {% if not llamado.acta_adjunta %}disabled{% endif %}>
                                     <i class="bi bi-file-earmark-pdf"></i>
                                 </button>
+                                <a href="{% url 'imprimir_llamado' llamado.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir o Descargar PDF">
+                                    <i class="bi bi-printer"></i> Imprimir
+                                </a>
+
                             </td>
                         </tr>
                         {% empty %}
