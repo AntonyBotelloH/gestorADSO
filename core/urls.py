@@ -56,6 +56,8 @@ urlpatterns = [
     
     # 4. Pantalla de "Contraseña cambiada exitosamente"
     path('recuperar/completo/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/recuperar_completo.html'), name='password_reset_complete'),
+    
+    path('ejemplos/', include('ejemplos.urls')),
 ]
 
 if settings.DEBUG:

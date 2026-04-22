@@ -9,7 +9,7 @@ from .models import SesionClase, RegistroAsistencia
 from usuarios.models import Ficha, Usuario
 
 @login_required
-@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
 def inicio_asistencia(request):
     """Vista para registrar la asistencia del día o editar una sesión pasada."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -100,7 +100,7 @@ def inicio_asistencia(request):
     return render(request, 'asistencia/asistencia.html', contexto)
 
 @login_required
-@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
 def historial_asistencias(request):
     """Vista para consultar sesiones anteriores con filtros de fecha."""
     ficha_id = request.session.get('ficha_activa_id')
@@ -143,7 +143,7 @@ def historial_asistencias(request):
     }
     return render(request, 'asistencia/historial.html', contexto)
 @login_required
-@rol_requerido('VOCERO', 'INSTRUCTOR', 'Admin')
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
 def estadisticas_asistencia(request):
     """Vista para el dashboard de rendimiento y riesgo de deserción."""
     ficha_id = request.session.get('ficha_activa_id')
