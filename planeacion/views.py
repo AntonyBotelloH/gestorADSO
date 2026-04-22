@@ -82,7 +82,7 @@ def listar_competencias(request):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def crear_competencia(request):
     """Crea una competencia nueva."""
     if request.method == 'POST':
@@ -106,7 +106,7 @@ def crear_competencia(request):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def editar_competencia(request, pk):
     competencia = get_object_or_404(Competencia, pk=pk)
     if request.method == 'POST':
@@ -130,7 +130,7 @@ def editar_competencia(request, pk):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def eliminar_competencia(request, pk):
     competencia = get_object_or_404(Competencia, pk=pk)
     competencia.delete()
@@ -139,7 +139,7 @@ def eliminar_competencia(request, pk):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def crear_rap(request):
     if request.method == 'POST':
         form = ResultadoAprendizajeForm(request.POST)
@@ -162,7 +162,7 @@ def crear_rap(request):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def editar_rap(request, pk):
     rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
     if request.method == 'POST':
@@ -186,7 +186,7 @@ def editar_rap(request, pk):
 
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('INSTRUCTOR', 'ADMIN')
 def eliminar_rap(request, pk):
     rap = get_object_or_404(ResultadoAprendizaje, pk=pk)
     rap.delete()
