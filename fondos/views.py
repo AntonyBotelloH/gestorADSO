@@ -86,9 +86,9 @@ def dashboard_fondos(request):
         'meta': meta,
         'progreso_meta': round(progreso, 1),
         'faltante_meta': faltante,
-        'movimientos': Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable').order_by('-fecha')[:10],
+        'movimientos': Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable').order_by('-fecha'),
         'conceptos_activos': Concepto.objects.filter(activo=True),
-        'aprendices': Usuario.objects.filter(rol='APRENDIZ'), 
+        'aprendices': Usuario.objects.all(), 
         # Variable para tu partial de breadcrumbs
         'breadcrumbs': [
             {'nombre': 'Fondos', 'url': '/fondos/'}
@@ -103,7 +103,7 @@ def listar_conceptos(request):
     """Vista para configurar las tarifas y multas (lectura para todos, escritura solo Instructor/Admin)."""
     if request.method == 'POST':
         # Verificar que sea Vocero o Admin para crear conceptos
-        if request.user.rol not in ['VOCERO', 'Admin']:
+        if request.user.rol not in ['VOCERO', 'Admin', 'INSTRUCTOR']:
             messages.error(request, "No tienes permiso para crear conceptos.")
             return redirect('conceptos')
         
@@ -121,6 +121,7 @@ def listar_conceptos(request):
 
     conceptos = Concepto.objects.all().order_by('categoria', 'nombre')
     contexto = {
+        'titulo': 'Catálogo de Conceptos',
         'conceptos': conceptos,
         'breadcrumbs': [
             {'nombre': 'Fondos', 'url': '/fondos/'},
@@ -144,9 +145,9 @@ def ver_recibo(request, movimiento_id):
     return render(request, 'fondos/recibo.html', contexto)
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('ADMIN','VOCERO')
 def pagar_movimiento(request, movimiento_id):
-    """Cambia el estado de un movimiento de Pendiente a Ejecutado y registra la fecha."""
+    """Cambia el estado de un movimiento de Pendiente a Ejecutado y registra la fecha (solo Admin)."""
     if request.method == 'POST':
         movimiento = get_object_or_404(Movimiento, id=movimiento_id)
         
@@ -168,7 +169,7 @@ def configurar_metas(request):
     # Si entra un formulario por POST - SOLO INSTRUCTOR/ADMIN
     if request.method == 'POST' and ficha:
         # Verificar que sea Admin
-        if request.user.rol != 'Admin':
+        if request.user.rol != 'ADMIN':
             messages.error(request, "No tienes permiso para crear o modificar metas.")
             return redirect('metas')
         
@@ -225,7 +226,7 @@ def configurar_metas(request):
     return render(request, 'fondos/metas.html', contexto)
 
 @login_required
-@rol_requerido('Admin')
+@rol_requerido('ADMIN')
 def editar_meta(request, meta_id):
     """Vista para editar una meta financiera (solo Admin)."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
@@ -252,7 +253,7 @@ def editar_meta(request, meta_id):
     return render(request, 'fondos/editar_meta.html', contexto)
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('ADMIN')
 def activar_meta(request, meta_id):
     """Vista para activar una meta (desactiva las demás de la misma ficha)."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
@@ -269,7 +270,7 @@ def activar_meta(request, meta_id):
     return redirect('metas')
 
 @login_required
-@rol_requerido('INSTRUCTOR', 'Admin')
+@rol_requerido('ADMIN')
 def finalizar_meta(request, meta_id):
     """Vista para finalizar/cerrar una meta."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
@@ -280,3 +281,48 @@ def finalizar_meta(request, meta_id):
     
     messages.success(request, f"Meta '{meta.nombre}' finalizada.")
     return redirect('metas')
+
+@login_required
+@rol_requerido('ADMIN', 'INSTRUCTOR')
+def editar_concepto(request, concepto_id):
+    """Vista para editar un concepto existente."""
+    concepto = get_object_or_404(Concepto, id=concepto_id)
+    
+    if request.method == 'POST':
+        concepto.nombre = request.POST.get('nombre', concepto.nombre)
+        concepto.categoria = request.POST.get('categoria', concepto.categoria)
+        concepto.tipo_operacion = 'Egreso' if concepto.categoria == 'Gasto' else 'Ingreso'
+        concepto.valor_sugerido = request.POST.get('valor_sugerido', concepto.valor_sugerido)
+        concepto.vigente_desde = request.POST.get('vigente_desde', concepto.vigente_desde)
+        concepto.activo = request.POST.get('activo') == 'on'
+        concepto.save()
+        
+        messages.success(request, "Concepto actualizado correctamente.")
+        return redirect('conceptos')
+    
+    contexto = {
+        'concepto': concepto,
+        'titulo': f'Editar Concepto: {concepto.nombre}',
+        'breadcrumbs': [
+            {'nombre': 'Fondos', 'url': '/fondos/'},
+            {'nombre': 'Catálogo de Conceptos', 'url': '/fondos/conceptos/'},
+            {'nombre': 'Editar Concepto', 'url': ''}
+        ]
+    }
+    return render(request, 'fondos/editar_concepto.html', contexto)
+
+@login_required
+@rol_requerido('INSTRUCTOR')
+def eliminar_movimiento(request, movimiento_id):
+    """Vista para eliminar un movimiento (solo Instructor)."""
+    if request.method == 'POST':
+        movimiento = get_object_or_404(Movimiento, id=movimiento_id)
+        
+        # Guardamos el nombre para el mensaje antes de que se borre
+        nombre_concepto = movimiento.concepto.nombre
+        
+        movimiento.delete()
+        
+        messages.success(request, f"El movimiento de '{nombre_concepto}' fue eliminado correctamente.")
+    
+    return redirect('inicio_fondos')
