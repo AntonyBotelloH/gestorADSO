@@ -91,6 +91,8 @@ class Usuario(AbstractUser):
             today = date.today()
             return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
         return None
+    
+    def save(self, *args, **kwargs):
         # Si first_name tiene texto, lo convertimos a formato Título
         if self.first_name:
             self.first_name = self.first_name.title()
