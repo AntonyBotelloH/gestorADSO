@@ -19,7 +19,7 @@ def inicio_asistencia(request):
         return redirect('inicio')
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
-    aprendices = Usuario.objects.filter( ficha=ficha).order_by('last_name') 
+    aprendices = Usuario.objects.filter(ficha=ficha, rol__in=['APRENDIZ', 'VOCERO']).order_by('last_name')
 
     sesion_id = request.GET.get('sesion_id')
     
@@ -38,6 +38,11 @@ def inicio_asistencia(request):
             sesion = SesionClase.objects.create(ficha=ficha, fecha=hoy)
 
     if request.method == 'POST':
+        # Protección: Si la sesión está cerrada, rechazamos los cambios
+        if sesion.cerrada:
+            messages.error(request, "Esta sesión ya se encuentra cerrada y no permite modificaciones.")
+            return redirect('historial_asistencia')
+            
         sesion.tema_tratado = request.POST.get('tema_tratado', '')
         sesion.save()
 
@@ -215,3 +220,28 @@ def estadisticas_asistencia(request):
     }
     
     return render(request, 'asistencia/estadisticas.html', contexto)
+
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
+def justificar_falla(request, registro_id):
+    """Permite cambiar el estado de una asistencia de Falla a Excusa directamente desde el reporte."""
+    if request.method == 'POST':
+        registro = get_object_or_404(RegistroAsistencia, id=registro_id)
+        if registro.estado == 'Falla':
+            registro.estado = 'Excusa'
+            registro.save()
+            messages.success(request, f"La inasistencia de {registro.aprendiz.first_name} ha sido justificada (Convertida a Excusa).")
+        # Nos redirige sutilmente de vuelta al informe donde estábamos
+        return redirect(request.META.get('HTTP_REFERER', 'inicio'))
+    return redirect('inicio')
+
+@login_required
+@rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
+def cerrar_sesion(request, sesion_id):
+    """Bloquea una sesión de clase para evitar futuras ediciones."""
+    if request.method == 'POST':
+        sesion = get_object_or_404(SesionClase, id=sesion_id)
+        sesion.cerrada = True
+        sesion.save()
+        messages.success(request, f"La sesión de asistencia del {sesion.fecha} ha sido cerrada de forma definitiva.")
+    return redirect('historial_asistencia')

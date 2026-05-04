@@ -102,9 +102,35 @@
                             </div>
                         </td>
                         <td class="pe-4 text-end">
-                            <a href="{% url 'inicio_asistencia' %}?sesion_id={{ sesion.id }}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm">
-                                <i class="bi bi-pencil-square me-1"></i> Editar
-                            </a>
+                            {% if not sesion.cerrada %}
+                                <a href="{% url 'inicio_asistencia' %}?sesion_id={{ sesion.id }}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm mb-1">
+                                    <i class="bi bi-pencil-square me-1"></i> Editar
+                                </a>
+                                <form action="{% url 'cerrar_sesion' sesion.id %}" method="POST" class="d-inline" id="form-cerrar-{{ sesion.id }}">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-outline-danger btn-sm fw-bold px-3 rounded-pill shadow-sm mb-1" title="Cerrar Sesión de Clase"
+                                            onclick="event.preventDefault(); Swal.fire({
+                                                title: '¿Cerrar esta sesión?',
+                                                text: 'Una vez cerrada, no podrás volver a editar la asistencia de este día.',
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#d33',
+                                                cancelButtonColor: '#6c757d',
+                                                confirmButtonText: 'Sí, ¡Cerrar!',
+                                                cancelButtonText: 'Cancelar'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    document.getElementById('form-cerrar-{{ sesion.id }}').submit();
+                                                }
+                                            })">
+                                        <i class="bi bi-lock me-1"></i> Cerrar
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">
+                                    <i class="bi bi-lock-fill me-1"></i> Cerrada
+                                </span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

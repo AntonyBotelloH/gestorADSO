@@ -6,6 +6,7 @@ class SesionClase(models.Model):
     fecha = models.DateField(auto_now_add=True, verbose_name="Fecha de Sesión")
     tema_tratado = models.CharField(max_length=200, blank=True, null=True, verbose_name="Tema o Actividad")
     observaciones = models.TextField(blank=True, null=True)
+    cerrada = models.BooleanField(default=False, verbose_name="Sesión Cerrada", help_text="Si está marcada, no se podrá editar la asistencia.")
 
     class Meta:
         verbose_name = "Sesión de Clase"
