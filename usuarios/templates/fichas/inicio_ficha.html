@@ -80,28 +80,37 @@
                         <div class="mb-4">
                             <div class="d-flex justify-content-between mb-1">
                                 <span class="fw-bold text-body small">Fase 1: Análisis</span>
-                                <span class="text-success fw-bold small">100%</span>
+                                <span class="text-success fw-bold small">{{ progreso_analisis }}%</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ progreso_analisis }}%;"></div>
                             </div>
                         </div>
                         <div class="mb-4">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-bold text-body small">Fase 2: Diseño</span>
-                                <span class="text-success fw-bold small">100%</span>
+                                <span class="fw-bold text-body small">Fase 2: Planeación</span>
+                                <span class="text-success fw-bold small">{{ progreso_planeacion }}%</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ progreso_planeacion }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-bold text-body small">Fase 3: Ejecución</span>
+                                <span class="text-warning fw-bold small">{{ progreso_ejecucion }}%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ progreso_ejecucion }}%;"></div>
                             </div>
                         </div>
                         <div class="mb-0">
                             <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-bold text-body small">Fase 3: Desarrollo</span>
-                                <span class="text-warning fw-bold small">40%</span>
+                                <span class="fw-bold text-body small">Fase 4: Evaluación</span>
+                                <span class="text-muted fw-bold small">{{ progreso_evaluacion }}%</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: 40%;"></div>
+                                <div class="progress-bar bg-secondary opacity-25" role="progressbar" style="width: {{ progreso_evaluacion }}%;"></div>
                             </div>
                         </div>
                     </div>
@@ -151,7 +160,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-end pe-3">
-                                <button class="btn btn-outline-secondary btn-sm shadow-sm"><i class="bi bi-eye"></i> Perfil</button>
+                                <a href="{% url 'editar_usuario' instructor.id %}" class="btn btn-outline-secondary btn-sm shadow-sm"><i class="bi bi-eye"></i> Perfil</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -235,7 +244,7 @@
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="#" method="POST">
+                    <form action="{% url 'asignar_instructor_ficha' %}" method="POST">
                         {% csrf_token %}
                         <div class="modal-body p-4">
                             <p class="text-muted small mb-3">Selecciona el instructor que deseas vincular a la ficha <strong>{{ ficha_activa.codigo_ficha }}</strong>.</p>
@@ -243,9 +252,12 @@
                             <div class="mb-3">
                                 <label for="instructorSelect" class="form-label fw-bold text-body small text-uppercase">Instructor</label>
                                 <select class="form-select border-secondary-subtle shadow-sm" id="instructorSelect" name="instructor_id" required>
-                                    <option value="" selected disabled>Buscar instructor...</option>
-                                    <option value="1">Ejemplo: Juan Pérez (Técnica)</option>
-                                    <option value="2">Ejemplo: María Gómez (Transversal)</option>
+                                    <option value="" selected disabled>Seleccionar instructor...</option>
+                                    {% for instructor in instructores_disponibles %}
+                                    <option value="{{ instructor.id }}">{{ instructor.first_name }} {{ instructor.last_name }}</option>
+                                    {% empty %}
+                                    <option value="" disabled>No hay instructores disponibles</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>

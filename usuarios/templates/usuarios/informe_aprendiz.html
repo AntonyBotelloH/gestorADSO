@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Informe Integral del Aprendiz</h2>
+        <a href="{% url 'inicio_usuario' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Usuarios
+        </a>
+    </div>
+
+    <!-- Tarjeta de Perfil del Aprendiz -->
+    <div class="card shadow-sm mb-4 border-0 bg-body-tertiary">
+        <div class="card-body d-flex align-items-center">
+            <div class="me-4">
+                {% if aprendiz.foto %}
+                    <img src="{{ aprendiz.foto.url }}" alt="Foto de {{ aprendiz.first_name }}" class="rounded-circle border border-secondary-subtle shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" />
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ aprendiz.first_name }}+{{ aprendiz.last_name }}&background=39A900&color=fff&bold=true&size=100" alt="Sin foto" class="rounded-circle shadow-sm" style="width: 100px; height: 100px;" />
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="mb-1 fw-bold">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</h3>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-id-card"></i> <strong>Documento:</strong> {{ aprendiz.documento }} &nbsp;|&nbsp; 
+                    <i class="fas fa-envelope"></i> <strong>Correo:</strong> {{ aprendiz.email }}
+                </p>
+                <div>
+                    <span class="badge bg-secondary">{{ aprendiz.rol }}</span>
+                    {% if aprendiz.is_active %}
+                        <span class="badge bg-success"><i class="fas fa-check-circle"></i> Activo</span>
+                    {% else %}
+                        <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Inactivo</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Nota sobre el Reglamento del Aprendiz -->
+    <div class="alert alert-warning shadow-sm">
+        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Importante: Reglamento del Aprendiz</h5>
+        <p class="mb-0">{{ mensaje_acuerdo_009 }}</p>
+    </div>
+
+    <div class="row">
+        <!-- Inasistencias (Fallas y Excusas) -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-calendar-times"></i> Registro de Inasistencias</h5>
+                    <span class="badge bg-light text-dark">{{ asistencias.count }} Registros</span>
+                </div>
+                <div class="card-body">
+                    {% if asistencias %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha (Día)</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asis in asistencias %}
+                                <tr>
+                                    <!-- Filtro date con formato "l" (día de la semana en texto) -->
+                                    <td>{{ asis.sesion.fecha|date:"l, d \d\e F \d\e Y"|title }}</td>
+                                    <td>
+                                        {% if asis.estado == 'Falla' %}
+                                            <span class="badge bg-danger">Falla Injustificada</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Excusa Aprobada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if asis.estado == 'Falla' %}
+                                        <form action="{% url 'justificar_falla' asis.id %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Cambiar a Excusa" onclick="return confirm('¿Estás seguro de que deseas justificar esta inasistencia?')">
+                                                <i class="fas fa-check-circle"></i> Justificar
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-muted"><i class="fas fa-check"></i> Justificada</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-double fa-3x text-success mb-2"></i>
+                        <p class="text-muted mb-0">El aprendiz no tiene inasistencias registradas.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Llamados y Fondos -->
+        <div class="col-lg-6 mb-4">
+            
+            <!-- Llamados de Atención -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-gavel"></i> Llamados de Atención</h5>
+                    <span class="badge bg-light text-dark">{{ llamados.count }} Casos</span>
+                </div>
+                <div class="card-body">
+                    {% if llamados %}
+                    <ul class="list-group list-group-flush">
+                        {% for llamado in llamados %}
+                        <li class="list-group-item px-0">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 fw-bold">{{ llamado.falta_cometida }}</h6>
+                                <small class="text-muted">{{ llamado.instancia }}</small>
+                            </div>
+                            <p class="mb-1 small"><strong>Tipo:</strong> {{ llamado.tipo_falta }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted text-center my-3"><i class="fas fa-award text-primary"></i> No tiene reportes disciplinarios.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fondos y Multas -->
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-coins"></i> Fondos (Multas y Aportes)</h5>
+                    <span class="badge bg-light text-dark">{{ movimientos.count }} Registros</span>
+                </div>
+                <div class="card-body">
+                    {% if movimientos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Valor</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mov in movimientos %}
+                                <tr>
+                                    <td>{{ mov.concepto.nombre }}</td>
+                                    <td>${{ mov.valor|floatformat:0 }}</td>
+                                    <td>
+                                        {% if mov.estado == 'Pendiente' %}
+                                            <span class="badge bg-warning text-dark">Pendiente</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Pagado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center my-3">No tiene multas ni deudas en los fondos.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

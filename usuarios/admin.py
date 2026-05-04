@@ -57,9 +57,9 @@ class UsuarioCustomAdmin(UserAdmin):
 
 @admin.register(Ficha)
 class FichaAdmin(admin.ModelAdmin):
-    list_display = ('codigo_ficha', 'programa', 'jornada')
+    list_display = ('codigo_ficha', 'programa', 'jornada', 'etapa', 'fase')
     search_fields = ('codigo_ficha', 'programa')
-    list_filter = ('jornada',)
+    list_filter = ('jornada', 'etapa', 'fase')
 
 @admin.register(GrupoProyecto)
 class GrupoProyectoAdmin(admin.ModelAdmin):

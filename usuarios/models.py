@@ -29,6 +29,14 @@ class Ficha(models.Model):
         ('Productiva', 'Etapa Productiva'),
         ('Terminada', 'Terminada / Certificada'),
     ]
+    
+    # Fases del proceso formativo SENA (Modelo por Proyectos)
+    FASE_CHOICES = [
+        ('Analisis', 'Análisis'),
+        ('Planeacion', 'Planeación'),
+        ('Ejecucion', 'Ejecución'),
+        ('Evaluacion', 'Evaluación'),
+    ]
 
     codigo_ficha = models.CharField(max_length=15, unique=True, verbose_name='Código de Ficha') # Le subí a 15 por si acaso los códigos crecen
     programa = models.CharField(max_length=150, verbose_name='Programa de Formación')
@@ -38,6 +46,7 @@ class Ficha(models.Model):
     fecha_inicio = models.DateField(null=True, blank=True, verbose_name='Fecha de Inicio')
     fecha_fin_lectiva = models.DateField(null=True, blank=True, verbose_name='Fin Etapa Lectiva')
     etapa = models.CharField(max_length=15, choices=ETAPA_CHOICES, default='Lectiva', verbose_name='Etapa Actual')
+    fase = models.CharField(max_length=10, choices=FASE_CHOICES, default='Fase 1', verbose_name='Fase Actual (Etapa Lectiva)')
     is_active = models.BooleanField(default=True, verbose_name='Ficha Activa')
     
     class Meta:
