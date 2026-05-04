@@ -64,7 +64,7 @@
                   <td class="ps-4 text-body"><strong>{{ alerta.aprendiz }}</strong></td>
                   <td><span class="badge bg-{{ alerta.color }} text-dark">{{ alerta.tipo }}</span></td>
                   <td class="text-end pe-4">
-                    <a href="#" class="btn btn-outline-secondary btn-sm">Revisar</a>
+                    <a href="{% url 'detalle_llamado' alerta.id %}" class="btn btn-outline-secondary btn-sm">Revisar</a>
                   </td>
                 </tr>
                 {% empty %}

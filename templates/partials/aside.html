@@ -291,7 +291,12 @@
       <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
         <li><a class="dropdown-item" href="{% url 'inicio_usuario' %}">Perfil</a></li>
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+        <li>
+          <form action="{% url 'logout' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item">Cerrar Sesión</button>
+          </form>
+        </li>
       </ul>
     </div>
   </div>
