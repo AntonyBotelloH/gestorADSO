@@ -97,7 +97,8 @@ def inicio(request):
             alertas_reales.append({
                 'aprendiz': llamado.aprendiz.get_full_name(), 
                 'tipo': llamado.get_instancia_display(), 
-                'color': color
+                'color': color,
+                'id': llamado.id
             })
         
         # --- RESUMEN DE NOVEDADES (NUEVO) ---

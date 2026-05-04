@@ -48,13 +48,17 @@
             </div>
 
             <div class="row mb-4">
-              <div class="col-sm-6 mb-3 mb-sm-0">
+              <div class="col-sm-4 mb-3 mb-sm-0">
                 <small class="text-muted fw-bold d-block text-uppercase">Tipo de Falta</small>
                 <span class="text-body fw-bold">{{ llamado.get_tipo_falta_display }}</span>
               </div>
-              <div class="col-sm-6">
+              <div class="col-sm-4 mb-3 mb-sm-0">
                 <small class="text-muted fw-bold d-block text-uppercase">Gravedad de la Falta</small>
                 <span class="badge {% if llamado.gravedad == 'Leve' %}bg-info text-dark{% elif llamado.gravedad == 'Grave' %}bg-warning text-dark{% elif llamado.gravedad == 'Gravisima' %}bg-danger text-white{% else %}bg-secondary text-white{% endif %} rounded-pill px-3 py-2 fs-6">{{ llamado.get_gravedad_display }}</span>
+              </div>
+              <div class="col-sm-4">
+                <small class="text-muted fw-bold d-block text-uppercase">Fase del Proceso</small>
+                <span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary-subtle rounded-pill px-3 py-2 fs-6">{{ llamado.get_fase_display }}</span>
               </div>
             </div>
 

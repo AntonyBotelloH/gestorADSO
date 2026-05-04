@@ -47,6 +47,10 @@
                     <label class="form-label fw-bold small text-muted text-uppercase">Instancia / Sanción a aplicar:</label>
                     {{ form.instancia }}
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Fase del Proceso Formativo:</label>
+                    {{ form.fase }}
+                </div>
 
                 <div class="col-12">
                     <label class="form-label fw-bold small text-muted text-uppercase">Descripción de los Hechos (Circunstancias de modo, tiempo y lugar):</label>
@@ -72,6 +76,7 @@
                             <th class="ps-4 py-3">Fecha</th>
                             <th>Aprendiz</th>
                             <th>Clasificación</th>
+                            <th>Fase</th>
                             <th>Instancia</th>
                             <th>Estado Plan</th>
                             <th>Falta Tipificada</th>
@@ -98,6 +103,11 @@
                                 </span>
                             </td>
                             <td>
+                                <span class="badge bg-secondary bg-opacity-25 text-dark border border-secondary-subtle rounded-pill">
+                                    {{ llamado.get_fase_display }}
+                                </span>
+                            </td>
+                            <td>
                                 {% if llamado.plan_mejoramiento %}
                                     <span class="badge 
                                         {% if llamado.plan_mejoramiento.estado == 'En Curso' %}bg-primary
@@ -115,9 +125,15 @@
                             </td>
                             <td class="text-end pe-4">
                                 <a href="{% url 'detalle_llamado' llamado.pk %}" class="btn btn-outline-secondary btn-sm fw-bold me-1" title="Ver Detalle"><i class="bi bi-eye"></i> Ver</a>
-                                <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" {% if not llamado.acta_adjunta %}disabled{% endif %}>
-                                    <i class="bi bi-file-earmark-pdf"></i>
-                                </button>
+                                {% if llamado.acta_adjunta %}
+                                    <a href="{{ llamado.acta_adjunta.url }}" target="_blank" class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-danger btn-sm fw-bold" title="Descargar Acta" disabled>
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </button>
+                                {% endif %}
                                 <a href="{% url 'imprimir_llamado' llamado.id %}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Imprimir o Descargar PDF">
                                     <i class="bi bi-printer"></i> Imprimir
                                 </a>

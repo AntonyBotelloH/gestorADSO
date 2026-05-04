@@ -61,7 +61,7 @@ class LlamadoAtencionForm(forms.ModelForm):
     class Meta:
         model = LlamadoAtencion
         # OJO: Cambiamos motivo_principal por falta_cometida
-        fields = ['aprendiz', 'falta_cometida', 'tipo_falta', 'gravedad', 'instancia', 'descripcion']
+        fields = ['aprendiz', 'falta_cometida', 'tipo_falta', 'gravedad', 'instancia', 'fase', 'descripcion']
         
         widgets = {
             'aprendiz': forms.Select(attrs={
@@ -79,6 +79,9 @@ class LlamadoAtencionForm(forms.ModelForm):
                 'class': 'form-select border-secondary-subtle bg-secondary text-white shadow-none bg-opacity-25'
             }),
             'instancia': forms.Select(attrs={
+                'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'
+            }),
+            'fase': forms.Select(attrs={
                 'class': 'form-select border-secondary-subtle bg-body-tertiary text-body shadow-none'
             }),
             'descripcion': forms.Textarea(attrs={

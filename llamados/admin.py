@@ -14,8 +14,8 @@ class FaltaReglamentoAdmin(admin.ModelAdmin):
 
 @admin.register(LlamadoAtencion)
 class LlamadoAtencionAdmin(admin.ModelAdmin):
-    list_display = ('aprendiz', 'ficha', 'instancia', 'falta_cometida', 'fecha_registro')
-    list_filter = ('instancia', 'tipo_falta', 'gravedad', 'fecha_registro')
+    list_display = ('aprendiz', 'ficha', 'fase', 'instancia', 'falta_cometida', 'fecha_registro')
+    list_filter = ('instancia', 'tipo_falta', 'gravedad', 'fase', 'fecha_registro')
     search_fields = ('aprendiz__first_name', 'aprendiz__last_name', 'aprendiz__numero_documento', 'ficha__codigo_ficha')
     autocomplete_fields = ('aprendiz', 'ficha', 'falta_cometida')
     date_hierarchy = 'fecha_registro'

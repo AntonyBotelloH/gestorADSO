@@ -66,6 +66,15 @@ class LlamadoAtencion(models.Model):
     ]
     instancia = models.CharField(max_length=20, choices=INSTANCIA_CHOICES, default='Verbal')
     
+    # Fases del proceso formativo SENA (Modelo por Proyectos)
+    FASE_CHOICES = [
+        ('Analisis', 'Análisis'),
+        ('Planeacion', 'Planeación'),
+        ('Ejecucion', 'Ejecución'),
+        ('Evaluacion', 'Evaluación'),
+    ]
+    fase = models.CharField(max_length=15, choices=FASE_CHOICES, default='Analisis', verbose_name='Fase en que ocurrió la falta')
+    
     ficha = models.ForeignKey(Ficha, on_delete=models.CASCADE, related_name='llamados')
     aprendiz = models.ForeignKey(
         Usuario, 
