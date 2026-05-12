@@ -173,6 +173,36 @@
         <!-- Columna Derecha: Llamados y Fondos -->
         <div class="col-lg-6 mb-4">
             
+            <!-- Consulta SOFIA Plus -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-search"></i> Consulta en SOFIA Plus</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted small">Genera una captura de pantalla en tiempo real de la tabla de inasistencias de este aprendiz directamente desde SOFIA Plus.</p>
+                    
+                    <div class="d-grid gap-2 mb-3 px-4">
+                        <a href="{% url 'consultar_inasistencias_sofia' aprendiz.id %}" class="btn btn-primary btn-lg shadow-sm fw-bold btn-sincronizar text-white">
+                            <i class="fas fa-camera me-2"></i> Generar Reporte SOFIA
+                        </a>
+                    </div>
+                    
+                    {% if request.session.prueba_consulta_sofia_aprendiz == aprendiz.id|stringformat:"s" %}
+                        {% if request.session.img_consulta_sofia %}
+                            <hr>
+                            <p class="text-success fw-bold small"><i class="fas fa-check-circle"></i> Última captura generada:</p>
+                            <img src="{{ request.session.img_consulta_sofia }}" class="img-fluid border rounded shadow-sm mt-2" style="max-height: 300px; cursor: zoom-in;" onclick="window.open(this.src, '_blank')">
+                        {% endif %}
+                    {% endif %}
+                    {% if request.session.error_consulta_sofia_aprendiz == aprendiz.id|stringformat:"s" %}
+                        <hr>
+                        <div class="alert alert-danger small mt-3 text-start">
+                            <i class="fas fa-exclamation-triangle"></i> {{ request.session.msg_error_consulta_sofia }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Llamados de Atención -->
             <div class="card shadow mb-4">
                 <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">

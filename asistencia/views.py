@@ -555,12 +555,6 @@ def probar_consulta_inasistencia_sofia(request):
             input_aprendiz.send_keys(documento_prueba)
             
         # Clic en Consultar Inasistencias
-        try:
-            btn_consultar = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[contains(@value, 'Consultar') or contains(@id, 'Consultar') or @type='submit']")))
-            btn_consultar.click()
-        except:
-            btn_consultar = wait.until(EC.element_to_be_clickable((By.ID, "formNovedadAprendiz:btnRegistrarNovedad")))
-            driver.execute_script("arguments[0].click();", btn_consultar)
         time.sleep(2)
         btn_consultar = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:btnRegistrarNovedad")))
         driver.execute_script("arguments[0].click();", btn_consultar)
@@ -594,6 +588,149 @@ def probar_consulta_inasistencia_sofia(request):
         except: pass
             
     return redirect('registro_sofia')
+
+@login_required
+@rol_requerido('INSTRUCTOR', 'ADMIN')
+def consultar_inasistencias_sofia(request, usuario_id):
+    """Consulta inasistencias en SOFIA para un aprendiz y guarda la foto temporal en sesión."""
+    aprendiz = get_object_or_404(Usuario, id=usuario_id)
+    ficha_id = request.session.get('ficha_activa_id')
+    
+    # Limpiamos variables de sesión previas
+    request.session['prueba_consulta_sofia_aprendiz'] = str(aprendiz.id)
+    if 'img_consulta_sofia' in request.session: del request.session['img_consulta_sofia']
+    if 'error_consulta_sofia_aprendiz' in request.session: del request.session['error_consulta_sofia_aprendiz']
+    if 'msg_error_consulta_sofia' in request.session: del request.session['msg_error_consulta_sofia']
+
+    try:
+        from selenium import webdriver
+        import time
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import Select
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from django.core.files.storage import FileSystemStorage
+        
+        credencial = getattr(request.user, 'credenciales_sofia', None)
+        documento_prueba = aprendiz.documento
+        
+        if not credencial or not credencial.get_password():
+            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+            request.session['msg_error_consulta_sofia'] = "No tienes credenciales configuradas."
+            return redirect('informe_aprendiz', usuario_id=aprendiz.id)
+            
+        if not ficha_id:
+            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+            request.session['msg_error_consulta_sofia'] = "Selecciona una ficha en el menú lateral."
+            return redirect('informe_aprendiz', usuario_id=aprendiz.id)
+            
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless=new')
+        options.add_argument('--window-size=1920,1080')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        driver = webdriver.Chrome(options=options)
+        
+        driver.get("http://senasofiaplus.edu.co/sofia-public/")
+        wait = WebDriverWait(driver, 15)
+        
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
+        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
+        
+        input_doc = driver.find_element(By.ID, "username")
+        input_doc.clear()
+        input_doc.send_keys(credencial.documento.strip())
+        input_pass = driver.find_element(By.NAME, "josso_password")
+        input_pass.clear()
+        input_pass.send_keys(credencial.get_password().strip())
+        driver.find_element(By.NAME, "ingresar").click()
+        
+        driver.switch_to.default_content()
+        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
+        Select(select_rol_element).select_by_value("13")
+        time.sleep(3)
+        
+        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
+        time.sleep(1)
+        
+        menu_padre = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]")))
+        driver.execute_script("arguments[0].click();", menu_padre)
+        time.sleep(2) 
+        
+        menu_consulta = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'consultar') and contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'inasistencia')]")))
+        driver.execute_script("arguments[0].click();", menu_consulta)
+        time.sleep(3)
+        
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
+        
+        btn_ficha = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:fichaOLK")))
+        driver.execute_script("arguments[0].click();", btn_ficha)
+        time.sleep(2)
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
+        wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
+        time.sleep(2) 
+        driver.switch_to.parent_frame()
+        time.sleep(2)
+        
+        try:
+            btn_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@id, 'aprendizOLK') or contains(@id, 'AprendizOLK')]")))
+            driver.execute_script("arguments[0].click();", btn_aprendiz)
+            time.sleep(3)
+            wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "viewDialog1_content")))
+            try:
+                input_busqueda = driver.find_element(By.XPATH, "//input[@type='text']")
+                input_busqueda.clear()
+                input_busqueda.send_keys(documento_prueba)
+                btn_lista = driver.find_element(By.XPATH, "//a[contains(., 'Lista') or contains(., 'Consultar')]")
+                driver.execute_script("arguments[0].click();", btn_lista)
+                time.sleep(2)
+            except: pass
+            wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{documento_prueba}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
+            time.sleep(2)
+            driver.switch_to.parent_frame()
+        except:
+            input_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")))
+            input_aprendiz.clear()
+            input_aprendiz.send_keys(documento_prueba)
+            
+        time.sleep(2)
+        btn_consultar = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:btnRegistrarNovedad")))
+        driver.execute_script("arguments[0].click();", btn_consultar)
+        
+        time.sleep(3)
+        try:
+            wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:InasistenciasTable")))
+        except:
+            pass
+        
+        fs = FileSystemStorage()
+        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', f'consulta_{documento_prueba}.png')
+        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
+        driver.save_screenshot(captura_path)
+        
+        request.session['img_consulta_sofia'] = fs.url(f'sofia_proofs/consulta_{documento_prueba}.png')
+        messages.success(request, f"Reporte de SOFIA Plus generado para {aprendiz.first_name}.")
+        
+    except Exception as e:
+        try:
+            from django.core.files.storage import FileSystemStorage
+            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', f'error_consulta_{documento_prueba}.png')
+            driver.save_screenshot(captura_path)
+            request.session['img_consulta_sofia'] = FileSystemStorage().url(f'sofia_proofs/error_consulta_{documento_prueba}.png')
+            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+            request.session['msg_error_consulta_sofia'] = "Ocurrió un error al consultar. Revisa la captura."
+        except:
+            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+            request.session['msg_error_consulta_sofia'] = f"El bot falló al consultar. Detalle: {str(e)[:100]}"
+    finally:
+        try: driver.quit()
+        except: pass
+            
+    return redirect('informe_aprendiz', usuario_id=aprendiz.id)
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
