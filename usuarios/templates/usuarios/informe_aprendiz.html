@@ -46,7 +46,7 @@
     <div class="row">
         <!-- Inasistencias (Fallas y Excusas) -->
         <div class="col-lg-6 mb-4">
-            <div class="card shadow h-100">
+            <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="m-0"><i class="fas fa-calendar-times"></i> Registro de Inasistencias</h5>
                     <span class="badge bg-light text-dark">{{ asistencias.count }} Registros</span>
@@ -75,15 +75,32 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        {% if asis.estado == 'Falla' %}
-                                        <form action="{% url 'justificar_falla' asis.id %}" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Cambiar a Excusa" onclick="return confirm('¿Estás seguro de que deseas justificar esta inasistencia?')">
-                                                <i class="fas fa-check-circle"></i> Justificar
-                                            </button>
-                                        </form>
+                                        {% if asis.sesion.cerrada %}
+                                            <a href="{% url 'detalle_registro' asis.id %}" class="btn btn-sm btn-outline-primary shadow-sm" title="Ver Expediente">
+                                                <i class="bi bi-file-earmark-person"></i>
+                                            </a>
+                                            {% if asis.estado == 'Falla' %}
+                                                {% if not asis.sincronizado_sofia %}
+                                                    <a href="{% url 'sincronizar_falla_sofia' asis.id %}" class="btn btn-sm btn-outline-danger shadow-sm ms-1 btn-sincronizar" title="Subir a SOFIA Plus">
+                                                        <i class="bi bi-cloud-arrow-up"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <button class="btn btn-sm btn-outline-success shadow-sm ms-1" title="Ya reportado en SOFIA Plus" disabled>
+                                                        <i class="bi bi-check2-all"></i>
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
                                         {% else %}
-                                        <span class="text-muted"><i class="fas fa-check"></i> Justificada</span>
+                                            {% if asis.estado == 'Falla' %}
+                                            <form action="{% url 'justificar_falla' asis.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Cambiar a Excusa" onclick="return confirm('¿Estás seguro de que deseas justificar esta inasistencia?')">
+                                                    <i class="fas fa-check-circle"></i> Justificar
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <span class="text-muted"><i class="fas fa-check"></i> Justificada</span>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -95,6 +112,58 @@
                     <div class="text-center py-4">
                         <i class="fas fa-check-double fa-3x text-success mb-2"></i>
                         <p class="text-muted mb-0">El aprendiz no tiene inasistencias registradas.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Registro de Retardos -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-clock"></i> Registro de Retardos</h5>
+                    <span class="badge bg-light text-dark">{{ retardos.count }} Registros</span>
+                </div>
+                <div class="card-body">
+                    {% if retardos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha (Día)</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for retardo in retardos %}
+                                <tr>
+                                    <td>{{ retardo.sesion.fecha|date:"l, d \d\e F \d\e Y"|title }}</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">Llegada Tarde</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if retardo.sesion.cerrada %}
+                                            <a href="{% url 'detalle_registro' retardo.id %}" class="btn btn-sm btn-outline-primary shadow-sm" title="Ver Expediente">
+                                                <i class="bi bi-file-earmark-person"></i>
+                                            </a>
+                                        {% else %}
+                                            <form action="{% url 'justificar_falla' retardo.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Cambiar a Excusa" onclick="return confirm('¿Estás seguro de que deseas justificar este retardo?')">
+                                                    <i class="fas fa-check-circle"></i> Justificar
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-double fa-3x text-success mb-2"></i>
+                        <p class="text-muted mb-0">El aprendiz no tiene retardos registrados.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -172,4 +241,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnsSincronizar = document.querySelectorAll('.btn-sincronizar');
+        
+        btnsSincronizar.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Cambiar el icono por la rueda de carga
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = 'spinner-border spinner-border-sm';
+                }
+                // Deshabilitar visual y funcionalmente el botón
+                this.classList.add('disabled');
+                this.style.pointerEvents = 'none';
+            });
+        });
+    });
+</script>
 {% endblock %}

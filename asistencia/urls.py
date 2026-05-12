@@ -1,5 +1,5 @@
 from django.urls import path
-from asistencia.views import inicio_asistencia, historial_asistencias, estadisticas_asistencia, justificar_falla, cerrar_sesion
+from asistencia.views import inicio_asistencia, historial_asistencias, estadisticas_asistencia, justificar_falla, cerrar_sesion, detalle_sesion, registro_sofia, probar_conexion_sofia, probar_rol_sofia, probar_navegacion_sofia, probar_seleccion_ficha_sofia, probar_seleccion_aprendiz_sofia, probar_consulta_inasistencia_sofia, sincronizar_falla_sofia, detalle_registro
 
 urlpatterns = [
     # Toma de asistencia diaria (o edición de una sesión específica)
@@ -16,4 +16,22 @@ urlpatterns = [
     
     # Cerrar sesión (bloquear edición futura)
     path('cerrar_sesion/<int:sesion_id>/', cerrar_sesion, name='cerrar_sesion'),
+    
+    # Detalle de inasistencias y retardos de una sesión específica
+    path('detalle_sesion/<int:sesion_id>/', detalle_sesion, name='detalle_sesion'),
+    
+    # Detalle de un registro individual (para ver su captura de SOFIA)
+    path('registro/<int:registro_id>/', detalle_registro, name='detalle_registro'),
+
+    # Automatización SOFIA
+    path('registro-sofia/', registro_sofia, name='registro_sofia'),
+    path('registro-sofia/probar-conexion/', probar_conexion_sofia, name='probar_conexion_sofia'),
+    path('registro-sofia/probar-rol/', probar_rol_sofia, name='probar_rol_sofia'),
+    path('registro-sofia/probar-navegacion/', probar_navegacion_sofia, name='probar_navegacion_sofia'),
+    path('registro-sofia/probar-seleccion/', probar_seleccion_ficha_sofia, name='probar_seleccion_ficha_sofia'),
+    path('registro-sofia/probar-seleccion-aprendiz/', probar_seleccion_aprendiz_sofia, name='probar_seleccion_aprendiz_sofia'),
+    path('registro-sofia/probar-consulta/', probar_consulta_inasistencia_sofia, name='probar_consulta_inasistencia_sofia'),
+    
+    # Sincronización directa desde Detalle de Sesión
+    path('detalle_sesion/sincronizar/<int:registro_id>/', sincronizar_falla_sofia, name='sincronizar_falla_sofia'),
 ]

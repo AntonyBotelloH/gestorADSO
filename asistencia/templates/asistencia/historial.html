@@ -22,11 +22,11 @@
             <form method="GET" class="row g-3 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted text-uppercase">Desde:</label>
-                    <input type="date" name="fecha_inicio" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ request.GET.fecha_inicio }}">
+                    <input type="date" name="fecha_inicio" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ fecha_inicio }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold small text-muted text-uppercase">Hasta:</label>
-                    <input type="date" name="fecha_fin" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ request.GET.fecha_fin }}">
+                    <input type="date" name="fecha_fin" class="form-control bg-body text-body border-secondary-subtle shadow-none" value="{{ fecha_fin }}">
                 </div>
                 <div class="col-md-4">
                     <div class="d-grid gap-2 d-md-flex">
@@ -102,6 +102,9 @@
                             </div>
                         </td>
                         <td class="pe-4 text-end">
+                            <a href="{% url 'detalle_sesion' sesion.id %}" class="btn btn-outline-info btn-sm fw-bold px-3 rounded-pill shadow-sm mb-1" title="Ver Detalle del Día">
+                                <i class="bi bi-eye me-1"></i> Detalle
+                            </a>
                             {% if not sesion.cerrada %}
                                 <a href="{% url 'inicio_asistencia' %}?sesion_id={{ sesion.id }}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm mb-1">
                                     <i class="bi bi-pencil-square me-1"></i> Editar

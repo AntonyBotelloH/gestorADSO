@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn"><i class="bi bi-robot text-success"></i> Sincronización con SOFIA Plus</h3>
+            <p class="text-muted small mb-0">Panel de control y pruebas paso a paso para la automatización</p>
+        </div>
+    </div>
+
+    <!-- PASO 1: Conexión -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-primary">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">1. Conectar a SOFIA Plus</h5>
+                    <p class="text-muted small">
+                        Inicia un navegador en segundo plano, intenta conectarse y verifica que SOFIA Plus responde.
+                    </p>
+                    <a href="{% url 'probar_conexion_sofia' %}" class="btn btn-primary fw-bold">
+                        <i class="bi bi-box-arrow-in-right"></i> Ejecutar Prueba de Conexión
+                    </a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_conexion %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_conexion }}</div>
+                    {% elif prueba_conexion %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 1):</p>
+                        <img src="{{ prueba_conexion }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 2: Selección de Rol -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-success">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">2. Seleccionar Rol Instructor</h5>
+                    <p class="text-muted small">Tras iniciar sesión, busca el menú desplegable y selecciona el rol de "Instructor".</p>
+                    <a href="{% url 'probar_rol_sofia' %}" class="btn btn-success fw-bold"><i class="bi bi-person-badge"></i> Ejecutar Prueba de Rol</a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_rol %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_rol }}</div>
+                    {% elif prueba_rol %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 2):</p>
+                        <img src="{{ prueba_rol }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 3: Navegación al Formulario -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-info">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">3. Cargar Formulario de Inasistencias</h5>
+                    <p class="text-muted small">Navega por el menú de Gestión de Tiempos hasta la pantalla de registro y accede al Iframe del formulario.</p>
+                    <a href="{% url 'probar_navegacion_sofia' %}" class="btn btn-info text-white fw-bold"><i class="bi bi-ui-checks-grid"></i> Ejecutar Prueba de Navegación</a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_navegacion %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_navegacion }}</div>
+                    {% elif prueba_navegacion %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 3):</p>
+                        <img src="{{ prueba_navegacion }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 4: Selección de Ficha -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-warning">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">4. Seleccionar Ficha Activa</h5>
+                    <p class="text-muted small">Abre el cuadro de diálogo de SOFIA Plus y selecciona la ficha que tengas activa en el panel lateral de Gestor SENA.</p>
+                    <a href="{% url 'probar_seleccion_ficha_sofia' %}" class="btn btn-warning text-dark fw-bold"><i class="bi bi-layers"></i> Ejecutar Prueba de Selección</a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_seleccion %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_seleccion }}</div>
+                    {% elif prueba_seleccion %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 4):</p>
+                        <img src="{{ prueba_seleccion }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 5: Selección de Aprendiz -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-secondary">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">5. Seleccionar Aprendiz</h5>
+                    <p class="text-muted small">El bot buscará al aprendiz con documento 1024486777 y presionará el botón de consultar inasistencias.</p>
+                    <a href="{% url 'probar_seleccion_aprendiz_sofia' %}" class="btn btn-secondary text-white fw-bold"><i class="bi bi-person-bounding-box"></i> Ejecutar Prueba de Aprendiz</a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_seleccion_aprendiz %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_seleccion_aprendiz }}</div>
+                    {% elif prueba_seleccion_aprendiz %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 5):</p>
+                        <img src="{{ prueba_seleccion_aprendiz }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASO 6: Consulta de Inasistencias -->
+    <div class="card shadow-sm border-0 mb-4 border-start border-4 border-dark">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5 border-end">
+                    <h5 class="fw-bold">6. Consultar Resultados (Tabla)</h5>
+                    <p class="text-muted small">El bot irá al menú de consulta, buscará al aprendiz y tomará un pantallazo de la tabla de inasistencias arrojada por SOFIA Plus.</p>
+                    <a href="{% url 'probar_consulta_inasistencia_sofia' %}" class="btn btn-dark fw-bold"><i class="bi bi-table"></i> Ejecutar Prueba de Consulta</a>
+                </div>
+                <div class="col-md-7 text-center">
+                    {% if error_consulta %}
+                        <div class="alert alert-danger mb-0 small text-start"><i class="bi bi-exclamation-triangle"></i> {{ error_consulta }}</div>
+                    {% elif prueba_consulta %}
+                        <p class="text-success fw-bold small mb-2"><i class="bi bi-check-circle"></i> Captura del navegador (Paso 6):</p>
+                        <img src="{{ prueba_consulta }}" class="img-fluid border rounded shadow-sm" style="max-height: 250px; object-fit: cover; cursor: zoom-in;" data-bs-toggle="modal" data-bs-target="#visorImagenModal" onclick="document.getElementById('imgVisor').src=this.src" title="Haz clic para ampliar">
+                    {% else %}
+                        <p class="text-muted small mb-0 fst-italic">Aún no se ha ejecutado la prueba.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Visor de Imágenes -->
+    <div class="modal fade" id="visorImagenModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-0 pb-0 justify-content-end">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="imgVisor" src="" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

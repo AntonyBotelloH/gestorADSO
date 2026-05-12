@@ -1,5 +1,8 @@
 import os
+import base64
+from cryptography.fernet import Fernet
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
@@ -149,4 +152,38 @@ def asignar_ficha_al_iniciar_sesion(sender, request, user, **kwargs):
     """
     if user.rol in ['APRENDIZ', 'VOCERO'] and user.ficha:
         request.session['ficha_activa_id'] = user.ficha.codigo_ficha
+
+def obtener_fernet():
+    # Crea una llave de 32 bytes segura utilizando tu SECRET_KEY de Django
+    key = settings.SECRET_KEY[:32].encode('utf-8').ljust(32, b'x')
+    return Fernet(base64.urlsafe_b64encode(key))
+
+class CredencialSofiaPlus(models.Model):
+    usuario = models.OneToOneField('Usuario', on_delete=models.CASCADE, related_name='credenciales_sofia')
+    tipo_documento = models.CharField(max_length=5, default='CC')
+    documento = models.CharField(max_length=20)
+    password_encriptada = models.TextField(blank=True, null=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Credencial SOFIA Plus"
+        verbose_name_plural = "Credenciales SOFIA Plus"
+
+    def set_password(self, raw_password):
+        """Encripta la contraseña antes de guardarla."""
+        f = obtener_fernet()
+        self.password_encriptada = f.encrypt(raw_password.encode('utf-8')).decode('utf-8')
+
+    def get_password(self):
+        """Desencripta la contraseña para usarla en la automatización."""
+        if not self.password_encriptada:
+            return None
+        f = obtener_fernet()
+        try:
+            return f.decrypt(self.password_encriptada.encode('utf-8')).decode('utf-8')
+        except Exception:
+            return None
+
+    def __str__(self):
+        return f"Credenciales SOFIA - {self.usuario.get_full_name()}"
     

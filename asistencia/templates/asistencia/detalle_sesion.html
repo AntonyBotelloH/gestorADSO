@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="py-2">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn">Detalle de Asistencia</h3>
+            <p class="text-muted small mb-0">
+                <i class="bi bi-calendar-event me-1"></i> Sesión del <strong>{{ sesion.fecha|date:"l, d \d\e F \d\e Y"|title }}</strong>
+                {% if sesion.cerrada %}
+                    <span class="badge bg-secondary ms-2"><i class="bi bi-lock-fill"></i> Cerrada</span>
+                {% else %}
+                    <span class="badge bg-success ms-2"><i class="bi bi-unlock-fill"></i> Abierta</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if sesion_anterior %}
+            <a href="{% url 'detalle_sesion' sesion_anterior.id %}" class="btn btn-outline-success fw-bold shadow-sm" title="Día Anterior">
+                <i class="bi bi-chevron-left"></i> Anterior
+            </a>
+            {% endif %}
+            
+            {% if sesion_siguiente %}
+            <a href="{% url 'detalle_sesion' sesion_siguiente.id %}" class="btn btn-outline-success fw-bold shadow-sm" title="Día Siguiente">
+                Siguiente <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'historial_asistencia' %}" class="btn btn-outline-secondary fw-bold shadow-sm ms-2">
+                <i class="bi bi-arrow-left"></i> Volver al Historial
+            </a>
+        </div>
+    </div>
+
+    <!-- Información de la Sesión -->
+    <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+        <div class="card-body">
+            <h6 class="fw-bold text-muted text-uppercase small mb-2">Tema Tratado</h6>
+            <p class="mb-0">{{ sesion.tema_tratado|default:"No se registró ningún tema para esta sesión." }}</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Columna Inasistencias -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 bg-body-tertiary h-100">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom border-danger-subtle border-2">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-person-x text-danger me-2"></i>Inasistencias del Día</h5>
+                    <span class="badge bg-danger text-white rounded-pill px-3">{{ inasistencias.count }}</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th class="ps-4">Aprendiz</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center pe-4">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in inasistencias %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{% url 'informe_aprendiz' registro.aprendiz.id %}" class="fw-bold text-body text-decoration-none" title="Ver Informe">
+                                            {{ registro.aprendiz.first_name }} {{ registro.aprendiz.last_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if registro.estado == 'Falla' %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Falla</span>
+                                        {% else %}
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Excusa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        {% if sesion.cerrada %}
+                                            <a href="{% url 'detalle_registro' registro.id %}" class="btn btn-sm btn-outline-primary shadow-sm" title="Ver Expediente">
+                                                <i class="bi bi-file-earmark-person"></i>
+                                            </a>
+                                            {% if registro.estado == 'Falla' %}
+                                                {% if not registro.sincronizado_sofia %}
+                                                    <a href="{% url 'sincronizar_falla_sofia' registro.id %}" class="btn btn-sm btn-outline-danger shadow-sm ms-1 btn-sincronizar" title="Subir a SOFIA Plus">
+                                                        <i class="bi bi-cloud-arrow-up"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <button class="btn btn-sm btn-outline-success shadow-sm ms-1" title="Ya reportado en SOFIA Plus" disabled>
+                                                        <i class="bi bi-check2-all"></i>
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if registro.estado == 'Falla' %}
+                                            <form action="{% url 'justificar_falla' registro.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Justificar Falla" onclick="return confirm('¿Justificar esta inasistencia?')">
+                                                    <i class="bi bi-check-circle-fill"></i> Justificar
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                                <span class="text-muted small"><i class="bi bi-check"></i> Justificada</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted small">
+                                        <i class="bi bi-emoji-smile fs-2 d-block mb-2 text-success opacity-50"></i>
+                                        Ninguna inasistencia registrada en este día.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Retardos -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 bg-body-tertiary h-100">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center border-bottom border-warning-subtle border-2">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-clock-history text-warning me-2"></i>Retardos del Día</h5>
+                    <span class="badge bg-warning text-dark rounded-pill px-3">{{ retardos.count }}</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th class="ps-4">Aprendiz</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center pe-4">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in retardos %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{% url 'informe_aprendiz' registro.aprendiz.id %}" class="fw-bold text-body text-decoration-none" title="Ver Informe">
+                                            {{ registro.aprendiz.first_name }} {{ registro.aprendiz.last_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Retardo</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        {% if sesion.cerrada %}
+                                            <a href="{% url 'detalle_registro' registro.id %}" class="btn btn-sm btn-outline-primary shadow-sm" title="Ver Expediente">
+                                                <i class="bi bi-file-earmark-person"></i>
+                                            </a>
+                                        {% else %}
+                                            <form action="{% url 'justificar_falla' registro.id %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Justificar Retardo" onclick="return confirm('¿Justificar este retardo?')">
+                                                    <i class="bi bi-check-circle-fill"></i> Justificar
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted small">
+                                        <i class="bi bi-clock fs-2 d-block mb-2 text-success opacity-50"></i>
+                                        Todos llegaron a tiempo en esta sesión.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnsSincronizar = document.querySelectorAll('.btn-sincronizar');
+        
+        btnsSincronizar.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Cambiar el icono por la rueda de carga
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = 'spinner-border spinner-border-sm';
+                }
+                // Deshabilitar visual y funcionalmente el botón
+                this.classList.add('disabled');
+                this.style.pointerEvents = 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

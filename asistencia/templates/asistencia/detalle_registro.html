@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn"><i class="bi bi-file-earmark-person text-success"></i> Expediente de Asistencia</h3>
+            <p class="text-muted small mb-0">Información detallada y evidencia de sincronización en SOFIA Plus</p>
+        </div>
+        <div>
+            <a href="{% url 'detalle_sesion' registro.sesion.id %}" class="btn btn-outline-secondary fw-bold shadow-sm"><i class="bi bi-arrow-left"></i> Volver a la Sesión</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4 border-start border-4 {% if registro.estado == 'Presente' %}border-success{% elif registro.estado == 'Retardo' %}border-warning{% elif registro.estado == 'Excusa' %}border-info{% else %}border-danger{% endif %}">
+                <div class="card-body">
+                    <h5 class="fw-bold border-bottom pb-2 mb-3">Datos del Aprendiz</h5>
+                    <p class="mb-2"><strong>Nombre:</strong> {{ registro.aprendiz.get_full_name }}</p>
+                    <p class="mb-2"><strong>Documento:</strong> {{ registro.aprendiz.documento }}</p>
+                    <p class="mb-2"><strong>Estado:</strong> 
+                        <span class="badge {% if registro.estado == 'Presente' %}bg-success{% elif registro.estado == 'Retardo' %}bg-warning text-dark{% elif registro.estado == 'Excusa' %}bg-info text-dark{% else %}bg-danger{% endif %}">
+                            {{ registro.get_estado_display }}
+                        </span>
+                    </p>
+                    <p class="mb-1"><strong>Comentario interno:</strong> <br> {{ registro.comentario|default:"Sin comentarios" }}</p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4 border-start border-4 border-secondary">
+                <div class="card-body">
+                    <h5 class="fw-bold border-bottom pb-2 mb-3">Datos de la Sesión</h5>
+                    <p class="mb-2"><strong>Fecha:</strong> {{ registro.sesion.fecha }}</p>
+                    <p class="mb-2"><strong>Ficha:</strong> {{ registro.sesion.ficha.codigo_ficha }}</p>
+                    <p class="mb-1"><strong>Tema Tratado:</strong> <br> {{ registro.sesion.tema_tratado|default:"No especificado" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-camera me-2 text-primary"></i>Evidencia SOFIA Plus</h5>
+                    
+                    <!-- Botón para sincronizar por primera vez o re-sincronizar -->
+                    {% if registro.sesion.cerrada and registro.estado == 'Falla' %}
+                        {% if not registro.sincronizado_sofia %}
+                            <a href="{% url 'sincronizar_falla_sofia' registro.id %}" class="btn btn-sm btn-outline-danger fw-bold shadow-sm btn-sincronizar" title="Subir a SOFIA Plus">
+                                <i class="bi bi-cloud-arrow-up"></i> <span class="texto-btn">{% if registro.captura_sofia %}Volver a Simular{% else %}Sincronizar Falla{% endif %}</span>
+                            </a>
+                        {% else %}
+                            <span class="badge bg-success px-3 py-2"><i class="bi bi-check2-all"></i> Sincronizado en SOFIA</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="card-body text-center bg-body-tertiary rounded-bottom">
+                    {% if registro.captura_sofia %}
+                        <p class="text-success fw-bold small mb-3"><i class="bi bi-check-circle"></i> La evidencia de la plataforma se ha guardado correctamente:</p>
+                        <a href="{{ registro.captura_sofia.url }}" target="_blank"><img src="{{ registro.captura_sofia.url }}" class="img-fluid border rounded shadow-sm" style="max-height: 500px; object-fit: contain;" title="Haz clic para abrir en una pestaña nueva"></a>
+                    {% else %}
+                        <div class="py-5 text-muted">
+                            <i class="bi bi-image opacity-50" style="font-size: 3rem;"></i>
+                            <p class="mt-3 mb-0">Aún no se ha guardado ninguna captura de SOFIA Plus para este registro.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnsSincronizar = document.querySelectorAll('.btn-sincronizar');
+        
+        btnsSincronizar.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 1. Cambiar el icono por un spinner (rueda de carga)
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = 'spinner-border spinner-border-sm me-1';
+                }
+                // 2. Cambiar el texto
+                const texto = this.querySelector('.texto-btn');
+                if (texto) {
+                    texto.innerText = 'Sincronizando...';
+                }
+                // 3. Deshabilitar el botón para evitar doble clic
+                this.classList.add('disabled');
+                this.style.pointerEvents = 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

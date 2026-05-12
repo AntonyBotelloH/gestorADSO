@@ -15,4 +15,7 @@ urlpatterns = [
     path('fichas/cambiar/', set_ficha_activa, name='cambiar_ficha'),
     path('fichas/editar/<str:codigo_ficha>/', editar_ficha, name='editar_ficha'),
     path('fichas/asignar-instructor/', asignar_instructor_ficha, name='asignar_instructor_ficha'),
+    
+    # Configuraciones
+    path('configuracion/sofia-plus/', configuracion_sofia_plus, name='configuracion_sofia_plus'),
 ]

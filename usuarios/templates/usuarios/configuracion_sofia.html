@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 border-start border-4 border-success">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-robot me-2 text-success"></i>Credenciales SOFIA Plus</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-4">
+                        Estas credenciales se encriptan con algoritmos de grado industrial. 
+                        Únicamente el bot del sistema podrá desencriptarlas cuando sea el momento de sincronizar información automáticamente.
+                    </p>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Tipo Doc.</label>
+                                <select name="tipo_documento" class="form-select bg-body-tertiary" required>
+                                    <option value="CC" {% if credencial.tipo_documento == 'CC' %}selected{% endif %}>Cédula (CC)</option>
+                                    <option value="TI" {% if credencial.tipo_documento == 'TI' %}selected{% endif %}>Tarjeta (TI)</option>
+                                    <option value="CE" {% if credencial.tipo_documento == 'CE' %}selected{% endif %}>Extranjería (CE)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Número de Documento</label>
+                                <input type="text" name="documento" class="form-control bg-body-tertiary" value="{{ credencial.documento|default:'' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Contraseña de SOFIA Plus</label>
+                            <input type="password" name="password" class="form-control bg-body-tertiary" 
+                                   placeholder="{% if credencial.password_encriptada %}•••••••• (Ingresa solo si deseas actualizarla){% else %}Ingresa tu contraseña{% endif %}" 
+                                   {% if not credencial.password_encriptada %}required{% endif %}>
+                        </div>
+                        
+                        <a href="/configuraciones/" class="btn btn-outline-secondary fw-bold shadow-sm me-2"><i class="bi bi-arrow-left"></i> Volver</a>
+                        <button type="submit" class="btn btn-success fw-bold shadow-sm">
+                            <i class="bi bi-shield-lock me-2"></i> Guardar y Encriptar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

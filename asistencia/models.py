@@ -28,6 +28,8 @@ class RegistroAsistencia(models.Model):
     aprendiz = models.ForeignKey(Usuario, on_delete=models.CASCADE, limit_choices_to={'rol': 'APRENDIZ'})
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='Presente')
     comentario = models.CharField(max_length=200, blank=True, null=True, help_text="Ej: Llegó 20 min tarde por trancón")
+    captura_sofia = models.ImageField(upload_to='sofia_proofs/registros/', null=True, blank=True, verbose_name="Captura SOFIA Plus")
+    sincronizado_sofia = models.BooleanField(default=False, verbose_name="Sincronizado en SOFIA")
 
     class Meta:
         verbose_name = "Registro de Asistencia"

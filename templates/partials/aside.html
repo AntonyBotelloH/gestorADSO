@@ -50,6 +50,12 @@
                 Estadísticas
               </a>
             </li>
+            <li>
+              <a href="{% url 'registro_sofia' %}"
+                class="nav-link py-1 {% if 'registro_sofia' in request.path or 'probar' in request.path %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                <i class="bi bi-robot me-1"></i> Registro SOFIA
+              </a>
+            </li>
           </ul>
         </div>
       </li>
@@ -251,6 +257,12 @@
         <a href="{% url 'configuraciones' %}"
           class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' %}color-verde-sena-bg text-white fw-bold{% else %}text-white{% endif %}">
           <i class="bi bi-gear me-2"></i> Configuraciones
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{% url 'configuracion_sofia_plus' %}"
+          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuracion_sofia_plus' %}color-verde-sena-bg text-white fw-bold{% else %}text-white{% endif %}">
+          <i class="bi bi-shield-lock me-2"></i> Credenciales SOFIA
         </a>
       </li>
       <li class="nav-item mb-1">

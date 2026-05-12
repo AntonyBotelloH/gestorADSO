@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from usuarios.decorators import rol_requerido
-from .models import Usuario, Ficha
+from .models import Usuario, Ficha, CredencialSofiaPlus
 from .forms import UsuarioForm, UsuarioEditarForm, FichaForm, FichaEditarForm
 from datetime import datetime
 
@@ -45,7 +45,7 @@ def crear_usuario(request):
             mensaje = f"¡Usuario {usuario.first_name} registrado! Ingreso: {usuario.documento} | Clave: {password_generada}"
             messages.success(request, mensaje)
             
-            return redirect('usuarios/inicio_usuario')
+            return redirect('inicio_usuario')
         else:
             messages.error(request, "Error al registrar. Por favor verifica los datos.")
     else:
@@ -314,6 +314,12 @@ def informe_aprendiz(request, usuario_id):
         estado__in=['Falla', 'Excusa']
     ).select_related('sesion').order_by('-sesion__fecha')
     
+    # 1.5 Retardos
+    retardos = RegistroAsistencia.objects.filter(
+        aprendiz=aprendiz, 
+        estado='Retardo'
+    ).select_related('sesion').order_by('-sesion__fecha')
+
     # 2. Fondos (Multas, aportes u otros movimientos del usuario)
     movimientos = Movimiento.objects.filter(
         responsable=aprendiz
@@ -326,8 +332,9 @@ def informe_aprendiz(request, usuario_id):
     
     # Mensaje de advertencia sobre el Acuerdo 009 de 2012
     mensaje_acuerdo_009 = (
-        "Según el Acuerdo 009 de 2012 (Reglamento del Aprendiz SENA): "
+        "Según el Reglamento del Aprendiz SENA: "
         "Las inasistencias justificadas (Excusas) no eximen al aprendiz de la responsabilidad de desatrasarse y presentar las evidencias de aprendizaje. "
+        "Así mismo (Art. 29), las llegadas tarde reiteradas afectan el proceso formativo y su acumulación (3 retardos) deriva en un llamado de atención. "
         "A su vez, si el total de inasistencias (justificadas o no) supera el 10% de las horas totales de la etapa lectiva, "
         "se considera un incumplimiento que puede dar lugar al inicio del proceso de cancelación de matrícula por deserción."
     )
@@ -336,6 +343,7 @@ def informe_aprendiz(request, usuario_id):
         'titulo': f'Informe de {aprendiz.first_name} {aprendiz.last_name}',
         'aprendiz': aprendiz,
         'asistencias': asistencias,
+        'retardos': retardos,
         'movimientos': movimientos,
         'llamados': llamados,
         'mensaje_acuerdo_009': mensaje_acuerdo_009,
@@ -345,3 +353,31 @@ def informe_aprendiz(request, usuario_id):
         ],
     }
     return render(request, 'usuarios/informe_aprendiz.html', context)
+
+@login_required
+def configuracion_sofia_plus(request):
+    """Vista para configurar y encriptar las credenciales de automatización de SOFIA Plus."""
+    credencial, created = CredencialSofiaPlus.objects.get_or_create(usuario=request.user)
+    
+    if request.method == 'POST':
+        credencial.tipo_documento = request.POST.get('tipo_documento')
+        credencial.documento = request.POST.get('documento')
+        
+        password = request.POST.get('password')
+        # Solo encriptamos y guardamos la contraseña si el usuario ingresó una nueva
+        if password:
+            credencial.set_password(password)
+            
+        credencial.save()
+        messages.success(request, "Tus credenciales de SOFIA Plus han sido guardadas y encriptadas exitosamente.")
+        return redirect('configuracion_sofia_plus')
+        
+    context = {
+        'titulo': 'Automatización SOFIA Plus',
+        'credencial': credencial,
+        'breadcrumbs': [
+            {'nombre': 'Configuración', 'url': ''},
+            {'nombre': 'SOFIA Plus', 'url': ''}
+        ]
+    }
+    return render(request, 'usuarios/configuracion_sofia.html', context)

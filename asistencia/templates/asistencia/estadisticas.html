@@ -55,7 +55,7 @@
 
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
+            <div class="card shadow-sm border-0 bg-body-tertiary">
                 <div class="card-header bg-transparent py-3">
                     <h5 class="mb-0 fw-bold color-negro-suave-fn">Distribución de Novedades</h5>
                 </div>
@@ -106,10 +106,18 @@
         </div>
 
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100 bg-body-tertiary">
+            <!-- Tabla de Fallas -->
+            <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
                 <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold color-negro-suave-fn">Alertas de Ausentismo</h5>
-                    <span class="badge bg-secondary-subtle text-body border border-secondary-subtle px-3">Top Riesgo</span>
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">Alertas de Inasistencias</h5>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3">Fallas</span>
+                        {% if mostrar_todas_fallas %}
+                            <a href="{% url 'estadisticas_asistencia' %}{% if mostrar_todos_retardos %}?mostrar_todos_retardos=1{% endif %}" class="btn btn-outline-secondary btn-sm">Mostrar solo alertas</a>
+                        {% else %}
+                            <a href="{% url 'estadisticas_asistencia' %}?mostrar_todas_fallas=1{% if mostrar_todos_retardos %}&mostrar_todos_retardos=1{% endif %}" class="btn btn-outline-primary btn-sm">Ver todas</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -121,10 +129,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for aprendiz in aprendices %}
+                            {% for aprendiz in aprendices_fallas %}
                                 <tr>
                                     <td class="ps-4">
-                                        <div class="fw-bold text-body">{{ aprendiz.first_name }} {{ aprendiz.last_name }}</div>
+                                        <a href="{% url 'informe_aprendiz' aprendiz.id %}" class="fw-bold text-body text-decoration-none" title="Ver Informe Integral">
+                                            {{ aprendiz.first_name }} {{ aprendiz.last_name }} <i class="bi bi-box-arrow-up-right ms-1 text-muted" style="font-size: 0.75rem;"></i>
+                                        </a>
                                     </td>
                                     <td class="text-center">
                                         <span class="fw-bold color-rojo-alerta-fn fs-5">{{ aprendiz.total_fallas }}</span>
@@ -144,7 +154,61 @@
                                 <tr>
                                     <td colspan="3" class="text-center py-5 text-muted small">
                                         <i class="bi bi-shield-check fs-1 d-block mb-2 text-success opacity-50"></i>
-                                        ¡Excelente! Ningún aprendiz tiene fallas registradas.
+                                        ¡Excelente! Ningún aprendiz tiene más de dos fallas en sesiones cerradas.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabla de Retardos -->
+            <div class="card shadow-sm border-0 bg-body-tertiary">
+                <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold color-negro-suave-fn">Alertas de Retardos</h5>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3">Llegadas Tarde</span>
+                        {% if mostrar_todos_retardos %}
+                            <a href="{% url 'estadisticas_asistencia' %}{% if mostrar_todas_fallas %}?mostrar_todas_fallas=1{% endif %}" class="btn btn-outline-secondary btn-sm">Mostrar solo alertas</a>
+                        {% else %}
+                            <a href="{% url 'estadisticas_asistencia' %}?mostrar_todos_retardos=1{% if mostrar_todas_fallas %}&mostrar_todas_fallas=1{% endif %}" class="btn btn-outline-primary btn-sm">Ver todas</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-secondary small">
+                            <tr>
+                                <th class="ps-4">Aprendiz</th>
+                                <th class="text-center">Retardos</th>
+                                <th class="text-center pe-4">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aprendiz in aprendices_retardos %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{% url 'informe_aprendiz' aprendiz.id %}" class="fw-bold text-body text-decoration-none" title="Ver Informe Integral">
+                                            {{ aprendiz.first_name }} {{ aprendiz.last_name }} <i class="bi bi-box-arrow-up-right ms-1 text-muted" style="font-size: 0.75rem;"></i>
+                                        </a>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="fw-bold text-warning fs-5">{{ aprendiz.total_retardos }}</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        {% if aprendiz.total_retardos >= 3 %}
+                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" title="Art. 29 - Llegadas tarde reiteradas">Llamado (Art. 29)</span>
+                                        {% elif aprendiz.total_retardos >= 1 %}
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 rounded-pill shadow-sm">Seguimiento</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-5 text-muted small">
+                                        <i class="bi bi-shield-check fs-1 d-block mb-2 text-success opacity-50"></i>
+                                        ¡Excelente! Ningún aprendiz tiene más de dos retardos en sesiones cerradas.
                                     </td>
                                 </tr>
                             {% endfor %}
