@@ -1,4 +1,6 @@
 import os
+import glob
+import time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
@@ -10,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from usuarios.decorators import rol_requerido 
 from .models import SesionClase, RegistroAsistencia
 from usuarios.models import Ficha, Usuario
+from . import sofia_helpers
 
 @login_required
 @rol_requerido('VOCERO', 'INSTRUCTOR', 'ADMIN')
@@ -339,12 +342,27 @@ def detalle_sesion(request, sesion_id):
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def registro_sofia(request):
     """Dashboard para controlar paso a paso la automatización con SOFIA Plus."""
+    if request.method == 'POST':
+        doc = request.POST.get('aprendiz_documento')
+        if doc:
+            request.session['aprendiz_prueba_doc'] = str(doc)
+            messages.success(request, "Aprendiz para pruebas seleccionado correctamente.")
+        return redirect('registro_sofia')
+
+    ficha_id = request.session.get('ficha_activa_id')
+    aprendices = []
+    if ficha_id:
+        ficha = Ficha.objects.filter(codigo_ficha=ficha_id).first()
+        if ficha:
+            aprendices = Usuario.objects.filter(ficha=ficha, rol__in=['APRENDIZ', 'VOCERO']).order_by('first_name', 'last_name')
+
     contexto = {
-        'titulo': 'Sincronización SOFIA Plus',
+        'titulo': 'Test de Sincronización SOFIA Plus',
         'breadcrumbs': [
-            {'nombre': 'Asistencia', 'url': '/asistencia/'},
-            {'nombre': 'Registro SOFIA', 'url': ''}
+            {'nombre': 'Configuración', 'url': '#'},
+            {'nombre': 'Test Sincronización', 'url': ''}
         ],
+        'aprendices': aprendices,
         'prueba_conexion': request.session.get('prueba_conexion_sofia'),
         'prueba_rol': request.session.get('prueba_rol_sofia'),
         'prueba_navegacion': request.session.get('prueba_navegacion_sofia'),
@@ -358,235 +376,97 @@ def registro_sofia(request):
         'prueba_consulta': request.session.get('prueba_consulta_sofia'),
         'error_consulta': request.session.get('error_consulta_sofia'),
     }
-    
-    # Limpiamos los errores de la sesión después de mostrarlos
-    if 'error_conexion_sofia' in request.session: del request.session['error_conexion_sofia']
-    if 'error_rol_sofia' in request.session: del request.session['error_rol_sofia']
-    if 'error_navegacion_sofia' in request.session: del request.session['error_navegacion_sofia']
-    if 'error_seleccion_sofia' in request.session: del request.session['error_seleccion_sofia']
-    if 'error_seleccion_aprendiz_sofia' in request.session: del request.session['error_seleccion_aprendiz_sofia']
-    if 'error_consulta_sofia' in request.session: del request.session['error_consulta_sofia']
-    
+
+    sofia_helpers.clear_session_keys(request, [
+        'error_conexion_sofia',
+        'error_rol_sofia',
+        'error_navegacion_sofia',
+        'error_seleccion_sofia',
+        'error_seleccion_aprendiz_sofia',
+        'error_consulta_sofia',
+    ])
+
     return render(request, 'asistencia/registro_sofia.html', contexto)
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_conexion_sofia(request):
     """Inicia un navegador en segundo plano, intenta cargar SOFIA y toma una captura."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from selenium.webdriver.common.keys import Keys
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        if not credencial or not credencial.get_password():
-            request.session['error_conexion_sofia'] = "No tienes credenciales configuradas en Configuración > SOFIA Plus."
-            return redirect('registro_sofia')
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    if not sofia_helpers.validate_sofia_credencial(request, credencial, 'error_conexion_sofia', "No tienes credenciales configuradas en Configuración > SOFIA Plus."):
+        return redirect('registro_sofia')
 
-        # Configurar Chrome en modo oculto (headless)
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # Navegar a la URL pública que indicaste
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        
-        wait = WebDriverWait(driver, 15)
-        
-        # ¡AQUÍ ESTÁ LA CLAVE! El formulario está dentro de un iframe, le decimos al bot que entre en él
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        
-        # 1. Seleccionar el Tipo de Documento
-        select_tipo = Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId"))))
-        select_tipo.select_by_value(credencial.tipo_documento)
-        
-        # 2. Llenar el Número de Documento (limpiando inputs y quitando espacios ocultos)
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        
-        # 3. Llenar la Contraseña desencriptada (limpiando y quitando espacios ocultos)
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        # Aplicamos .strip() para asegurar que no haya ni un solo espacio en blanco invisible
-        input_pass.send_keys(credencial.get_password().strip())
-        
-        # 4. Hacer clic en "Ingresar"
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        # Esperar a que cargue la plataforma interna tras el login
+    def action(driver):
+        sofia_helpers.login_sofia(driver, credencial)
         time.sleep(5)
-        
-        # Tomamos la captura DESPUÉS de hacer clic en Ingresar
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'conexion.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_conexion_sofia'] = fs.url('sofia_proofs/conexion.png')
-        messages.success(request, "Prueba de conexión a SOFIA Plus ejecutada.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_conexion.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_conexion_sofia'] = FileSystemStorage().url('sofia_proofs/error_conexion.png')
-            request.session['error_conexion_sofia'] = "El bot no encontró el formulario. Revisa la captura para ver en qué pantalla quedó atascado."
-        except:
-            request.session['error_conexion_sofia'] = f"Error en Selenium: {str(e)[:100]}"
-    finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        action,
+        'prueba_conexion_sofia',
+        'conexion.png',
+        error_session_key='error_conexion_sofia',
+        error_proof_name='error_conexion.png',
+        success_message="Prueba de conexión a SOFIA Plus ejecutada."
+    )
+
+    return redirect('registro_sofia')
+
+@login_required
+@rol_requerido('INSTRUCTOR', 'ADMIN')
+def purgar_imagenes_prueba(request):
+    """Elimina las imágenes de prueba generadas y limpia la sesión."""
+    proofs_dir = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs')
+    
+    if os.path.exists(proofs_dir):
+        for file_path in glob.glob(os.path.join(proofs_dir, '*.png')):
+            if os.path.isfile(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception:
+                    pass
+                    
+    keys_to_clear = [
+        'prueba_conexion_sofia', 'prueba_rol_sofia', 'prueba_navegacion_sofia',
+        'prueba_seleccion_sofia', 'prueba_seleccion_aprendiz_sofia', 'prueba_consulta_sofia',
+    ]
+    sofia_helpers.clear_session_keys(request, keys_to_clear)
+    
+    messages.success(request, "Las imágenes de prueba han sido purgadas exitosamente.")
     return redirect('registro_sofia')
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_consulta_inasistencia_sofia(request):
     """Sexto paso: Ejecuta la consulta de inasistencias y toma un pantallazo de la tabla de resultados."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        ficha_id = request.session.get('ficha_activa_id')
-        documento_prueba = "1024486777" # Documento indicado para la prueba
-        
-        if not credencial or not credencial.get_password():
-            request.session['error_consulta_sofia'] = "No tienes credenciales configuradas."
-            return redirect('registro_sofia')
-            
-        if not ficha_id:
-            request.session['error_consulta_sofia'] = "Selecciona una ficha en el menú lateral."
-            return redirect('registro_sofia')
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        driver.switch_to.default_content()
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13")
-        time.sleep(3)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]"))).click()
-        time.sleep(2) # Damos un segundo extra para que el menú se despliegue por completo
-        
-        # Búsqueda con el texto exacto que viste en la captura y variaciones por seguridad
-        xpath_menu_consulta = "//a[contains(text(), 'Consultar Inasistencias de Aprendices') or contains(text(), 'Consultar Inasistencia') or contains(., 'Consultar Inasistencias')]"
-        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_menu_consulta))).click()
-        time.sleep(3)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        
-        # 1. Seleccionar Ficha mediante el popup
-        wait.until(EC.element_to_be_clickable((By.ID, "formNovedadAprendiz:fichaOLK"))).click()
-        time.sleep(2)
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
-        wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-        time.sleep(2) 
-        driver.switch_to.parent_frame()
-        time.sleep(2)
-        
-        # 2. Seleccionar Aprendiz mediante el popup
-        try:
-            btn_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@id, 'aprendizOLK') or contains(@id, 'AprendizOLK')]")))
-            driver.execute_script("arguments[0].click();", btn_aprendiz)
-            time.sleep(3)
-            wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "viewDialog1_content")))
-            try:
-                input_busqueda = driver.find_element(By.XPATH, "//input[@type='text']")
-                input_busqueda.clear()
-                input_busqueda.send_keys(documento_prueba)
-                btn_lista = driver.find_element(By.XPATH, "//a[contains(., 'Lista') or contains(., 'Consultar')]")
-                driver.execute_script("arguments[0].click();", btn_lista)
-                time.sleep(2)
-            except: pass
-            wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{documento_prueba}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-            time.sleep(2)
-            driver.switch_to.parent_frame()
-        except:
-            # Fallback en caso de que el modal no se abra
-            input_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")))
-            input_aprendiz.clear()
-            input_aprendiz.send_keys(documento_prueba)
-            
-        # Clic en Consultar Inasistencias
-        time.sleep(2)
-        btn_consultar = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:btnRegistrarNovedad")))
-        driver.execute_script("arguments[0].click();", btn_consultar)
-        
-        # Esperar explícitamente a que aparezca la tabla de inasistencias en el DOM
-        time.sleep(3)
-        try:
-            wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:InasistenciasTable")))
-        except:
-            pass # Capturará la pantalla igual para ver el resultado
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'consulta_inasistencia.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_consulta_sofia'] = fs.url('sofia_proofs/consulta_inasistencia.png')
-        messages.success(request, f"Se consultaron correctamente las inasistencias del aprendiz.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_consulta.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_consulta_sofia'] = FileSystemStorage().url('sofia_proofs/error_consulta.png')
-            request.session['error_consulta_sofia'] = "No se encontró el menú de consulta. Revisa la captura de pantalla para ver qué opciones aparecieron."
-        except:
-            request.session['error_consulta_sofia'] = f"El bot falló al consultar. Detalle: {str(e)[:100]}"
-    finally:
-        try: driver.quit()
-        except: pass
-            
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    ficha_id = request.session.get('ficha_activa_id')
+    documento_prueba = request.session.get('aprendiz_prueba_doc')
+
+    if not documento_prueba:
+        request.session['error_consulta_sofia'] = 'Selecciona un aprendiz para la prueba en la parte superior.'
+        return redirect('registro_sofia')
+
+    if not credencial or not credencial.get_password():
+        request.session['error_consulta_sofia'] = 'No tienes credenciales configuradas.'
+        return redirect('registro_sofia')
+
+    if not ficha_id:
+        request.session['error_consulta_sofia'] = 'Selecciona una ficha en el menú lateral.'
+        return redirect('registro_sofia')
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.prepare_consultar_inasistencias(driver, credencial, ficha_id, documento_prueba),
+        'prueba_consulta_sofia',
+        'consulta_inasistencia.png',
+        error_session_key='error_consulta_sofia',
+        error_proof_name='error_consulta.png',
+        success_message='Se consultaron correctamente las inasistencias del aprendiz.'
+    )
+
     return redirect('registro_sofia')
 
 @login_required
@@ -595,141 +475,36 @@ def consultar_inasistencias_sofia(request, usuario_id):
     """Consulta inasistencias en SOFIA para un aprendiz y guarda la foto temporal en sesión."""
     aprendiz = get_object_or_404(Usuario, id=usuario_id)
     ficha_id = request.session.get('ficha_activa_id')
-    
-    # Limpiamos variables de sesión previas
-    request.session['prueba_consulta_sofia_aprendiz'] = str(aprendiz.id)
-    if 'img_consulta_sofia' in request.session: del request.session['img_consulta_sofia']
-    if 'error_consulta_sofia_aprendiz' in request.session: del request.session['error_consulta_sofia_aprendiz']
-    if 'msg_error_consulta_sofia' in request.session: del request.session['msg_error_consulta_sofia']
 
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        documento_prueba = aprendiz.documento
-        
-        if not credencial or not credencial.get_password():
-            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
-            request.session['msg_error_consulta_sofia'] = "No tienes credenciales configuradas."
-            return redirect('informe_aprendiz', usuario_id=aprendiz.id)
-            
-        if not ficha_id:
-            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
-            request.session['msg_error_consulta_sofia'] = "Selecciona una ficha en el menú lateral."
-            return redirect('informe_aprendiz', usuario_id=aprendiz.id)
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        driver.switch_to.default_content()
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13")
-        time.sleep(3)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        
-        menu_padre = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]")))
-        driver.execute_script("arguments[0].click();", menu_padre)
-        time.sleep(2) 
-        
-        menu_consulta = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'consultar') and contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'inasistencia')]")))
-        driver.execute_script("arguments[0].click();", menu_consulta)
-        time.sleep(3)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        
-        btn_ficha = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:fichaOLK")))
-        driver.execute_script("arguments[0].click();", btn_ficha)
-        time.sleep(2)
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
-        wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-        time.sleep(2) 
-        driver.switch_to.parent_frame()
-        time.sleep(2)
-        
-        try:
-            btn_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@id, 'aprendizOLK') or contains(@id, 'AprendizOLK')]")))
-            driver.execute_script("arguments[0].click();", btn_aprendiz)
-            time.sleep(3)
-            wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "viewDialog1_content")))
-            try:
-                input_busqueda = driver.find_element(By.XPATH, "//input[@type='text']")
-                input_busqueda.clear()
-                input_busqueda.send_keys(documento_prueba)
-                btn_lista = driver.find_element(By.XPATH, "//a[contains(., 'Lista') or contains(., 'Consultar')]")
-                driver.execute_script("arguments[0].click();", btn_lista)
-                time.sleep(2)
-            except: pass
-            wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{documento_prueba}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-            time.sleep(2)
-            driver.switch_to.parent_frame()
-        except:
-            input_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")))
-            input_aprendiz.clear()
-            input_aprendiz.send_keys(documento_prueba)
-            
-        time.sleep(2)
-        btn_consultar = wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:btnRegistrarNovedad")))
-        driver.execute_script("arguments[0].click();", btn_consultar)
-        
-        time.sleep(3)
-        try:
-            wait.until(EC.presence_of_element_located((By.ID, "formNovedadAprendiz:InasistenciasTable")))
-        except:
-            pass
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', f'consulta_{documento_prueba}.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['img_consulta_sofia'] = fs.url(f'sofia_proofs/consulta_{documento_prueba}.png')
-        messages.success(request, f"Reporte de SOFIA Plus generado para {aprendiz.first_name}.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', f'error_consulta_{documento_prueba}.png')
-            driver.save_screenshot(captura_path)
-            request.session['img_consulta_sofia'] = FileSystemStorage().url(f'sofia_proofs/error_consulta_{documento_prueba}.png')
-            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
-            request.session['msg_error_consulta_sofia'] = "Ocurrió un error al consultar. Revisa la captura."
-        except:
-            request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
-            request.session['msg_error_consulta_sofia'] = f"El bot falló al consultar. Detalle: {str(e)[:100]}"
-    finally:
-        try: driver.quit()
-        except: pass
-            
+    request.session['prueba_consulta_sofia_aprendiz'] = str(aprendiz.id)
+    request.session.pop('img_consulta_sofia', None)
+    request.session.pop('error_consulta_sofia_aprendiz', None)
+    request.session.pop('msg_error_consulta_sofia', None)
+
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    documento_prueba = aprendiz.documento
+
+    if not credencial or not credencial.get_password():
+        request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+        request.session['msg_error_consulta_sofia'] = 'No tienes credenciales configuradas.'
+        return redirect('informe_aprendiz', usuario_id=aprendiz.id)
+
+    if not ficha_id:
+        request.session['error_consulta_sofia_aprendiz'] = str(aprendiz.id)
+        request.session['msg_error_consulta_sofia'] = 'Selecciona una ficha en el menú lateral.'
+        return redirect('informe_aprendiz', usuario_id=aprendiz.id)
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.prepare_consultar_inasistencias(driver, credencial, ficha_id, documento_prueba),
+        'img_consulta_sofia',
+        f'consulta_{documento_prueba}.png',
+        error_session_key='error_consulta_sofia_aprendiz',
+        error_proof_name=f'error_consulta_{documento_prueba}.png',
+        success_message=f'Reporte de SOFIA Plus generado para {aprendiz.first_name}.'
+    )
+
     return redirect('informe_aprendiz', usuario_id=aprendiz.id)
 
 @login_required
@@ -738,189 +513,66 @@ def sincronizar_falla_sofia(request, registro_id):
     """Extrae los datos de la base de datos y simula el registro de inasistencia en SOFIA."""
     registro = get_object_or_404(RegistroAsistencia, id=registro_id)
     sesion = registro.sesion
-    
+
     if not sesion.cerrada:
-        messages.error(request, "La sesión debe estar cerrada para poder sincronizar fallas con SOFIA Plus.")
+        messages.error(request, 'La sesión debe estar cerrada para poder sincronizar fallas con SOFIA Plus.')
         return redirect(request.META.get('HTTP_REFERER', f'/asistencia/detalle_sesion/{sesion.id}/'))
-        
+
     if registro.sincronizado_sofia:
-        messages.info(request, "Esta inasistencia ya se encuentra reportada en SOFIA Plus.")
+        messages.info(request, 'Esta inasistencia ya se encuentra reportada en SOFIA Plus.')
         return redirect(request.META.get('HTTP_REFERER', f'/asistencia/detalle_sesion/{sesion.id}/'))
-        
+
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    if not credencial or not credencial.get_password():
+        request.session['error_sincronizacion'] = 'No tienes credenciales configuradas en SOFIA Plus.'
+        return redirect(request.META.get('HTTP_REFERER', f'/asistencia/detalle_sesion/{sesion.id}/'))
+
+    ficha_id = sesion.ficha.codigo_ficha
+    documento_aprendiz = registro.aprendiz.documento
+    fecha_str = sesion.fecha.strftime('%d/%m/%Y')
+    horas_falla = '6'
+
+    driver = None
     try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        if not credencial or not credencial.get_password():
-            request.session['error_sincronizacion'] = "No tienes credenciales configuradas en SOFIA Plus."
-            return redirect(request.META.get('HTTP_REFERER', f'/asistencia/detalle_sesion/{sesion.id}/'))
-            
-        ficha_id = sesion.ficha.codigo_ficha
-        documento_aprendiz = registro.aprendiz.documento
-        
-        # SOFIA Plus normalmente usa el formato DD/MM/YYYY
-        fecha_str = sesion.fecha.strftime("%d/%m/%Y")
-        horas_falla = "6"
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # --- PASOS DE NAVEGACIÓN HASTA EL APRENDIZ ---
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        driver.switch_to.default_content()
-        Select(wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))).select_by_value("13")
+        driver = sofia_helpers.create_sofia_driver()
+        wait = sofia_helpers.prepare_registrar_inasistencia_aprendiz(driver, credencial, ficha_id, documento_aprendiz)
+
+        btn_consultar = wait.until(sofia_helpers.EC.presence_of_element_located((sofia_helpers.By.XPATH, "//input[contains(@value, 'Consultar') or contains(@id, 'Consultar') or @type='submit']")))
+        driver.execute_script('arguments[0].click();', btn_consultar)
         time.sleep(3)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Registrar Inasistencia del Aprendiz')]"))).click()
-        time.sleep(3)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        wait.until(EC.element_to_be_clickable((By.ID, "formNovedadAprendiz:fichaOLK"))).click()
-        time.sleep(2)
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
-        wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-        time.sleep(2) 
-        driver.switch_to.parent_frame()
-        time.sleep(2)
-        
-        # Seleccionar Aprendiz
+
         try:
-            btn_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@id, 'aprendizOLK') or contains(@id, 'AprendizOLK')]")))
-            driver.execute_script("arguments[0].click();", btn_aprendiz)
-            time.sleep(3)
-            wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "viewDialog1_content")))
-            try:
-                input_busqueda = driver.find_element(By.XPATH, "//input[@type='text']")
-                input_busqueda.clear()
-                input_busqueda.send_keys(documento_aprendiz)
-                btn_lista = driver.find_element(By.XPATH, "//a[contains(., 'Lista') or contains(., 'Consultar')]")
-                driver.execute_script("arguments[0].click();", btn_lista)
-                time.sleep(2)
-            except: pass
-            wait.until(EC.element_to_be_clickable((By.XPATH, f"//tr[td[contains(., '{documento_aprendiz}')]]//a[contains(@id, 'cmdlnkShow')]"))).click()
-            time.sleep(2)
-            driver.switch_to.parent_frame()
-        except:
-            input_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")))
-            input_aprendiz.clear()
-            input_aprendiz.send_keys(documento_aprendiz)
-            
-        # CLIC EN CONSULTAR PARA ABRIR FORMULARIO DE FECHAS
-        btn_consultar = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[contains(@value, 'Consultar') or contains(@id, 'Consultar') or @type='submit']")))
-        btn_consultar.click()
-        time.sleep(3)
-        
-        # --- INTENTAR RELLENAR DATOS ---
-        try:
-            # Llenar Fecha de Inicio
-            input_fecha_ini = driver.find_element(By.ID, "formNovedadAprendiz:fechaEjecucion")
-            input_fecha_ini.clear()
-            input_fecha_ini.send_keys(fecha_str)
-            
-            # Llenar Fecha Fin
-            input_fecha_fin = driver.find_element(By.ID, "formNovedadAprendiz:fechaFin")
-            input_fecha_fin.clear()
-            input_fecha_fin.send_keys(fecha_str)
-            
-            # Llenar Cantidad de Horas
-            input_horas = driver.find_element(By.ID, "formNovedadAprendiz:horasITX")
-            input_horas.clear()
-            input_horas.send_keys(horas_falla)
-            
-            # Llenar Justificación
-            input_justicacion = driver.find_element(By.ID, "formNovedadAprendiz:justificacionITA")
-            input_justicacion.clear()
-            input_justicacion.send_keys("SIN JUSTIFICAR")
-            
+            sofia_helpers.fill_inasistencia_form(driver, fecha_str, horas_falla)
             time.sleep(1)
-            
-            # Hacer clic en el fondo de la página para forzar que los campos validen (onblur de JSF)
-            driver.find_element(By.TAG_NAME, 'body').click()
-            time.sleep(1.5) # Pausa extra asegurando que todo esté listo antes de la foto
-            
-            # Ocultar visualmente cualquier mensaje residual de "valor requerido" antes de la foto
-            driver.execute_script("""
-                var errores = document.querySelectorAll('.colMsgError');
-                errores.forEach(function(e) { e.innerHTML = ''; });
-                var textos = document.querySelectorAll('span, div, label, td');
-                textos.forEach(function(t) { 
-                    if(t.innerText && t.innerText.toLowerCase().includes('requerido')) { t.style.display = 'none'; }
-                });
-            """)
-            
-            # Tomamos captura ANTES del guardado (para evidenciar los datos ingresados)
-            from django.core.files.base import ContentFile
-            png_data = driver.get_screenshot_as_png()
-            nombre_archivo = f"sofia_falla_{documento_aprendiz}_{sesion.fecha}.png"
-            registro.captura_sofia.save(nombre_archivo, ContentFile(png_data), save=True)
-            
-            # Clic en el botón "Registrar Novedad"
-            btn_guardar = driver.find_element(By.ID, "formNovedadAprendiz:btnRegistrarNovedad")
-            driver.execute_script("arguments[0].click();", btn_guardar)
-            
-            # Esperar a que SOFIA muestre el mensaje verde de éxito
-            wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(@class, 'info') and contains(text(), 'Registrada Correctamente')]")))
-            
-            # Si pasó la línea anterior, el guardado fue exitoso
+            sofia_helpers.click_body(driver)
+            time.sleep(1.5)
+            sofia_helpers.hide_required_messages(driver)
+            sofia_helpers.capture_form_state(driver, registro, documento_aprendiz, sesion)
+
+            btn_guardar = driver.find_element(sofia_helpers.By.ID, 'formNovedadAprendiz:btnRegistrarNovedad')
+            driver.execute_script('arguments[0].click();', btn_guardar)
+            wait.until(sofia_helpers.EC.presence_of_element_located(
+                (sofia_helpers.By.XPATH, "//span[contains(@class, 'info') and contains(text(), 'Registrada Correctamente')]")
+            ))
             registro.sincronizado_sofia = True
             registro.save()
-            
-        except Exception as e:
-            print("Error al intentar guardar la novedad en SOFIA:", e)
-            # Si ocurre un error y no alcanzó a tomar la foto, la tomamos aquí
+        except Exception:
             if not registro.captura_sofia:
                 try:
-                    from django.core.files.base import ContentFile
-                    png_data = driver.get_screenshot_as_png()
-                    nombre_archivo = f"sofia_falla_{documento_aprendiz}_{sesion.fecha}_error.png"
-                    registro.captura_sofia.save(nombre_archivo, ContentFile(png_data), save=True)
-                except:
+                    sofia_helpers.capture_form_state(driver, registro, documento_aprendiz, sesion, suffix='error')
+                except Exception:
                     pass
-        
+
         if registro.sincronizado_sofia:
-            messages.success(request, f"¡Éxito! La falla de {registro.aprendiz.first_name} se reportó correctamente en SOFIA Plus.")
+            messages.success(request, f'¡Éxito! La falla de {registro.aprendiz.first_name} se reportó correctamente en SOFIA Plus.')
         else:
-            messages.warning(request, f"Los datos se ingresaron pero no se confirmó el registro en SOFIA Plus. Revisa la captura en el expediente.")
-        
+            messages.warning(request, 'Los datos se ingresaron pero no se confirmó el registro en SOFIA Plus. Revisa la captura en el expediente.')
     except Exception as e:
-        messages.error(request, f"El bot se detuvo. Error: {str(e)[:150]}")
+        messages.error(request, f'El bot se detuvo. Error: {str(e)[:150]}')
     finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
-    # Ahora redirigimos directamente al detalle del registro para ver la foto
+        if driver:
+            sofia_helpers.quit_sofia_driver(driver)
+
     return redirect('detalle_registro', registro_id=registro.id)
 
 @login_required
@@ -943,422 +595,99 @@ def detalle_registro(request, registro_id):
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_seleccion_aprendiz_sofia(request):
     """Quinto paso: Selecciona un aprendiz específico para la prueba."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        ficha_id = request.session.get('ficha_activa_id')
-        documento_prueba = "1024486777" # Documento indicado para la prueba
-        
-        if not credencial or not credencial.get_password():
-            request.session['error_seleccion_aprendiz_sofia'] = "No tienes credenciales configuradas."
-            return redirect('registro_sofia')
-            
-        if not ficha_id:
-            request.session['error_seleccion_aprendiz_sofia'] = "Selecciona una ficha en el menú lateral."
-            return redirect('registro_sofia')
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # --- PASOS 1, 2, 3 y 4 ---
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        driver.switch_to.default_content()
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13")
-        time.sleep(3)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Registrar Inasistencia del Aprendiz')]"))).click()
-        time.sleep(3)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        wait.until(EC.element_to_be_clickable((By.ID, "formNovedadAprendiz:fichaOLK"))).click()
-        time.sleep(2)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
-        xpath_ficha = f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"
-        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_ficha))).click()
-        time.sleep(2) 
-        
-        driver.switch_to.parent_frame()
-        time.sleep(2) # Espera a que la página se actualice con la ficha
-        
-        # --- PASO 5: SELECCIONAR APRENDIZ ---
-        try:
-            # Intento: Buscar el botón de lupa del aprendiz
-            btn_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(@id, 'aprendizOLK') or contains(@id, 'AprendizOLK')]")))
-            # Forzamos el clic con JavaScript por si SOFIA tiene algún elemento bloqueando la lupa
-            driver.execute_script("arguments[0].click();", btn_aprendiz)
-            time.sleep(3)
-            
-            # Entrar al modal del aprendiz utilizando el ID exacto que nos arrojó el HTML
-            wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "viewDialog1_content")))
-            
-            try:
-                # Buscar usando el input de texto del modal (si lo tiene visible)
-                input_busqueda = driver.find_element(By.XPATH, "//input[@type='text']")
-                input_busqueda.clear()
-                input_busqueda.send_keys(documento_prueba)
-                
-                btn_lista = driver.find_element(By.XPATH, "//a[contains(., 'Lista') or contains(., 'Consultar')]")
-                driver.execute_script("arguments[0].click();", btn_lista)
-                time.sleep(2)
-            except:
-                pass # Si no tiene buscador, asumimos que todos los aprendices están en lista
-            
-            # Seleccionar el resultado
-            xpath_resultado = f"//tr[td[contains(., '{documento_prueba}')]]//a[contains(@id, 'cmdlnkShow')]"
-            wait.until(EC.element_to_be_clickable((By.XPATH, xpath_resultado))).click()
-            time.sleep(2)
-            
-            driver.switch_to.parent_frame()
-        except:
-            # Plan B: Si la lupa falla, escribimos directamente el documento en el cuadro
-            input_aprendiz = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")))
-            input_aprendiz.clear()
-            input_aprendiz.send_keys(documento_prueba)
-        
-        # Esperamos un poco para que el popup se cierre y el input se llene con el nombre del aprendiz
-        time.sleep(3)
-        
-        # OMITIMOS el clic en "Consultar" por el momento, solo queremos ver si el aprendiz fue seleccionado
-        # btn_consultar = wait.until(EC.element_to_be_clickable((By.XPATH, "//input[contains(@value, 'Consultar') or contains(@id, 'Consultar') or @type='submit']")))
-        # btn_consultar.click()
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'seleccion_aprendiz.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_seleccion_aprendiz_sofia'] = fs.url('sofia_proofs/seleccion_aprendiz.png')
-        messages.success(request, f"Se buscó correctamente el aprendiz con documento {documento_prueba}.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_seleccion_aprendiz.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_seleccion_aprendiz_sofia'] = FileSystemStorage().url('sofia_proofs/error_seleccion_aprendiz.png')
-            request.session['error_seleccion_aprendiz_sofia'] = "El bot se atascó intentando seleccionar al aprendiz. Revisa la captura para ver qué HTML nos falta."
-        except:
-            request.session['error_seleccion_aprendiz_sofia'] = f"Error en Selenium: {str(e)[:100]}"
-    finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    ficha_id = request.session.get('ficha_activa_id')
+    documento_prueba = request.session.get('aprendiz_prueba_doc')
+
+    if not documento_prueba:
+        request.session['error_seleccion_aprendiz_sofia'] = 'Selecciona un aprendiz para la prueba en la parte superior.'
+        return redirect('registro_sofia')
+
+    if not sofia_helpers.validate_sofia_credencial(request, credencial, 'error_seleccion_aprendiz_sofia'):
+        return redirect('registro_sofia')
+
+    if not sofia_helpers.validate_ficha_id(request, ficha_id, 'error_seleccion_aprendiz_sofia'):
+        return redirect('registro_sofia')
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.prepare_registrar_inasistencia_aprendiz(driver, credencial, ficha_id, documento_prueba),
+        'prueba_seleccion_aprendiz_sofia',
+        'seleccion_aprendiz.png',
+        error_session_key='error_seleccion_aprendiz_sofia',
+        error_proof_name='error_seleccion_aprendiz.png',
+        success_message=f'Se buscó correctamente el aprendiz con documento {documento_prueba}.'
+    )
+
     return redirect('registro_sofia')
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_seleccion_ficha_sofia(request):
     """Cuarto paso: Abre el popup de fichas y selecciona la ficha que el usuario tiene activa."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        ficha_id = request.session.get('ficha_activa_id')
-        
-        if not credencial or not credencial.get_password():
-            request.session['error_seleccion_sofia'] = "No tienes credenciales configuradas."
-            return redirect('registro_sofia')
-            
-        if not ficha_id:
-            request.session['error_seleccion_sofia'] = "Selecciona una ficha en el menú lateral de Gestor SENA para continuar."
-            return redirect('registro_sofia')
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # --- PASO 1, 2 y 3: LLEGAR AL FORMULARIO ---
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        driver.switch_to.default_content()
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13")
-        time.sleep(3)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]"))).click()
-        time.sleep(1)
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Registrar Inasistencia del Aprendiz')]"))).click()
-        time.sleep(3)
-        
-        # --- PASO 4: SELECCIONAR LA FICHA ---
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        
-        # Clic en el botón con la lupa usando su ID directo
-        wait.until(EC.element_to_be_clickable((By.ID, "formNovedadAprendiz:fichaOLK"))).click()
-        time.sleep(2)
-        
-        # Entrar al Iframe del Modal (Popup). En SOFIA la URL del Iframe contiene "modalGestionHoraCosto"
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.XPATH, "//iframe[contains(@src, 'modalGestionHoraCosto')]")))
-        
-        # Buscar la ficha activa del instructor por su código usando XPath dinámico
-        # Buscamos una fila <tr> que en un <td> contenga el código, y le damos clic a su enlace <a> 'cmdlnkShow'
-        xpath_ficha = f"//tr[td[contains(., '{ficha_id}')]]//a[contains(@id, 'cmdlnkShow')]"
-        wait.until(EC.element_to_be_clickable((By.XPATH, xpath_ficha))).click()
-        time.sleep(2) # Esperar al JS window.parent.cerrarVentana()
-        
-        # Volver al Iframe "contenido"
-        driver.switch_to.parent_frame()
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'seleccion_ficha.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_seleccion_sofia'] = fs.url('sofia_proofs/seleccion_ficha.png')
-        messages.success(request, f"Se seleccionó exitosamente la ficha {ficha_id} en el formulario.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_seleccion_ficha.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_seleccion_sofia'] = FileSystemStorage().url('sofia_proofs/error_seleccion_ficha.png')
-            request.session['error_seleccion_sofia'] = "No se logró encontrar la ficha en el listado de SOFIA. Asegúrate de tener asignada esta ficha en la plataforma."
-        except:
-            request.session['error_seleccion_sofia'] = f"Error en Selenium: {str(e)[:100]}"
-    finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+    ficha_id = request.session.get('ficha_activa_id')
+
+    if not sofia_helpers.validate_sofia_credencial(request, credencial, 'error_seleccion_sofia'):
+        return redirect('registro_sofia')
+
+    if not sofia_helpers.validate_ficha_id(request, ficha_id, 'error_seleccion_sofia', 'Selecciona una ficha en el menú lateral de Gestor SENA para continuar.'):
+        return redirect('registro_sofia')
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.prepare_registrar_inasistencia(driver, credencial, ficha_id),
+        'prueba_seleccion_sofia',
+        'seleccion_ficha.png',
+        error_session_key='error_seleccion_sofia',
+        error_proof_name='error_seleccion_ficha.png',
+        success_message=f'Se seleccionó exitosamente la ficha {ficha_id} en el formulario.'
+    )
+
     return redirect('registro_sofia')
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_navegacion_sofia(request):
     """Tercer paso: Navega por el menú hasta llegar al formulario de inasistencias."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        if not credencial or not credencial.get_password():
-            request.session['error_navegacion_sofia'] = "No tienes credenciales configuradas."
-            return redirect('registro_sofia')
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # --- PASO 1: LOGIN ---
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        # --- PASO 2: CAMBIAR ROL A INSTRUCTOR ---
-        driver.switch_to.default_content()
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13")
-        time.sleep(3)
-        
-        # --- PASO 3: NAVEGAR AL REGISTRO ---
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Gestión de Tiempos')]"))).click()
-        time.sleep(1)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Gestionar Tiempos del Instructor')]"))).click()
-        time.sleep(1)
-        
-        wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Registrar Inasistencia del Aprendiz')]"))).click()
-        time.sleep(3)
-        
-        # El formulario carga en un iframe central llamado "contenido"
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.NAME, "contenido")))
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'navegacion.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_navegacion_sofia'] = fs.url('sofia_proofs/navegacion.png')
-        messages.success(request, "Navegación hasta el formulario completada con éxito.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_navegacion.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_navegacion_sofia'] = FileSystemStorage().url('sofia_proofs/error_navegacion.png')
-            request.session['error_navegacion_sofia'] = "El bot falló al navegar por el menú. Revisa la captura para ver en dónde se quedó."
-        except:
-            request.session['error_navegacion_sofia'] = f"Error en Selenium: {str(e)[:100]}"
-    finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+
+    if not sofia_helpers.validate_sofia_credencial(request, credencial, 'error_navegacion_sofia'):
+        return redirect('registro_sofia')
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.navigate_to_registrar_inasistencia(driver, sofia_helpers.login_as_instructor(driver, credencial)),
+        'prueba_navegacion_sofia',
+        'navegacion.png',
+        error_session_key='error_navegacion_sofia',
+        error_proof_name='error_navegacion.png',
+        success_message='Navegación hasta el formulario completada con éxito.'
+    )
+
     return redirect('registro_sofia')
 
 @login_required
 @rol_requerido('INSTRUCTOR', 'ADMIN')
 def probar_rol_sofia(request):
     """Inicia el navegador, simula el cambio de rol y toma captura."""
-    try:
-        from selenium import webdriver
-        import time
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import Select
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from django.core.files.storage import FileSystemStorage
-        
-        credencial = getattr(request.user, 'credenciales_sofia', None)
-        if not credencial or not credencial.get_password():
-            request.session['error_rol_sofia'] = "No tienes credenciales configuradas en Configuración > SOFIA Plus."
-            return redirect('registro_sofia')
-            
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        driver = webdriver.Chrome(options=options)
-        
-        # --- PASO 1: LOGIN ---
-        driver.get("http://senasofiaplus.edu.co/sofia-public/")
-        wait = WebDriverWait(driver, 15)
-        
-        # Entramos al iframe del formulario
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "registradoBox1")))
-        
-        Select(wait.until(EC.presence_of_element_located((By.ID, "tipoId")))).select_by_value(credencial.tipo_documento)
-        
-        input_doc = driver.find_element(By.ID, "username")
-        input_doc.clear()
-        input_doc.send_keys(credencial.documento.strip())
-        
-        input_pass = driver.find_element(By.NAME, "josso_password")
-        input_pass.clear()
-        input_pass.send_keys(credencial.get_password().strip())
-        
-        driver.find_element(By.NAME, "ingresar").click()
-        
-        # --- PASO 2: CAMBIAR ROL A INSTRUCTOR ---
-        # Tras el login, la página recarga y salimos del Iframe. Por seguridad aseguramos volver a la base de la página.
-        driver.switch_to.default_content()
-        
-        # Esperamos que aparezca el selector de roles (significa que el login fue exitoso)
-        select_rol_element = wait.until(EC.presence_of_element_located((By.ID, "seleccionRol:roles")))
-        Select(select_rol_element).select_by_value("13") # 13 = Instructor
-        
-        # SOFIA recarga la página por AJAX al cambiar el select, damos un tiempo de espera
-        time.sleep(5)
-        
-        fs = FileSystemStorage()
-        captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'rol_instructor.png')
-        os.makedirs(os.path.dirname(captura_path), exist_ok=True)
-        driver.save_screenshot(captura_path)
-        
-        request.session['prueba_rol_sofia'] = fs.url('sofia_proofs/rol_instructor.png')
-        messages.success(request, "Prueba de cambio de rol ejecutada.")
-        
-    except Exception as e:
-        try:
-            from django.core.files.storage import FileSystemStorage
-            captura_path = os.path.join(settings.MEDIA_ROOT, 'sofia_proofs', 'error_rol.png')
-            driver.save_screenshot(captura_path)
-            request.session['prueba_rol_sofia'] = FileSystemStorage().url('sofia_proofs/error_rol.png')
-            request.session['error_rol_sofia'] = "El bot falló al cambiar de rol. Revisa la captura para ver qué salió mal."
-        except:
-            request.session['error_rol_sofia'] = f"Error en Selenium: {str(e)[:100]}"
-    finally:
-        try:
-            driver.quit()
-        except:
-            pass
-            
+    credencial = getattr(request.user, 'credenciales_sofia', None)
+
+    if not sofia_helpers.validate_sofia_credencial(request, credencial, 'error_rol_sofia', 'No tienes credenciales configuradas en Configuración > SOFIA Plus.'):
+        return redirect('registro_sofia')
+
+    sofia_helpers.run_sofia_action(
+        request,
+        credencial,
+        lambda driver: sofia_helpers.login_as_instructor(driver, credencial),
+        'prueba_rol_sofia',
+        'rol_instructor.png',
+        error_session_key='error_rol_sofia',
+        error_proof_name='error_rol.png',
+        success_message='Prueba de cambio de rol ejecutada.'
+    )
+
     return redirect('registro_sofia')

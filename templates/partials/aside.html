@@ -25,12 +25,12 @@
       <li class="nav-item mb-1">
         <a href="#collapseAsistencia"
           data-bs-toggle="collapse"
-          class="nav-link rounded d-flex align-items-center {% if '/asistencia/' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}"
-          aria-expanded="{% if '/asistencia/' in request.path %}true{% else %}false{% endif %}">
+          class="nav-link rounded d-flex align-items-center {% if '/asistencia/' in request.path and 'registro-sofia' not in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}"
+          aria-expanded="{% if '/asistencia/' in request.path and 'registro-sofia' not in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-calendar-check me-2"></i> Control Asistencia
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if '/asistencia/' in request.path %}show{% endif %}" id="collapseAsistencia" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if '/asistencia/' in request.path and 'registro-sofia' not in request.path %}show{% endif %}" id="collapseAsistencia" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
               <a href="{% url 'inicio_asistencia' %}"
@@ -48,12 +48,6 @@
               <a href="{% url 'estadisticas_asistencia' %}"
                 class="nav-link py-1 {% if request.resolver_match.url_name == 'estadisticas_asistencia' %}text-white fw-bold{% else %}text-white-50{% endif %}">
                 Estadísticas
-              </a>
-            </li>
-            <li>
-              <a href="{% url 'registro_sofia' %}"
-                class="nav-link py-1 {% if 'registro_sofia' in request.path or 'probar' in request.path %}text-white fw-bold{% else %}text-white-50{% endif %}">
-                <i class="bi bi-robot me-1"></i> Registro SOFIA
               </a>
             </li>
           </ul>
@@ -123,12 +117,12 @@
       <li class="nav-item mb-1">
         <a href="#collapseFicha"
           data-bs-toggle="collapse"
-          class="nav-link rounded d-flex align-items-center {% if 'ficha' in request.path or 'usuario' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}"
-          aria-expanded="{% if 'ficha' in request.path or 'usuario' in request.path %}true{% else %}false{% endif %}">
+          class="nav-link rounded d-flex align-items-center {% if 'ficha' in request.path or 'usuario' in request.path and 'configuracion' not in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}"
+          aria-expanded="{% if 'ficha' in request.path or 'usuario' in request.path and 'configuracion' not in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-folder2-open me-2"></i> Gestión de Ficha
           <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-        <div class="collapse {% if 'ficha' in request.path or 'usuario' in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
+        <div class="collapse {% if 'ficha' in request.path or 'usuario' in request.path and 'configuracion' not in request.path %}show{% endif %}" id="collapseFicha" data-bs-parent="#menuAcordeon">
           <ul class="nav flex-column ps-4 mt-1">
             <li>
               <a href="{% url 'inicio_ficha' %}" class="nav-link {% if request.resolver_match.url_name == 'inicio_ficha' %}text-white fw-bold{% else %}text-white-50{% endif %} py-1">Resumen Ficha</a>
@@ -253,17 +247,37 @@
           <i class="bi bi-check2-square me-2"></i> Mis Pendientes
         </a>
       </li>
+      
       <li class="nav-item mb-1">
-        <a href="{% url 'configuraciones' %}"
-          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' %}color-verde-sena-bg text-white fw-bold{% else %}text-white{% endif %}">
+        <a href="#collapseConfiguraciones"
+          data-bs-toggle="collapse"
+          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuraciones' or request.resolver_match.url_name == 'configuracion_sofia_plus' or 'registro-sofia' in request.path or 'probar' in request.path %}color-verde-sena-bg text-white fw-bold{% else %}text-white collapsed{% endif %}"
+          aria-expanded="{% if request.resolver_match.url_name == 'configuraciones' or request.resolver_match.url_name == 'configuracion_sofia_plus' or 'registro-sofia' in request.path or 'probar' in request.path %}true{% else %}false{% endif %}">
           <i class="bi bi-gear me-2"></i> Configuraciones
+          <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
         </a>
-      </li>
-      <li class="nav-item mb-1">
-        <a href="{% url 'configuracion_sofia_plus' %}"
-          class="nav-link rounded d-flex align-items-center {% if request.resolver_match.url_name == 'configuracion_sofia_plus' %}color-verde-sena-bg text-white fw-bold{% else %}text-white{% endif %}">
-          <i class="bi bi-shield-lock me-2"></i> Credenciales SOFIA
-        </a>
+        <div class="collapse {% if request.resolver_match.url_name == 'configuraciones' or request.resolver_match.url_name == 'configuracion_sofia_plus' or 'registro-sofia' in request.path or 'probar' in request.path %}show{% endif %}" id="collapseConfiguraciones" data-bs-parent="#menuAcordeon">
+          <ul class="nav flex-column ps-4 mt-1">
+            <li>
+              <a href="{% url 'configuraciones' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'configuraciones' %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Ajustes Generales
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'configuracion_sofia_plus' %}"
+                class="nav-link py-1 {% if request.resolver_match.url_name == 'configuracion_sofia_plus' %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Credenciales SOFIA
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'registro_sofia' %}"
+                class="nav-link py-1 {% if 'registro-sofia' in request.path or 'probar' in request.path %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                <i class="bi bi-robot me-1"></i> Test Sincronización
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
       <li class="nav-item mb-1">
         <a href="{% url 'listar_productos' %}"

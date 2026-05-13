@@ -1,5 +1,5 @@
 from django.urls import path
-from asistencia.views import inicio_asistencia, historial_asistencias, estadisticas_asistencia, justificar_falla, cerrar_sesion, detalle_sesion, registro_sofia, probar_conexion_sofia, probar_rol_sofia, probar_navegacion_sofia, probar_seleccion_ficha_sofia, probar_seleccion_aprendiz_sofia, probar_consulta_inasistencia_sofia, sincronizar_falla_sofia, detalle_registro, consultar_inasistencias_sofia
+from asistencia.views import inicio_asistencia, historial_asistencias, estadisticas_asistencia, justificar_falla, cerrar_sesion, detalle_sesion, registro_sofia, probar_conexion_sofia, probar_rol_sofia, probar_navegacion_sofia, probar_seleccion_ficha_sofia, probar_seleccion_aprendiz_sofia, probar_consulta_inasistencia_sofia, sincronizar_falla_sofia, detalle_registro, consultar_inasistencias_sofia, purgar_imagenes_prueba
 
 urlpatterns = [
     # Toma de asistencia diaria (o edición de una sesión específica)
@@ -31,6 +31,7 @@ urlpatterns = [
     path('registro-sofia/probar-seleccion/', probar_seleccion_ficha_sofia, name='probar_seleccion_ficha_sofia'),
     path('registro-sofia/probar-seleccion-aprendiz/', probar_seleccion_aprendiz_sofia, name='probar_seleccion_aprendiz_sofia'),
     path('registro-sofia/probar-consulta/', probar_consulta_inasistencia_sofia, name='probar_consulta_inasistencia_sofia'),
+    path('registro-sofia/purgar/', purgar_imagenes_prueba, name='purgar_imagenes_prueba'),
     
     # Sincronización directa desde Detalle de Sesión
     path('detalle_sesion/sincronizar/<int:registro_id>/', sincronizar_falla_sofia, name='sincronizar_falla_sofia'),

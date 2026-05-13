@@ -4,8 +4,37 @@
 <div class="container-fluid py-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1 color-negro-suave-fn"><i class="bi bi-robot text-success"></i> Sincronización con SOFIA Plus</h3>
+            <h3 class="fw-bold mb-1 color-negro-suave-fn"><i class="bi bi-robot text-success"></i> Test de Sincronización con SOFIA</h3>
             <p class="text-muted small mb-0">Panel de control y pruebas paso a paso para la automatización</p>
+        </div>
+        <div>
+            <a href="{% url 'purgar_imagenes_prueba' %}" class="btn btn-outline-danger fw-bold shadow-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar todas las imágenes de prueba? Esto no afectará las evidencias ya guardadas en los expedientes de inasistencia.');">
+                <i class="bi bi-trash3-fill"></i> Purgar Imágenes
+            </a>
+        </div>
+    </div>
+
+    <!-- Selector de Aprendiz para Pruebas -->
+    <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
+        <div class="card-body">
+            <form method="POST" action="{% url 'registro_sofia' %}">
+                {% csrf_token %}
+                <div class="row align-items-center">
+                    <div class="col-md-auto">
+                        <label for="aprendiz_documento" class="col-form-label fw-bold"><i class="bi bi-person-bounding-box text-primary"></i> Seleccionar Aprendiz de Prueba:</label>
+                    </div>
+                    <div class="col-md">
+                        <select class="form-select border-primary-subtle shadow-sm" name="aprendiz_documento" id="aprendiz_documento" onchange="this.form.submit()">
+                            <option value="">-- Seleccione un aprendiz de la ficha activa --</option>
+                            {% for aprendiz in aprendices %}
+                                <option value="{{ aprendiz.documento }}" {% if request.session.aprendiz_prueba_doc == aprendiz.documento|stringformat:"s" %}selected{% endif %}>
+                                    {{ aprendiz.first_name }} {{ aprendiz.last_name }} ({{ aprendiz.documento }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -18,8 +47,8 @@
                     <p class="text-muted small">
                         Inicia un navegador en segundo plano, intenta conectarse y verifica que SOFIA Plus responde.
                     </p>
-                    <a href="{% url 'probar_conexion_sofia' %}" class="btn btn-primary fw-bold">
-                        <i class="bi bi-box-arrow-in-right"></i> Ejecutar Prueba de Conexión
+                    <a href="{% url 'probar_conexion_sofia' %}" class="btn btn-primary fw-bold btn-sofia-test">
+                        <i class="bi bi-box-arrow-in-right"></i> <span class="texto-btn">Ejecutar Prueba de Conexión</span>
                     </a>
                 </div>
                 <div class="col-md-7 text-center">
@@ -43,7 +72,7 @@
                 <div class="col-md-5 border-end">
                     <h5 class="fw-bold">2. Seleccionar Rol Instructor</h5>
                     <p class="text-muted small">Tras iniciar sesión, busca el menú desplegable y selecciona el rol de "Instructor".</p>
-                    <a href="{% url 'probar_rol_sofia' %}" class="btn btn-success fw-bold"><i class="bi bi-person-badge"></i> Ejecutar Prueba de Rol</a>
+                    <a href="{% url 'probar_rol_sofia' %}" class="btn btn-success fw-bold btn-sofia-test"><i class="bi bi-person-badge"></i> <span class="texto-btn">Ejecutar Prueba de Rol</span></a>
                 </div>
                 <div class="col-md-7 text-center">
                     {% if error_rol %}
@@ -66,7 +95,7 @@
                 <div class="col-md-5 border-end">
                     <h5 class="fw-bold">3. Cargar Formulario de Inasistencias</h5>
                     <p class="text-muted small">Navega por el menú de Gestión de Tiempos hasta la pantalla de registro y accede al Iframe del formulario.</p>
-                    <a href="{% url 'probar_navegacion_sofia' %}" class="btn btn-info text-white fw-bold"><i class="bi bi-ui-checks-grid"></i> Ejecutar Prueba de Navegación</a>
+                    <a href="{% url 'probar_navegacion_sofia' %}" class="btn btn-info text-white fw-bold btn-sofia-test"><i class="bi bi-ui-checks-grid"></i> <span class="texto-btn">Ejecutar Prueba de Navegación</span></a>
                 </div>
                 <div class="col-md-7 text-center">
                     {% if error_navegacion %}
@@ -89,7 +118,7 @@
                 <div class="col-md-5 border-end">
                     <h5 class="fw-bold">4. Seleccionar Ficha Activa</h5>
                     <p class="text-muted small">Abre el cuadro de diálogo de SOFIA Plus y selecciona la ficha que tengas activa en el panel lateral de Gestor SENA.</p>
-                    <a href="{% url 'probar_seleccion_ficha_sofia' %}" class="btn btn-warning text-dark fw-bold"><i class="bi bi-layers"></i> Ejecutar Prueba de Selección</a>
+                    <a href="{% url 'probar_seleccion_ficha_sofia' %}" class="btn btn-warning text-dark fw-bold btn-sofia-test"><i class="bi bi-layers"></i> <span class="texto-btn">Ejecutar Prueba de Selección</span></a>
                 </div>
                 <div class="col-md-7 text-center">
                     {% if error_seleccion %}
@@ -111,8 +140,8 @@
             <div class="row align-items-center">
                 <div class="col-md-5 border-end">
                     <h5 class="fw-bold">5. Seleccionar Aprendiz</h5>
-                    <p class="text-muted small">El bot buscará al aprendiz con documento 1024486777 y presionará el botón de consultar inasistencias.</p>
-                    <a href="{% url 'probar_seleccion_aprendiz_sofia' %}" class="btn btn-secondary text-white fw-bold"><i class="bi bi-person-bounding-box"></i> Ejecutar Prueba de Aprendiz</a>
+                    <p class="text-muted small">El bot buscará al aprendiz con documento <strong>{{ request.session.aprendiz_prueba_doc|default:"[Seleccione arriba]" }}</strong> y presionará el botón de consultar inasistencias.</p>
+                    <a href="{% url 'probar_seleccion_aprendiz_sofia' %}" class="btn btn-secondary text-white fw-bold btn-sofia-test"><i class="bi bi-person-bounding-box"></i> <span class="texto-btn">Ejecutar Prueba de Aprendiz</span></a>
                 </div>
                 <div class="col-md-7 text-center">
                     {% if error_seleccion_aprendiz %}
@@ -134,8 +163,8 @@
             <div class="row align-items-center">
                 <div class="col-md-5 border-end">
                     <h5 class="fw-bold">6. Consultar Resultados (Tabla)</h5>
-                    <p class="text-muted small">El bot irá al menú de consulta, buscará al aprendiz y tomará un pantallazo de la tabla de inasistencias arrojada por SOFIA Plus.</p>
-                    <a href="{% url 'probar_consulta_inasistencia_sofia' %}" class="btn btn-dark fw-bold"><i class="bi bi-table"></i> Ejecutar Prueba de Consulta</a>
+                    <p class="text-muted small">El bot irá al menú de consulta, buscará al aprendiz con documento <strong>{{ request.session.aprendiz_prueba_doc|default:"[Seleccione arriba]" }}</strong> y tomará un pantallazo de la tabla de inasistencias arrojada por SOFIA.</p>
+                    <a href="{% url 'probar_consulta_inasistencia_sofia' %}" class="btn btn-dark fw-bold btn-sofia-test"><i class="bi bi-table"></i> <span class="texto-btn">Ejecutar Prueba de Consulta</span></a>
                 </div>
                 <div class="col-md-7 text-center">
                     {% if error_consulta %}
@@ -165,4 +194,28 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnsPrueba = document.querySelectorAll('.btn-sofia-test');
+        
+        btnsPrueba.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 1. Cambiar el icono por un spinner (rueda de carga)
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = 'spinner-border spinner-border-sm me-2';
+                }
+                // 2. Cambiar el texto
+                const texto = this.querySelector('.texto-btn');
+                if (texto) {
+                    texto.innerText = 'Ejecutando prueba...';
+                }
+                // 3. Deshabilitar el botón para evitar doble clic
+                this.classList.add('disabled');
+                this.style.pointerEvents = 'none';
+            });
+        });
+    });
+</script>
 {% endblock %}
