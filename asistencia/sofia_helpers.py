@@ -142,7 +142,9 @@ def run_sofia_action(request, credencial, action, success_session_key, proof_nam
             except Exception:
                 pass
         if error_session_key:
-            request.session[error_session_key] = f'{error_message_prefix}{str(e)[:100]}'
+            error_name = type(e).__name__
+            error_msg = str(e).split('Stacktrace:')[0].strip()
+            request.session[error_session_key] = f'{error_message_prefix} {error_name} - {error_msg[:120]}'
         return None
     finally:
         if driver:
@@ -209,13 +211,32 @@ def select_aprendiz_in_modal(wait, driver, documento):
             time.sleep(2)
         except Exception:
             pass
-        btn_sel = wait.until(EC.presence_of_element_located(
-            (By.XPATH, f"//tr[td[contains(., '{documento}')]]//a[contains(@id, 'cmdlnkShow')]")
-        ))
-        driver.execute_script('arguments[0].click();', btn_sel)
-        time.sleep(2)
+
+        for _ in range(15):  # Revisa hasta 15 páginas
+            try:
+                btn_sel = WebDriverWait(driver, 2).until(EC.presence_of_element_located(
+                    (By.XPATH, f"//tr[td[contains(., '{documento}')]]//a[contains(@id, 'cmdlnkShow')]")
+                ))
+                driver.execute_script('arguments[0].click();', btn_sel)
+                time.sleep(2)
+                driver.switch_to.parent_frame()
+                return
+            except Exception:
+                try:
+                    btn_siguiente = driver.find_element(By.XPATH, "//*[contains(@title, 'Siguiente') or contains(@title, 'siguiente') or contains(@id, 'next') or contains(text(), 'Siguiente') or contains(@alt, 'Siguiente')]")
+                    driver.execute_script('arguments[0].click();', btn_siguiente)
+                    time.sleep(3)
+                except Exception:
+                    driver.switch_to.parent_frame()
+                    raise Exception(f"Aprendiz con documento {documento} no encontrado en el listado.")
+
         driver.switch_to.parent_frame()
-    except Exception:
+        raise Exception(f"Aprendiz con documento {documento} no encontrado después de 15 páginas.")
+
+    except Exception as e:
+        if "Aprendiz con documento" in str(e):
+            raise e
+            
         input_aprendiz = wait.until(EC.presence_of_element_located(
             (By.XPATH, "//input[contains(@id, 'aprendiz') and @type='text']")
         ))

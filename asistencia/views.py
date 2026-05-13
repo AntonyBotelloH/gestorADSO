@@ -568,7 +568,9 @@ def sincronizar_falla_sofia(request, registro_id):
         else:
             messages.warning(request, 'Los datos se ingresaron pero no se confirmó el registro en SOFIA Plus. Revisa la captura en el expediente.')
     except Exception as e:
-        messages.error(request, f'El bot se detuvo. Error: {str(e)[:150]}')
+        error_name = type(e).__name__
+        error_msg = str(e).split('Stacktrace:')[0].strip()
+        messages.error(request, f'El bot se detuvo ({error_name}). Detalles: {error_msg[:150]}')
     finally:
         if driver:
             sofia_helpers.quit_sofia_driver(driver)
