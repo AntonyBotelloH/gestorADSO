@@ -85,6 +85,15 @@ class Obligacion(models.Model):
     def __str__(self):
         return f"Obligación {self.numeral} - {self.contrato.numero_contrato}"
 
+class EvidenciaEsperada(models.Model):
+    """Define las evidencias requeridas o esperadas (catálogo) para una obligación específica."""
+    obligacion = models.ForeignKey(Obligacion, on_delete=models.CASCADE, related_name='evidencias_esperadas')
+    nombre = models.CharField(max_length=255, verbose_name="Nombre de la Evidencia")
+    descripcion = models.TextField(verbose_name="Descripción detallada (Formatos, vigencia, etc.)", blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} - Obligación {self.obligacion.numeral}"
+
 class InformeMensual(models.Model):
     """Cabecera del informe de ejecución."""
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name='informes')
@@ -110,16 +119,23 @@ class EjecucionObligacion(models.Model):
     informe = models.ForeignKey(InformeMensual, on_delete=models.CASCADE, related_name='ejecuciones')
     obligacion = models.ForeignKey(Obligacion, on_delete=models.RESTRICT)
     acciones_realizadas = models.TextField(verbose_name="Acciones realizadas")
-    
-    # Campo para listar los nombres de los archivos entregados (viñetas)
-    lista_evidencias_texto = models.TextField(
-        verbose_name="Evidencias (Listado)", 
-        help_text="Ej: - Obligación 1.pdf \n- Proyecto Formativo.pdf",
-        blank=True
-    )
 
     def __str__(self):
         return f"Ejecución Obl. {self.obligacion.numeral} - {self.informe.mes_reporte}"
+
+class EvidenciaObligacion(models.Model):
+    """Archivos de soporte o evidencias para cada obligación ejecutada."""
+    ejecucion = models.ForeignKey(EjecucionObligacion, on_delete=models.CASCADE, related_name='evidencias')
+    nombre_archivo = models.CharField(max_length=255, verbose_name="Nombre o Descripción de la Evidencia")
+    archivo = models.FileField(
+        upload_to=ruta_archivo_sena, 
+        null=True, 
+        blank=True,
+        verbose_name="Archivo de Evidencia"
+    )
+
+    def __str__(self):
+        return f"{self.nombre_archivo} - {self.ejecucion}"
 
 class Desplazamiento(models.Model):
     """Registro de órdenes de viaje legalizadas anexas al informe."""

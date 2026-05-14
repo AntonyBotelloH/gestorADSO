@@ -54,11 +54,13 @@
 
     <script>
       $(document).ready(function () {
-        // Inicializador de Select2
-        $('.form-select').select2({
-          theme: 'bootstrap-5',
-          width: '100%'
-        });
+        // Inicializador de Select2 (con verificación de disponibilidad)
+        if (typeof $.fn.select2 !== 'undefined') {
+          $('.form-select').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+          });
+        }
 
         // Script de Alto Contraste
         if (localStorage.getItem('altoContrasteSena') === 'true') {

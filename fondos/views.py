@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.utils import timezone
+from django.urls import reverse
 from usuarios.decorators import rol_requerido
 from .models import Concepto, Movimiento, MetaFinanciera
 from usuarios.models import Ficha, Usuario
@@ -18,34 +19,63 @@ def dashboard_fondos(request):
 
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id)
 
+    # Filtrar movimientos según parámetro GET
+    filtro = request.GET.get('filtro', 'todos')
+
     # --- LÓGICA DE GUARDADO (POST) - SOLO VOCERO/ADMIN ---
     if request.method == 'POST':
         # Verificar que el usuario sea Vocero o Admin para registrar movimientos
-        if request.user.rol not in ['VOCERO', 'Admin']:
+        if request.user.rol not in ['VOCERO', 'ADMIN']:
             messages.error(request, "No tienes permiso para registrar movimientos.")
             return redirect('inicio_fondos')
         
-        concepto_id = request.POST.get('concepto')
-        responsable_id = request.POST.get('responsable')
-        valor = request.POST.get('valor')
-        
-        concepto_obj = get_object_or_404(Concepto, id=concepto_id)
-        # Los ingresos por defecto quedan como 'Pendiente' (por cobrar)
-        # Los egresos se marcan como 'Ejecutado' de inmediato.
-        estado_inicial = 'Pendiente' if concepto_obj.tipo_operacion == 'Ingreso' else 'Ejecutado'
-        responsable_obj = Usuario.objects.filter(id=responsable_id).first() if responsable_id else None
+        if 'carga_masiva' in request.POST:
+            # Carga masiva para todos los aprendices y voceros de la ficha
+            concepto_id = request.POST.get('concepto_masivo')
+            valor = request.POST.get('valor_masivo')
+            
+            concepto_obj = get_object_or_404(Concepto, id=concepto_id)
+            usuarios_masivos = Usuario.objects.filter(ficha=ficha, rol__in=['APRENDIZ', 'VOCERO'])
+            
+            estado_inicial = 'Pendiente' if concepto_obj.tipo_operacion == 'Ingreso' else 'Ejecutado'
+            
+            movimientos_creados = 0
+            for usuario in usuarios_masivos:
+                Movimiento.objects.create(
+                    ficha=ficha,
+                    responsable=usuario,
+                    concepto=concepto_obj,
+                    valor=valor,
+                    estado=estado_inicial,
+                    fecha_pago=timezone.now() if estado_inicial == 'Ejecutado' else None
+                )
+                movimientos_creados += 1
+            
+            messages.success(request, f"Se registraron {movimientos_creados} movimientos masivos exitosamente.")
+            return redirect(f"{reverse('inicio_fondos')}?filtro={filtro}")
+        else:
+            # Registro individual
+            concepto_id = request.POST.get('concepto')
+            responsable_id = request.POST.get('responsable')
+            valor = request.POST.get('valor')
+            
+            concepto_obj = get_object_or_404(Concepto, id=concepto_id)
+            # Los ingresos por defecto quedan como 'Pendiente' (por cobrar)
+            # Los egresos se marcan como 'Ejecutado' de inmediato.
+            estado_inicial = 'Pendiente' if concepto_obj.tipo_operacion == 'Ingreso' else 'Ejecutado'
+            responsable_obj = Usuario.objects.filter(id=responsable_id).first() if responsable_id else None
 
-        Movimiento.objects.create(
-            ficha=ficha,
-            responsable=responsable_obj,
-            concepto=concepto_obj,
-            valor=valor,
-            estado=estado_inicial,
-            # Si se cobra/paga de una vez, la fecha de pago es HOY. Si queda pendiente, es None.
-            fecha_pago=timezone.now() if estado_inicial == 'Ejecutado' else None
-        )
-        messages.success(request, "Movimiento registrado exitosamente.")
-        return redirect('inicio_fondos')
+            Movimiento.objects.create(
+                ficha=ficha,
+                responsable=responsable_obj,
+                concepto=concepto_obj,
+                valor=valor,
+                estado=estado_inicial,
+                # Si se cobra/paga de una vez, la fecha de pago es HOY. Si queda pendiente, es None.
+                fecha_pago=timezone.now() if estado_inicial == 'Ejecutado' else None
+            )
+            messages.success(request, "Movimiento registrado exitosamente.")
+            return redirect(f"{reverse('inicio_fondos')}?filtro={filtro}")
 
     # --- LÓGICA DE LECTURA (GET) ---
     
@@ -76,9 +106,15 @@ def dashboard_fondos(request):
     progreso = 0
     faltante = 0
     if meta and meta.valor_objetivo > 0:
-        # El progreso se basa en lo recaudado (ingresos ejecutados)
-        progreso = min((ingresos_ejecutados / meta.valor_objetivo) * 100, 100)
-        faltante = max(meta.valor_objetivo - ingresos_ejecutados, 0)
+        # El progreso se basa en la caja real (dinero disponible)
+        if caja_real > 0:
+            progreso = min((caja_real / meta.valor_objetivo) * 100, 100)
+        faltante = max(meta.valor_objetivo - max(caja_real, 0), 0)
+
+    # Filtrar movimientos según parámetro GET
+    movimientos_queryset = Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable').order_by('-fecha')
+    if filtro == 'pendientes':
+        movimientos_queryset = movimientos_queryset.filter(estado='Pendiente')
 
     contexto = {
         'caja_real': caja_real,
@@ -86,9 +122,10 @@ def dashboard_fondos(request):
         'meta': meta,
         'progreso_meta': round(progreso, 1),
         'faltante_meta': faltante,
-        'movimientos': Movimiento.objects.filter(ficha=ficha).select_related('concepto', 'responsable').order_by('-fecha'),
+        'movimientos': movimientos_queryset,
         'conceptos_activos': Concepto.objects.filter(activo=True),
-        'aprendices': Usuario.objects.all(), 
+        'aprendices': Usuario.objects.filter(ficha=ficha), 
+        'filtro_actual': filtro,
         # Variable para tu partial de breadcrumbs
         'breadcrumbs': [
             {'nombre': 'Fondos', 'url': '/fondos/'}
@@ -162,14 +199,14 @@ def pagar_movimiento(request, movimiento_id):
     return redirect('inicio_fondos')
 @login_required
 def configurar_metas(request):
-    """Vista para establecer el objetivo financiero (lectura para todos, escritura solo Instructor/Admin)."""
+    """Vista para establecer el objetivo financiero (lectura para todos, escritura solo Vocero/Admin)."""
     ficha_id = request.session.get('ficha_activa_id')
     ficha = get_object_or_404(Ficha, codigo_ficha=ficha_id) if ficha_id else None
 
-    # Si entra un formulario por POST - SOLO INSTRUCTOR/ADMIN
+    # Si entra un formulario por POST - SOLO VOCERO/ADMIN
     if request.method == 'POST' and ficha:
-        # Verificar que sea Admin
-        if request.user.rol != 'ADMIN':
+        # Verificar que sea Vocero o Admin
+        if request.user.rol not in ['VOCERO', 'ADMIN']:
             messages.error(request, "No tienes permiso para crear o modificar metas.")
             return redirect('metas')
         
@@ -196,17 +233,27 @@ def configurar_metas(request):
 
     if meta_activa:
         # Solo contamos ingresos que YA fueron pagados (Ejecutados)
-        recaudado = Movimiento.objects.filter(
+        ingresos_ejecutados = Movimiento.objects.filter(
             ficha=ficha, 
             concepto__tipo_operacion='Ingreso', 
             estado='Ejecutado'
         ).aggregate(Sum('valor'))['valor__sum'] or 0
         
+        egresos_ejecutados = Movimiento.objects.filter(
+            ficha=ficha, 
+            concepto__tipo_operacion='Egreso', 
+            estado='Ejecutado'
+        ).aggregate(Sum('valor'))['valor__sum'] or 0
+        
+        caja_real = ingresos_ejecutados - egresos_ejecutados
+        recaudado = caja_real # Mantenemos el nombre de la variable para el contexto
+        
         if meta_activa.valor_objetivo > 0:
-            progreso = min((recaudado / meta_activa.valor_objetivo) * 100, 100)
+            if caja_real > 0:
+                progreso = min((caja_real / meta_activa.valor_objetivo) * 100, 100)
             
-        # Calculamos el faltante restando lo recaudado del objetivo
-        faltante = max(meta_activa.valor_objetivo - recaudado, 0)
+        # Calculamos el faltante restando lo disponible del objetivo
+        faltante = max(meta_activa.valor_objetivo - max(caja_real, 0), 0)
 
     # Obtener todas las metas de la ficha para el histórico
     todas_metas = MetaFinanciera.objects.filter(ficha=ficha).order_by('-activa', '-fecha_limite') if ficha else []
@@ -226,9 +273,9 @@ def configurar_metas(request):
     return render(request, 'fondos/metas.html', contexto)
 
 @login_required
-@rol_requerido('ADMIN')
+@rol_requerido('VOCERO', 'ADMIN')
 def editar_meta(request, meta_id):
-    """Vista para editar una meta financiera (solo Admin)."""
+    """Vista para editar una meta financiera (Vocero/Admin)."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
     
     if request.method == 'POST':
@@ -253,9 +300,9 @@ def editar_meta(request, meta_id):
     return render(request, 'fondos/editar_meta.html', contexto)
 
 @login_required
-@rol_requerido('ADMIN')
+@rol_requerido('VOCERO', 'ADMIN')
 def activar_meta(request, meta_id):
-    """Vista para activar una meta (desactiva las demás de la misma ficha)."""
+    """Vista para activar una meta (Vocero/Admin)."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
     ficha = meta.ficha
     
@@ -270,9 +317,9 @@ def activar_meta(request, meta_id):
     return redirect('metas')
 
 @login_required
-@rol_requerido('ADMIN')
+@rol_requerido('VOCERO', 'ADMIN')
 def finalizar_meta(request, meta_id):
-    """Vista para finalizar/cerrar una meta."""
+    """Vista para finalizar/cerrar una meta (Vocero/Admin)."""
     meta = get_object_or_404(MetaFinanciera, id=meta_id)
     
     # Desactivar la meta
@@ -312,9 +359,9 @@ def editar_concepto(request, concepto_id):
     return render(request, 'fondos/editar_concepto.html', contexto)
 
 @login_required
-@rol_requerido('INSTRUCTOR')
+@rol_requerido('VOCERO')
 def eliminar_movimiento(request, movimiento_id):
-    """Vista para eliminar un movimiento (solo Instructor)."""
+    """Vista para eliminar un movimiento (solo Vocero)."""
     if request.method == 'POST':
         movimiento = get_object_or_404(Movimiento, id=movimiento_id)
         

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Catálogo de Obligaciones</h2>
+        <a href="{% url 'obligacion_create' %}" class="btn btn-primary">Nueva Obligación</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Contrato</th>
+                    <th style="width: 10%;">Numeral</th>
+                    <th style="width: 60%;">Descripción</th>
+                    <th style="width: 15%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obligacion in obligaciones %}
+                <tr>
+                    <td>{{ obligacion.contrato.numero_contrato }}</td>
+                    <td class="text-center fw-bold">{{ obligacion.numeral }}</td>
+                    <td class="small">{{ obligacion.descripcion }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'obligacion_update' obligacion.id %}" class="btn btn-outline-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'obligacion_delete' obligacion.id %}" class="btn btn-outline-danger" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No hay obligaciones registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

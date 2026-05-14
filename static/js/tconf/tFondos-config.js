@@ -1,17 +1,35 @@
-document.addEventListener('DOMContentLoaded', function () {
-    // 1. LÓGICA DE AUTOCOMPLETADO DEL CONCEPTO
+$(document).ready(function () {
+    // 1. LÓGICA DE AUTOCOMPLETADO DEL CONCEPTO (Individual)
     const selectElement = document.getElementById('selectConcepto')
     const inputElement = document.getElementById('inputValor')
-  
-    selectElement.addEventListener('change', function () {
-      const selectedOption = this.options[this.selectedIndex]
-      const valorSugerido = selectedOption.getAttribute('data-valor')
-      if (valorSugerido) {
-        inputElement.value = valorSugerido
-      } else {
-        inputElement.value = ''
-      }
-    })
+    
+    if (selectElement && inputElement && typeof $.fn.select2 !== 'undefined') {
+      $('#selectConcepto').on('select2:select', function (e) {
+        const selectedOption = e.params.data.element
+        const valorSugerido = selectedOption.getAttribute('data-valor')
+        if (valorSugerido) {
+          inputElement.value = valorSugerido
+        } else {
+          inputElement.value = ''
+        }
+      })
+    }
+
+    // 1b. LÓGICA DE AUTOCOMPLETADO DEL CONCEPTO (Masivo)
+    const selectMasivoElement = document.getElementById('selectConceptoMasivo')
+    const inputMasivoElement = document.getElementById('inputValorMasivo')
+    
+    if (selectMasivoElement && inputMasivoElement && typeof $.fn.select2 !== 'undefined') {
+      $('#selectConceptoMasivo').on('select2:select', function (e) {
+        const selectedOption = e.params.data.element
+        const valorSugerido = selectedOption.getAttribute('data-valor')
+        if (valorSugerido) {
+          inputMasivoElement.value = valorSugerido
+        } else {
+          inputMasivoElement.value = ''
+        }
+      })
+    }
 
     // 2. INICIALIZACIÓN DE DATATABLES
     $('#tablaMovimientos').DataTable({

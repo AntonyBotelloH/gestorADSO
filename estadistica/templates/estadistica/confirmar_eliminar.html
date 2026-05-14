@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title mt-3">¿Estás seguro que deseas eliminar {{ tipo|lower }}?</h5>
+                    <p class="card-text text-muted my-4">
+                        Estás a punto de eliminar el registro <strong>"{{ objeto }}"</strong>. <br>
+                        Esta acción es irreversible y podría afectar otros registros asociados.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="{% url url_cancelar %}" class="btn btn-secondary me-md-2 px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-danger px-4">Sí, Eliminar Definitivamente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,9 +1,9 @@
 from urllib import request
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
-from .models import Contrato, LiquidacionMensual, InformeMensual
-from .forms import InformeMensualForm, LiquidacionMensualForm
+from .models import Contrato, LiquidacionMensual, InformeMensual, Obligacion
+from .forms import InformeMensualForm, LiquidacionMensualForm, ContratoForm, ObligacionForm
 
 def dashboard_sena(request):
     """Vista principal con el resumen estadístico de los contratos."""
@@ -25,6 +25,72 @@ def dashboard_sena(request):
     }
     return render(request, 'dashboard.html', context)
 
+# --- VISTAS PARA CONTRATOS ---
+def contrato_list(request):
+    contratos = Contrato.objects.all().order_by('-fecha_inicio')
+    return render(request, 'estadistica/contrato_list.html', {'contratos': contratos})
+
+def contrato_create(request):
+    if request.method == 'POST':
+        form = ContratoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('contrato_list')
+    else:
+        form = ContratoForm()
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Registrar Contrato'})
+
+def contrato_update(request, pk):
+    contrato = get_object_or_404(Contrato, pk=pk)
+    if request.method == 'POST':
+        form = ContratoForm(request.POST, instance=contrato)
+        if form.is_valid():
+            form.save()
+            return redirect('contrato_list')
+    else:
+        form = ContratoForm(instance=contrato)
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Editar Contrato'})
+
+def contrato_delete(request, pk):
+    contrato = get_object_or_404(Contrato, pk=pk)
+    if request.method == 'POST':
+        contrato.delete()
+        return redirect('contrato_list')
+    return render(request, 'estadistica/confirmar_eliminar.html', {'objeto': contrato, 'tipo': 'Contrato', 'url_cancelar': 'contrato_list'})
+
+# --- VISTAS PARA OBLIGACIONES ---
+def obligacion_list(request):
+    obligaciones = Obligacion.objects.all().order_by('contrato', 'numeral')
+    return render(request, 'estadistica/obligacion_list.html', {'obligaciones': obligaciones})
+
+def obligacion_create(request):
+    if request.method == 'POST':
+        form = ObligacionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('obligacion_list')
+    else:
+        form = ObligacionForm()
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Registrar Obligación'})
+
+def obligacion_update(request, pk):
+    obligacion = get_object_or_404(Obligacion, pk=pk)
+    if request.method == 'POST':
+        form = ObligacionForm(request.POST, instance=obligacion)
+        if form.is_valid():
+            form.save()
+            return redirect('obligacion_list')
+    else:
+        form = ObligacionForm(instance=obligacion)
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Editar Obligación'})
+
+def obligacion_delete(request, pk):
+    obligacion = get_object_or_404(Obligacion, pk=pk)
+    if request.method == 'POST':
+        obligacion.delete()
+        return redirect('obligacion_list')
+    return render(request, 'estadistica/confirmar_eliminar.html', {'objeto': obligacion, 'tipo': 'Obligación', 'url_cancelar': 'obligacion_list'})
+
 
 # --- VISTAS PARA INFORMES MENSUALES ---
 
@@ -40,11 +106,11 @@ def informe_create(request):
         form = InformeMensualForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('sena:informe_list')
+            return redirect('informe_list')
     else:
         form = InformeMensualForm()
         
-    return render(request, 'estadistica/formulario_base.html', {'form': form})
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Subir Informe Mensual'})
 
 
 # --- VISTAS PARA LIQUIDACIONES (PAGOS) ---
@@ -60,8 +126,8 @@ def liquidacion_create(request):
         form = LiquidacionMensualForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('sena:liquidacion_list')
+            return redirect('liquidacion_list')
     else:
         form = LiquidacionMensualForm()
         
-    return render(request, 'estadistica/formulario_base.html', {'form': form})
+    return render(request, 'estadistica/formulario_base.html', {'form': form, 'titulo': 'Registrar Liquidación'})

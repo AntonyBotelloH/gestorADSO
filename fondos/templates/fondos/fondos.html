@@ -52,6 +52,7 @@
       </div>
     </div>
 
+    {% if request.user.rol == 'VOCERO' or request.user.rol == 'ADMIN' %}
     <div class="card shadow-sm border-0 mb-4 border-top border-4 bg-body-tertiary" style="border-top-color: #39A900 !important;">
       <div class="card-header bg-transparent py-3">
         <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-plus-circle me-2 text-success"></i>Registrar Nuevo Movimiento</h5>
@@ -90,11 +91,51 @@
         </form>
       </div>
     </div>
+    {% endif %}
+
+    {% if request.user.rol == 'VOCERO' or request.user.rol == 'ADMIN' %}
+    <div class="card shadow-sm border-0 mb-4 border-top border-4 bg-body-tertiary" style="border-top-color: #007bff !important;">
+      <div class="card-header bg-transparent py-3">
+        <h5 class="mb-0 fw-bold color-negro-suave-fn"><i class="bi bi-upload me-2 text-primary"></i>Carga Masiva de Movimientos</h5>
+      </div>
+      <div class="card-body px-4 py-4">
+        <p class="text-muted small mb-3">Registra un movimiento para todos los aprendices y voceros de la ficha de manera simultánea.</p>
+        <form method="POST" action="{% url 'inicio_fondos' %}" class="row g-3">
+          {% csrf_token %}
+          <input type="hidden" name="carga_masiva" value="1">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-muted text-uppercase">Concepto:</label>
+            <select name="concepto_masivo" id="selectConceptoMasivo" class="form-select border-secondary-subtle bg-body text-body shadow-none" required>
+              <option value="" disabled selected>-- Elija Concepto --</option>
+              {% for concepto in conceptos_activos %}
+                <option value="{{ concepto.id }}" data-valor="{{ concepto.valor_sugerido|floatformat:0 }}">{{ concepto.nombre }} ({{ concepto.get_tipo_operacion_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-bold small text-muted text-uppercase">Valor ($):</label>
+            <div class="input-group">
+              <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+              <input type="number" name="valor_masivo" id="inputValorMasivo" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="0" required />
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm"><i class="bi bi-upload me-1"></i> Cargar Masivo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
 
     <div class="card shadow-sm border-0 bg-body-tertiary">
       <div class="card-header bg-transparent py-3 d-flex justify-content-between align-items-center">
         <h5 class="mb-0 fw-bold color-negro-suave-fn">Últimos Movimientos</h5>
-        <span class="badge bg-secondary-subtle text-body border px-3 fw-normal">Historial Reciente</span>
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-group btn-group-sm" role="group">
+            <a href="{% url 'inicio_fondos' %}" class="btn {% if filtro_actual == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %} fw-bold">Todos</a>
+            <a href="{% url 'inicio_fondos' %}?filtro=pendientes" class="btn {% if filtro_actual == 'pendientes' %}btn-primary{% else %}btn-outline-primary{% endif %} fw-bold">Pendientes</a>
+          </div>
+        </div>
       </div>
 
       <div class="card-body">
@@ -145,19 +186,18 @@
 
                   <td class="pe-4 text-end text-nowrap">
                     {% if mov.estado == 'Pendiente' %}
+                      {% if request.user.rol == 'ADMIN' or request.user.rol == 'VOCERO' %}
                       <form action="{% url 'pagar_movimiento' mov.id %}" method="POST" class="d-inline">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-success btn-sm fw-bold px-3 rounded-pill shadow-sm me-1" title="Marcar como Pagado"><i class="bi bi-currency-dollar"></i> Pagar</button>
                       </form>
+                      {% endif %}
                     {% endif %}
 
-                    {% if request.user.rol == 'INSTRUCTOR' and mov.concepto.tipo_operacion == 'Ingreso' %}
-                      <form action="{% url 'eliminar_movimiento' mov.id %}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este cobro? Esta acción no se puede deshacer.');">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill shadow-sm me-1" title="Eliminar Cobro">
-                              <i class="bi bi-trash"></i>
-                          </button>
-                      </form>
+                    {% if request.user.rol == 'VOCERO' and mov.concepto.tipo_operacion == 'Ingreso' %}
+                      <button type="button" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill shadow-sm me-1" title="Eliminar Cobro" onclick="confirmarEliminar('{% url 'eliminar_movimiento' mov.id %}', '{{ mov.concepto.nombre|escapejs }}')">
+                        <i class="bi bi-trash"></i>
+                      </button>
                     {% endif %}
 
                     <a href="{% url 'ver_recibo' mov.id %}" class="btn btn-outline-secondary btn-sm fw-bold px-3 rounded-pill shadow-sm" title="Ver Recibo"><i class="bi bi-receipt"></i> <span class="d-none d-md-inline ms-1">Recibo</span></a>
@@ -177,11 +217,41 @@
       </div>
     </div>
   </div>
+  <!-- Modal de Confirmación de Eliminación -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalLabel"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Confirmar Eliminación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que quieres eliminar este movimiento?</p>
+          <p class="text-muted small"><strong>Concepto:</strong> <span id="conceptoEliminar"></span></p>
+          <p class="text-danger small"><i class="bi bi-exclamation-circle me-1"></i>Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <form id="deleteForm" method="POST" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'js/tconf/tFondos-config.js' %}"></script>
 
+<script>
+function confirmarEliminar(url, concepto) {
+    $('#deleteForm').attr('action', url);
+    $('#conceptoEliminar').text(concepto);
+    $('#confirmDeleteModal').modal('show');
+}
+</script>
 
 {% endblock %}

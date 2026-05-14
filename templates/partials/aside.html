@@ -224,6 +224,18 @@
               </a>
             </li>
             <li>
+              <a href="{% url 'contrato_list' %}"
+                class="nav-link py-1 {% if 'contrato' in request.resolver_match.url_name %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Contratos
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'obligacion_list' %}"
+                class="nav-link py-1 {% if 'obligacion' in request.resolver_match.url_name %}text-white fw-bold{% else %}text-white-50{% endif %}">
+                Obligaciones
+              </a>
+            </li>
+            <li>
               <a href="{% url 'informe_list' %}"
                 class="nav-link py-1 {% if 'informe' in request.resolver_match.url_name %}text-white fw-bold{% else %}text-white-50{% endif %}">
                 Informes Mensuales

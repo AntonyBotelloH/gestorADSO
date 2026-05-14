@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestión de Contratos</h2>
+        <a href="{% url 'contrato_create' %}" class="btn btn-primary">Registrar Contrato</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nº Contrato</th>
+                    <th>Objeto</th>
+                    <th>Valor Total</th>
+                    <th>Fechas</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contrato in contratos %}
+                <tr>
+                    <td><strong>{{ contrato.numero_contrato }}</strong></td>
+                    <td class="small">{{ contrato.objeto_contractual|truncatechars:100 }}</td>
+                    <td>${{ contrato.valor_total }}</td>
+                    <td>{{ contrato.fecha_inicio|date:"d M Y" }} - {{ contrato.fecha_fin|date:"d M Y" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{% url 'contrato_update' contrato.id %}" class="btn btn-outline-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'contrato_delete' contrato.id %}" class="btn btn-outline-danger" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay contratos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

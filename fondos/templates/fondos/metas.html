@@ -21,33 +21,41 @@
                     <h5 class="fw-bold mb-0 color-negro-suave-fn"><i class="bi bi-patch-plus me-2 text-success"></i>Definir Nueva Meta</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{% url 'metas' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Meta:</label>
-                            <input type="text" name="nombre" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. Visita técnica a Bogotá" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Justificación:</label>
-                            <textarea name="descripcion" class="form-control border-secondary-subtle bg-body text-body shadow-none" rows="2" placeholder="Transporte y viáticos de la ficha"></textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Valor Requerido ($):</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
-                                    <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. 250000" required>
+                    {% if request.user.rol == 'VOCERO' or request.user.rol == 'ADMIN' %}
+                        <form method="POST" action="{% url 'metas' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Nombre de la Meta:</label>
+                                <input type="text" name="nombre" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. Visita técnica a Bogotá" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Justificación:</label>
+                                <textarea name="descripcion" class="form-control border-secondary-subtle bg-body text-body shadow-none" rows="2" placeholder="Transporte y viáticos de la ficha"></textarea>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Valor Requerido ($):</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-body-secondary text-body border-secondary-subtle">$</span>
+                                        <input type="number" name="valor_objetivo" class="form-control border-secondary-subtle bg-body text-body shadow-none" placeholder="Ej. 250000" required>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite:</label>
+                                    <input type="date" name="fecha_limite" class="form-control border-secondary-subtle bg-body text-body shadow-none" required>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small text-muted text-uppercase">Fecha Límite:</label>
-                                <input type="date" name="fecha_limite" class="form-control border-secondary-subtle bg-body text-body shadow-none" required>
-                            </div>
+                            <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm mt-2">
+                                <i class="bi bi-flag-fill me-2"></i>Establecer Meta
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="py-5 text-center">
+                            <i class="bi bi-lock display-1 text-muted opacity-25 mb-3 d-block"></i>
+                            <p class="text-muted fw-bold">No tienes permiso para crear metas.</p>
+                            <small class="text-muted d-block mt-n2">Puedes ver el estado de la meta activa y el histórico.</small>
                         </div>
-                        <button type="submit" class="btn color-verde-sena-bg text-white w-100 fw-bold shadow-sm mt-2">
-                            <i class="bi bi-flag-fill me-2"></i>Establecer Meta
-                        </button>
-                    </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -142,20 +150,24 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center pe-4">
-                                        <div class="d-flex gap-2 justify-content-center">
-                                            {% if not meta.activa %}
-                                                <a href="{% url 'activar_meta' meta.id %}" class="btn btn-outline-success btn-sm shadow-sm" title="Establecer como activa">
-                                                    <i class="bi bi-check-circle"></i> Activar
+                                        {% if request.user.rol == 'VOCERO' or request.user.rol == 'ADMIN' %}
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                {% if not meta.activa %}
+                                                    <a href="{% url 'activar_meta' meta.id %}" class="btn btn-outline-success btn-sm shadow-sm" title="Establecer como activa">
+                                                        <i class="bi bi-check-circle"></i> Activar
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'finalizar_meta' meta.id %}" class="btn btn-outline-danger btn-sm shadow-sm" title="Finalizar esta meta">
+                                                        <i class="bi bi-x-circle"></i> Finalizar
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'editar_meta' meta.id %}" class="btn btn-outline-primary btn-sm shadow-sm">
+                                                    <i class="bi bi-pencil"></i> Editar
                                                 </a>
-                                            {% else %}
-                                                <a href="{% url 'finalizar_meta' meta.id %}" class="btn btn-outline-danger btn-sm shadow-sm" title="Finalizar esta meta">
-                                                    <i class="bi bi-x-circle"></i> Finalizar
-                                                </a>
-                                            {% endif %}
-                                            <a href="{% url 'editar_meta' meta.id %}" class="btn btn-outline-primary btn-sm shadow-sm">
-                                                <i class="bi bi-pencil"></i> Editar
-                                            </a>
-                                        </div>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted small">Sin acciones disponibles</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

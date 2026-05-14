@@ -12,16 +12,19 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Cargar variables de entorno desde el archivo .env
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kcco-0%gmf15*(zys&8%)vcel$kmguqomlicxx$b5rkyn1wqm-'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-key-para-desarrollo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -150,5 +153,13 @@ LOGIN_REDIRECT_URL = '/'
 # A dónde enviar a los intrusos que no han iniciado sesión
 LOGIN_URL = '/login/'
 
-# Manda los correos a la consola en vez de usar internet (Solo para desarrollo)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Configuración para envío de correos reales con Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ads3196477@gmail.com'
+# IMPORTANTE: No pongas tu contraseña real aquí ni la contraseña de la cuenta. 
+# Debes usar una "Contraseña de Aplicación" de Google y preferiblemente cargarla desde una variable de entorno.
+# Por seguridad temporal, lo dejaremos para que lo configures en tu entorno (ej. usando python-dotenv más adelante)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'sute ysrn nrjy ximx')
